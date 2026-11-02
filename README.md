@@ -1,16 +1,19 @@
 <div align="center">
 
-# 📦 Backupino (بکاپینو)
+# 📦 Backupino
 ### Fast, Resumable WordPress Backup, Cloning & Easy Migration
-**بکاپ‌گیری رایگان و انتقال آسان وردپرس با اینستالر مستقل خودکفا**
+**A next-generation WordPress migration and disaster recovery platform with a self-contained offline installer**
 
 [![Version](https://img.shields.io/badge/version-1.0.0--stable-blue.svg?style=for-the-badge)](https://github.com/Backupino/plugin)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%20--%207.1-21759b.svg?style=for-the-badge&logo=wordpress)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%20--%208.4-777bb4.svg?style=for-the-badge&logo=php)](https://php.net)
 [![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-2.0.html)
-[![Offline First](https://img.shields.io/badge/Architecture-100%25%20Offline--First-orange.svg?style=for-the-badge)](#offline-first-architecture)
+[![Plugin Check](https://img.shields.io/badge/Plugin%20Check-100%25%20Passed-success.svg?style=for-the-badge)](https://wordpress.org)
+[![Offline First](https://img.shields.io/badge/Architecture-100%25%20Offline--First-orange.svg?style=for-the-badge)](#100-offline-first-architecture)
 
 [Documentation Portal](https://github.com/Backupino/documents) • [Source Repository](https://github.com/Backupino/plugin) • [WordPress Profile](https://profiles.wordpress.org/backupino/)
+
+**Languages**: **English (Default)** | [راهنمای فارسی (Persian)](README.fa.md)
 
 </div>
 
@@ -18,37 +21,22 @@
 
 ## 🌟 Overview
 
-**Backupino** is a next-generation WordPress backup, cloning, and migration plugin built specifically for real-world shared hosting environments. It packages your entire WordPress website — database, themes, plugins, uploads, and core files — into a single archive paired with an ultra-lightweight, self-contained `installer.php` script that rebuilds the site on any empty server without WordPress being pre-installed.
+**Backupino** is an enterprise-grade WordPress backup, cloning, and migration plugin engineered specifically for real-world hosting environments with strict execution limits, memory constraints, and short timeouts.
+
+It bundles your entire WordPress installation — database, plugins, themes, uploads, and core files — into a single secure archive accompanied by a standalone, lightweight `installer.php` wizard. You can restore or migrate your entire website onto any fresh, empty server in 5 intuitive steps without needing WordPress pre-installed.
+
+---
 
 ### Why Backupino?
 
 * **100% Free Forever**: Backing up, restoring, and cloning have zero arbitrary file size limits and zero fees. Restoring a site will never be locked behind a paywall.
-* **Anti-Timeout Chunked Resumable Engine**: Operations are split into micro-batches with persistent database checkpoints. If your server hits a 30-second timeout, it automatically resumes exactly from the last processed file.
-* **Standalone Installer (`installer.php`)**: Rebuilds your website on fresh, empty hosting in 5 guided steps.
-* **Pure PHP SQL Streamer**: Dumps databases directly through native PDO/mysqli APIs. No `mysqldump`, `exec()`, or shell permissions required.
-* **Permanent Latest-Backup Link**: A permanent, secure download URL that always resolves to your newest backup, guarded by administrator authentication.
-* **Telegram & Bale Messenger Alerts**: Instant dispatch of backup completion reports and direct download links to Telegram and Bale.
+* **Anti-Timeout Chunked Resumable Engine**: Operations are split into micro-batches with persistent database checkpoints. If your server hits a 30-second FastCGI timeout, it automatically resumes exactly from the last processed file.
+* **Standalone Installer (`installer.php`)**: Rebuilds your website on fresh, empty hosting in 5 guided steps without WordPress installed.
+* **Pure PHP SQL Streamer**: Dumps databases directly through native PDO and MySQLi APIs. No `mysqldump`, `exec()`, or shell permissions required.
+* **Permanent Latest-Backup Link**: A secure, non-expiring download URL that always resolves to your newest backup, guarded by administrator authentication or a 32-byte secret key.
+* **Telegram & Bale Messenger Alerts**: Instant dispatch of backup completion reports and direct download links to Telegram and Bale with an automatic 3-attempt retry queue.
 * **Jalali (Solar Hijri) Calendar Support**: Native support for Persian calendar scheduling and formatting alongside Gregorian.
-* **100% Offline-First**: Zero external CDNs, zero remote font calls, zero telemetry tracking. Fully compliant with intranet and national networks.
-
----
-
-<div dir="rtl" align="right">
-
-## 🌟 معرفی فارسی
-
-**بکاپینو (Backupino)** افزونه نسل جدید برای پشتیبان‌گیری، شبیه‌سازی و انتقال بی‌دردسر وب‌سایت‌های وردپرسی است. این افزونه با معماری قطعه‌بندی‌شده ضد تایم‌اوت، نصاب مستقل خودکفا (`installer.php`) و استخراج خالص SQL طراحی شده تا در محدودترین هاست‌های اشتراکی نیز بدون افت کیفیت یا قطعی فرآیند عمل کند.
-
-### مزایای کلیدی:
-* **۱۰۰٪ رایگان برای همیشه:** ساخت نسخه پشتیبان و بازگردانی سایت تا ابد و بدون هیچ سقف حجمی رایگان است.
-* **نصاب مستقل خودکفا:** نیازی به نصب وردپرس در هاست مقصد نیست؛ فایل سبک `installer.php` همه چیز را روی هاست خام بازسازی می‌کند.
-* **موتور ضد تایم‌اوت:** پردازش در قطعات چند مگابایتی با ثبت چک‌پوینت؛ در صورت قطعی دقیقاً از همان ثانیه ادامه می‌یابد.
-* **لینک دائمی دانلود:** آدرس ثابت برای دریافت جدیدترین نسخه با احراز هویت امن مدیرکل.
-* **اعلان در بله و تلگرام:** گزارش لحظه‌ای اتمام بکاپ و مهاجرت با پیام‌رسان‌های محبوب و لینک‌های کلیک‌پذیر.
-* **تقویم خورشیدی:** ثبت تاریخ‌ها و زمانبندی خودکار ماهانه در اول هر ماه شمسی.
-* **معماری ۱۰۰٪ آفلاین-فرست:** بدون فراخوانی هیچ CDN خارجی، کاملاً امن و مستقل.
-
-</div>
+* **100% Offline-First Architecture**: Zero external CDNs, zero remote font calls, zero telemetry tracking. Fully compliant with intranet and isolated networks.
 
 ---
 
@@ -56,24 +44,24 @@
 
 Comprehensive guides, step-by-step tutorials, troubleshooting playbooks, and comparisons are available in our official documentation repository:
 
-👉 **[Backupino Documentation Portal (مستندات رسمی)](https://github.com/Backupino/documents)**
+👉 **[Backupino Documentation Portal (English)](https://github.com/Backupino/documents)** | **[مستندات فارسی](https://github.com/Backupino/documents/tree/main/fa)**
 
-* [Getting Started & Installation (راهنمای شروع و نصب)](https://github.com/Backupino/documents/tree/main/01-getting-started)
-* [User Guide & Migration Scenarios (راهنمای کاربری و مهاجرت)](https://github.com/Backupino/documents/tree/main/02-user-guide)
-* [Telegram & Bale Bot Integrations (اتصال ربات‌ها)](https://github.com/Backupino/documents/tree/main/03-integrations)
-* [Feature Matrix & Comparisons (مقایسه‌ها با رقبا)](https://github.com/Backupino/documents/tree/main/04-comparisons)
-* [Troubleshooting & Host Playbooks (عیب‌یابی و رفع خطاها)](https://github.com/Backupino/documents/tree/main/05-troubleshooting)
-* [Frequently Asked Questions (پرسش‌های متداول)](https://github.com/Backupino/documents/tree/main/06-faq)
+* [Getting Started & Installation](https://github.com/Backupino/documents/tree/main/en/01-getting-started)
+* [User Guide & Migration Playbook](https://github.com/Backupino/documents/tree/main/en/02-user-guide)
+* [Telegram & Bale Bot Integrations](https://github.com/Backupino/documents/tree/main/en/03-integrations)
+* [Feature Matrix & Competitor Benchmarks](https://github.com/Backupino/documents/tree/main/en/04-comparisons)
+* [Troubleshooting & Hosting Playbooks](https://github.com/Backupino/documents/tree/main/en/05-troubleshooting)
+* [Frequently Asked Questions (FAQ)](https://github.com/Backupino/documents/tree/main/en/06-faq)
 
 ---
 
 ## 🚀 Quick Start
 
-### Installation
+### Installation via WordPress Dashboard
 1. Download `backupino.zip` from [Releases](https://github.com/Backupino/plugin/releases).
-2. Go to **Plugins → Add New → Upload Plugin** in your WordPress dashboard.
-3. Choose the zip file and click **Install Now**, then **Activate**.
-4. Navigate to the **Backupino** menu in the sidebar and click **Create Backup**.
+2. In your WordPress dashboard, navigate to **Plugins → Add New → Upload Plugin**.
+3. Choose the zip file, click **Install Now**, and then **Activate**.
+4. Open the **Backupino** menu in the sidebar and click **Create Backup**.
 
 ### WP-CLI Support
 ```bash
