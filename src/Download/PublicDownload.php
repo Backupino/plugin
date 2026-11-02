@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Download;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Core\Capabilities;
 use Backupino\Plugin;
 use Backupino\Support\Bytes;
@@ -53,6 +55,18 @@ final class PublicDownload {
 		$packages_dir = $plugin->paths()->packages();
 		$archive_path = null;
 
+		$ip_raw     = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
+		$rate_key   = 'backupino_dl_fails_' . md5( $ip_raw );
+		$fail_count = function_exists( 'get_transient' ) ? (int) get_transient( $rate_key ) : 0;
+
+		if ( $fail_count >= 5 ) {
+			wp_die(
+				esc_html__( 'Too many failed download attempts. Please try again in 10 minutes.', 'backupino' ),
+				esc_html__( 'Too Many Requests', 'backupino' ),
+				array( 'response' => 429 )
+			);
+		}
+
 		if ( 'latest' === $target || '' === $target ) {
 			$archive_path = ( new LatestPackage() )->find( $packages_dir );
 		} else {
@@ -71,6 +85,10 @@ final class PublicDownload {
 				exit;
 
 			case AccessPolicy::FORBIDDEN:
+				if ( function_exists( 'set_transient' ) ) {
+					$window = defined( 'MINUTE_IN_SECONDS' ) ? 10 * MINUTE_IN_SECONDS : 600;
+					set_transient( $rate_key, $fail_count + 1, $window );
+				}
 				wp_die(
 					esc_html__( 'This download link is not valid.', 'backupino' ),
 					'',
@@ -85,6 +103,10 @@ final class PublicDownload {
 					array( 'response' => 404 )
 				);
 				break;
+		}
+
+		if ( function_exists( 'delete_transient' ) && $fail_count > 0 ) {
+			delete_transient( $rate_key );
 		}
 
 		$archive_path = (string) $archive_path;

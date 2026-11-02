@@ -62,9 +62,6 @@ function backupino_uninstall_site(): void {
 	delete_option( 'backupino_notify_queue' );
 	delete_option( 'backupino_migration_notice' );
 
-	// Clear update cache transients
-	delete_site_transient( 'backupino_update_check' );
-
 	// Clear scheduled cron events
 	wp_clear_scheduled_hook( 'backupino_cron_worker' );
 	wp_clear_scheduled_hook( 'backupino_cron_scheduler' );
@@ -96,7 +93,6 @@ if ( is_multisite() ) {
 	}
 
 	delete_site_option( 'backupino_settings' );
-	delete_site_transient( 'backupino_update_check' );
 } else {
 	backupino_uninstall_site();
 }

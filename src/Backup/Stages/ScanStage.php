@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup\Stages;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Backup\FileEntry;
 use Backupino\Backup\FileFilter;
 use Backupino\Backup\Manifest;
@@ -48,6 +50,10 @@ final class ScanStage implements Stage {
 	 * {@inheritDoc}
 	 */
 	public function run( JobContext $context ): StageResult {
+		if ( function_exists( 'wp_raise_memory_limit' ) ) {
+			wp_raise_memory_limit( 'admin' );
+		}
+
 		$job      = $context->job();
 		$state    = $job->stage_state( $this->id() );
 		$manifest = new Manifest( $context->work_dir() . '/manifest.ndjson', $context->paths()->root() );

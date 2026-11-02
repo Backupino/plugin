@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup\Stages;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Backup\Sql\MySqlDumper;
 use Backupino\Backup\Sql\SqlWriter;
 use Backupino\Jobs\JobContext;
@@ -47,6 +49,10 @@ final class DatabaseStage implements Stage {
 	 * {@inheritDoc}
 	 */
 	public function run( JobContext $context ): StageResult {
+		if ( function_exists( 'wp_raise_memory_limit' ) ) {
+			wp_raise_memory_limit( 'admin' );
+		}
+
 		$job = $context->job();
 
 		if ( ! $context->settings()->get( 'archive.database', true ) ) {

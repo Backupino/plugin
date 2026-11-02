@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Jobs;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Core\Db;
 use Backupino\Core\Schema;
 use Backupino\Support\Clock;

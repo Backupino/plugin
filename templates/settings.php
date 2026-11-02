@@ -606,18 +606,12 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 							</p>
 
 							<div class="backupino-field-group" style="margin-top: 24px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-								<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-									<div style="display: flex; align-items: center; gap: 10px;">
-										<span class="dashicons dashicons-update" style="font-size: 22px; color: #0284c7;"></span>
-										<div>
-											<strong style="display: block; font-size: 14px; margin-bottom: 2px;"><?php esc_html_e( 'Current Version:', 'backupino' ); ?> <?php echo esc_html( BACKUPINO_VERSION ); ?></strong>
-											<span style="font-size: 12px; color: #64748b;"><?php esc_html_e( 'Check GitHub releases for the latest version and updates.', 'backupino' ); ?></span>
-										</div>
+								<div style="display: flex; align-items: center; gap: 12px;">
+									<span class="dashicons dashicons-yes-alt" style="font-size: 24px; width: 24px; height: 24px; color: #10b981;"></span>
+									<div>
+										<strong style="display: block; font-size: 14px; margin-bottom: 2px;"><?php esc_html_e( 'Current Version:', 'backupino' ); ?> <?php echo esc_html( BACKUPINO_VERSION ); ?></strong>
+										<span style="font-size: 12px; color: #64748b;"><?php esc_html_e( 'Plugin updates are delivered securely through the official WordPress repository.', 'backupino' ); ?></span>
 									</div>
-									<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=backupino-settings&tab=updates&backupino_check_update=1' ), 'backupino_check_update' ) ); ?>" class="button button-secondary" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 500;">
-										<span class="dashicons dashicons-update" style="font-size: 16px; width: 16px; height: 16px; line-height: 1;"></span>
-										<span><?php esc_html_e( 'Check for updates', 'backupino' ); ?></span>
-									</a>
 								</div>
 							</div>
 						</div>

@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Support;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Thin, defensive filesystem utility layer.
  *
@@ -53,8 +55,13 @@ final class Fs {
 			@file_put_contents(
 				$htaccess,
 				"# Backupino: never list or download raw backup files.\n"
+				. "Options -Indexes\n"
 				. "<IfModule mod_authz_core.c>\n\tRequire all denied\n</IfModule>\n"
-				. "<IfModule !mod_authz_core.c>\n\tOrder allow,deny\n\tDeny from all\n</IfModule>\n",
+				. "<IfModule !mod_authz_core.c>\n\tOrder allow,deny\n\tDeny from all\n</IfModule>\n"
+				. "<FilesMatch \"\\.(php|phtml|php3|php4|php5|php7|php8|phps|pl|py|cgi)$\">\n"
+				. "\t<IfModule mod_authz_core.c>\n\t\tRequire all denied\n\t</IfModule>\n"
+				. "\t<IfModule !mod_authz_core.c>\n\t\tOrder allow,deny\n\t\tDeny from all\n\t</IfModule>\n"
+				. "</FilesMatch>\n",
 				LOCK_EX
 			);
 		}

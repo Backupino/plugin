@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup\Sql;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Core\Db;
 use Backupino\Jobs\Deadline;
 
@@ -62,8 +64,8 @@ final class MySqlDumper {
 				'views'           => true,
 				'triggers'        => true,
 				'routines'        => true,
-				'max_statement'   => 131072,
-				'max_rows_insert' => 100,
+				'max_statement'   => 262144,
+				'max_rows_insert' => 250,
 			),
 			$options
 		);

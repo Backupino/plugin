@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Installer;
 
+defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
+
 /**
  * Extracts the package archive in slices so that huge sites do not time out.
  */

@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Jobs;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Ordered list of stages with helpers for progression maths.
  */

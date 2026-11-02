@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup\Sql;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Append-only writer for the `database.sql` payload.
  *

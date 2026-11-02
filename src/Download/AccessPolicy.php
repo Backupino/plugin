@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Download;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Decides what a permanent-link request is allowed to do.
  *

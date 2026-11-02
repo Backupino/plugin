@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Installer;
 
+defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
+
 /**
  * Executes the dump statement by statement, in time boxed slices.
  */

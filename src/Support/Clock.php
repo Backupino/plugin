@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Support;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Provides the current time. Abstracted so that job scheduling and retention
  * policies can be tested deterministically.

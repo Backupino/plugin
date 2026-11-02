@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Support;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * System clock backed by PHP's `time()`.
  */

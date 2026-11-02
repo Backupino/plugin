@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Backend that produces the package archive.
  *

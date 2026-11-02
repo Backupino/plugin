@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Download;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Finds the most recent archive in a package directory.
  */

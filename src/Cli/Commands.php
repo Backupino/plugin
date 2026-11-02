@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Cli;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Core\Compatibility;
 use Backupino\Jobs\Job;
 use Backupino\Plugin;

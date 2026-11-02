@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Installer;
 
+defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
+
 /**
  * {@see Connection} implemented on top of mysqli.
  */

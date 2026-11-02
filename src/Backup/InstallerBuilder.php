@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Assembles `installer.php`, a single dependency free PHP file that can rebuild
  * the site on an empty server without WordPress being present.
@@ -99,6 +101,11 @@ final class InstallerBuilder {
 
 		$encoded = base64_encode( (string) $json );
 
+		$template = str_replace(
+			"defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;",
+			"define( 'BACKUPINO_INSTALLER', true );\ndefined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;",
+			$template
+		);
 		$template = str_replace( '__BACKUPINO_PAYLOAD__', $encoded, $template );
 		$template = str_replace( '__BACKUPINO_BODY__', $this->library(), $template );
 
@@ -117,6 +124,8 @@ final class InstallerBuilder {
 		$code = (string) preg_replace( '/declare\(\s*strict_types\s*=\s*1\s*\)\s*;/', '', $code );
 		$code = (string) preg_replace( '/^namespace\s+[^;]+;\s*$/m', '', $code );
 		$code = (string) preg_replace( '/^use\s+[^;]+;\s*$/m', '', $code );
+		$code = (string) preg_replace( '/defined\(\s*\'BACKUPINO_INSTALLER\'\s*\)\s*\|\|\s*defined\(\s*\'ABSPATH\'\s*\)\s*\|\|\s*exit\s*;\s*/m', '', $code );
+		$code = (string) preg_replace( '/defined\(\s*\'ABSPATH\'\s*\)\s*\|\|\s*exit\s*;\s*/m', '', $code );
 
 		return trim( $code );
 	}

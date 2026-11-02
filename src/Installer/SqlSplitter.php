@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Installer;
 
+defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
+
 /**
  * Splits a SQL dump into statements without loading it into memory.
  *

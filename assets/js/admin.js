@@ -191,13 +191,25 @@
 	var MAX_RETRIES = 4;
 	var isJobCancelled = false;
 	var currentActiveJobId = null;
+	var currentProgressContainer = null;
+	var isStepping = false;
+	var stepTimer = null;
 
 	function step( id, progressContainer ) {
 		if ( isJobCancelled ) {
 			return Promise.resolve();
 		}
+		currentActiveJobId = id;
+		currentProgressContainer = progressContainer;
+		isStepping = true;
+		if ( stepTimer ) {
+			window.clearTimeout( stepTimer );
+			stepTimer = null;
+		}
+
 		return request( 'jobs/' + id + '/step', { method: 'POST' } )
 			.then( function ( job ) {
+				isStepping = false;
 				retryCount = 0;
 				var currentStage = job.stage || '';
 				var displayMsg = ( job.stageLabel || data.strings.running ) + ( job.message ? ' — ' + job.message : '' );
@@ -215,6 +227,7 @@
 				}
 
 				if ( job.status === 'completed' ) {
+					currentActiveJobId = null;
 					progressBar( progressContainer, 100, data.strings.completed || 'Backup completed successfully!', 'package', true );
 					addTerminalLine( 'SUCCESS: Package generated and stored successfully!', 'success' );
 					window.setTimeout( function () {
@@ -224,33 +237,48 @@
 				}
 
 				if ( job.status === 'failed' || job.status === 'cancelled' ) {
+					currentActiveJobId = null;
 					progressBar( progressContainer, job.progress, ( data.strings.failed || 'Job failed' ) + ': ' + ( job.message || '' ), currentStage, false, true );
 					addTerminalLine( 'FAILED: ' + ( job.message || 'Job aborted.' ), 'error' );
 					return job;
 				}
 
 				return new Promise( function ( resolve ) {
-					window.setTimeout( function () {
+					stepTimer = window.setTimeout( function () {
+						stepTimer = null;
 						resolve( step( id, progressContainer ) );
 					}, 800 );
 				} );
 			} )
 			.catch( function ( error ) {
+				isStepping = false;
 				retryCount++;
 				if ( retryCount <= MAX_RETRIES ) {
 					addTerminalLine( 'Notice: Step paused temporarily (' + error.message + '). Retrying in 2s (attempt ' + retryCount + '/' + MAX_RETRIES + ')…', 'warning' );
 					return new Promise( function ( resolve ) {
-						window.setTimeout( function () {
+						stepTimer = window.setTimeout( function () {
+							stepTimer = null;
 							resolve( step( id, progressContainer ) );
 						}, 2000 );
 					} );
 				}
 
+				currentActiveJobId = null;
 				progressBar( progressContainer, 0, ( data.strings.failed || 'Job failed' ) + ': ' + error.message, '', false, true );
 				addTerminalLine( 'CRITICAL: Step execution aborted: ' + error.message, 'error' );
 				throw error;
 			} );
 	}
+
+	document.addEventListener( 'visibilitychange', function () {
+		if ( ! document.hidden && currentActiveJobId && ! isJobCancelled && ! isStepping && currentProgressContainer ) {
+			if ( stepTimer ) {
+				window.clearTimeout( stepTimer );
+				stepTimer = null;
+			}
+			step( currentActiveJobId, currentProgressContainer );
+		}
+	} );
 
 	function bindDashboard() {
 		var form = document.getElementById( 'backupino-create' );

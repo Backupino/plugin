@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Admin;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Core\Capabilities;
 
 /**
@@ -152,15 +154,10 @@ final class Admin {
 	 * @return string[]
 	 */
 	public function action_links( array $links ): array {
-		$settings_url     = admin_url( 'admin.php?page=' . self::SLUG . '-settings' );
-		$check_update_url = wp_nonce_url(
-			admin_url( 'plugins.php?backupino_check_update=1' ),
-			'backupino_check_update'
-		);
+		$settings_url = admin_url( 'admin.php?page=' . self::SLUG . '-settings' );
 
 		$new_links = array(
 			sprintf( '<a href="%s">%s</a>', esc_url( $settings_url ), esc_html__( 'Settings', 'backupino' ) ),
-			sprintf( '<a href="%s">%s</a>', esc_url( $check_update_url ), esc_html__( 'Check for updates', 'backupino' ) ),
 		);
 
 		return array_merge( $new_links, $links );

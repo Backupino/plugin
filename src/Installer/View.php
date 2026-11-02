@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Installer;
 
+defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
+
 /**
  * Small HTML helpers used by the installer page.
  */

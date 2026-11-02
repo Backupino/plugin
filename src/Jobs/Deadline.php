@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Jobs;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Monotonic deadline shared by every stage of a single job tick.
  */

@@ -13,6 +13,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Installer;
 
+defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
+
 if ( ! function_exists( 'Backupino\Installer\__' ) ) {
 	/**
 	 * Return the (untranslated) text.

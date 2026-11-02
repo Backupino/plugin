@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Storage;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Support\Fs;
 
 /**

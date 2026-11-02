@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Replace;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Serialized-safe, JSON-aware search and replace.
  *

@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup\Stages;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Backup\InstallerBuilder;
 use Backupino\Backup\Package;
 use Backupino\Backup\ZipArchiveWriter;

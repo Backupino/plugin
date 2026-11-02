@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Newline delimited JSON index of every file in an archive.
  *

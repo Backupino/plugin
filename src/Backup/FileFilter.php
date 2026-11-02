@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Decides which files enter the archive.
  *

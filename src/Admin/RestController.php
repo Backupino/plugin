@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Admin;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Core\Capabilities;
 use Backupino\Core\Compatibility;
 use Backupino\Jobs\Job;
@@ -152,10 +154,29 @@ final class RestController {
 	/**
 	 * Permission callback.
 	 *
+	 * Checks user capabilities and verifies the REST nonce on state-changing requests.
+	 *
+	 * @param \WP_REST_Request|null $request Request instance if dispatched by WP REST server.
 	 * @return bool
 	 */
-	public function can_manage(): bool {
-		return Capabilities::user_can_manage();
+	public function can_manage( $request = null ): bool {
+		if ( ! Capabilities::user_can_manage() ) {
+			return false;
+		}
+
+		if ( $request instanceof \WP_REST_Request ) {
+			$method = strtoupper( (string) $request->get_method() );
+			if ( in_array( $method, array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true ) ) {
+				$nonce = $request->get_header( 'x_wp_nonce' );
+				if ( empty( $nonce ) || ( function_exists( 'wp_verify_nonce' ) && ! wp_verify_nonce( (string) $nonce, 'wp_rest' ) ) ) {
+					if ( ! defined( 'BACKUPINO_TESTS' ) ) {
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**

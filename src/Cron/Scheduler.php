@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Cron;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Jobs\Job;
 use Backupino\Jobs\JobStatus;
 use Backupino\Plugin;

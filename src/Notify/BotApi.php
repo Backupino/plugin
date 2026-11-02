@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Notify;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Talks to a Telegram compatible Bot API.
  *

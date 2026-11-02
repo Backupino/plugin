@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Backup;
 
+defined( 'ABSPATH' ) || exit;
+
 use Backupino\Core\Paths;
 use Backupino\Jobs\Deadline;
 use Backupino\Support\Fs;

@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Core;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owns the custom tables used by the plugin.
  */

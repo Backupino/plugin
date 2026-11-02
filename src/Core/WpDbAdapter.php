@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Core;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Implements the {@see Db} contract on top of WordPress' `$wpdb`.
  */

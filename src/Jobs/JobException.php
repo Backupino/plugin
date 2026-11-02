@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace Backupino\Jobs;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Raised when a stage cannot continue; the runner marks the job as failed.
  */
