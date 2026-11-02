@@ -133,37 +133,16 @@ final class Importer {
 					}
 
 					// Handle Windows/NTFS, orphaned tablespaces, or foreign key constraint collisions (errno 121) on CREATE TABLE
-					if ( ( false !== stripos( $err, 'already exists' ) || false !== stripos( $err, 'tablespace' ) || false !== stripos( $err, 'errno: 121' ) || false !== stripos( $err, 'duplicate key' ) )
+					if ( ( false !== stripos( $err, 'already exists' ) || false !== stripos( $err, 'tablespace' ) || false !== stripos( $err, 'errno: 121' ) || false !== stripos( $err, 'duplicate key' ) || false !== stripos( $err, 'errno: 168' ) )
 						&& preg_match( '/^\s*CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+[`"]?([^`"\s]+)[`"]?/i', $statement, $tbl_match ) ) {
 						$tbl_name  = $tbl_match[1];
 						$escaped   = '`' . str_replace( '`', '``', $tbl_name ) . '`';
 						$retried   = false;
 						$clean_sql = (string) preg_replace( '/CONSTRAINT\s+[`"]?[^`"\s]+[`"]?\s+FOREIGN\s+KEY/i', 'FOREIGN KEY', $statement );
 
-						// Attempt to unlink orphaned physical file directly if accessible
-						$base_file = '';
-						try {
-							$datadir_rows = $this->connection->rows( "SHOW VARIABLES LIKE 'datadir'" );
-							$datadir      = isset( $datadir_rows[0]['Value'] ) ? (string) $datadir_rows[0]['Value'] : ( $datadir_rows[0]['value'] ?? '' );
-							$db_rows      = $this->connection->rows( 'SELECT DATABASE() AS db' );
-							$dbname       = isset( $db_rows[0]['db'] ) ? (string) $db_rows[0]['db'] : '';
-							if ( '' !== $datadir && '' !== $dbname ) {
-								$base_file = rtrim( (string) $datadir, '/\\' ) . DIRECTORY_SEPARATOR . $dbname . DIRECTORY_SEPARATOR . $tbl_name;
-								@unlink( $base_file . '.ibd' );
-								@unlink( $base_file . '.frm' );
-							}
-						} catch ( \Throwable $fe ) {
-							// Ignore if datadir cannot be queried or accessed
-						}
-
 						for ( $attempt = 1; $attempt <= 3; ++$attempt ) {
 							usleep( 150000 * $attempt );
-							@$this->connection->query( "ALTER TABLE {$escaped} DISCARD TABLESPACE" );
 							@$this->connection->query( "DROP TABLE IF EXISTS {$escaped}" );
-							if ( '' !== $base_file ) {
-								@unlink( $base_file . '.ibd' );
-								@unlink( $base_file . '.frm' );
-							}
 							usleep( 50000 );
 							if ( $this->connection->query( $clean_sql ) ) {
 								$retried = true;
