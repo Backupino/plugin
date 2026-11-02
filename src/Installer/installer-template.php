@@ -794,18 +794,7 @@ switch ( $backupino_action ) {
 			respond( array( 'ok' => false, 'error' => $e->getMessage() ), 400 );
 		}
 
-		// Clear Elementor CSS cache directory if present
-		$elementor_css_dir = $backupino_dir . '/wp-content/uploads/elementor/css';
-		if ( is_dir( $elementor_css_dir ) ) {
-			$css_files = glob( $elementor_css_dir . '/*' );
-			if ( is_array( $css_files ) ) {
-				foreach ( $css_files as $f ) {
-					if ( is_file( $f ) ) {
-						@unlink( $f );
-					}
-				}
-			}
-		}
+		// Preserve pre-compiled Elementor CSS files from the backup package so frontend loads immediately without dynamic tag recompilation errors.
 
 		$orig_config = $backupino_dir . '/wp-config.backupino-orig.php';
 		$orig_content = is_file( $orig_config ) && is_readable( $orig_config ) ? (string) file_get_contents( $orig_config ) : null;

@@ -213,7 +213,7 @@ final class MySqlDumper {
 			$name   = isset( $values[0] ) ? (string) $values[0] : '';
 			$type   = isset( $values[1] ) ? strtoupper( (string) $values[1] ) : 'BASE TABLE';
 
-			if ( '' === $name ) {
+			if ( '' === $name || false !== stripos( $name, 'backupino_jobs' ) ) {
 				continue;
 			}
 

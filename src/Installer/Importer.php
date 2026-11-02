@@ -132,6 +132,12 @@ final class Importer {
 							++$executed;
 							continue;
 						}
+
+						if ( false !== stripos( $tbl_name, 'backupino_jobs' ) ) {
+							// Transient Backupino jobs table can be safely skipped; auto-created by plugin on load.
+							++$executed;
+							continue;
+						}
 					}
 
 					// Handle duplicate key on INSERT (resumed or cancelled import recovery)
