@@ -347,6 +347,14 @@ final class RestController {
 
 		$merged = \Backupino\Core\Settings::merge( $current, $payload );
 
+		if ( isset( $payload['notify'] ) && is_array( $payload['notify'] ) ) {
+			$tg_on   = ! empty( $payload['notify']['telegram_enabled'] );
+			$bale_on = ! empty( $payload['notify']['bale_enabled'] );
+			if ( ! $tg_on && ! $bale_on ) {
+				$merged['notify']['service'] = 'none';
+			}
+		}
+
 		$plugin->settings()->update( $merged );
 
 		return new \WP_REST_Response( $plugin->settings()->all() );

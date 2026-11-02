@@ -105,14 +105,11 @@ final class Notifier {
 		$tg_token   = trim( (string) $this->settings->get( 'notify.telegram_token', '' ) );
 		$tg_chat_id = trim( (string) $this->settings->get( 'notify.telegram_chat_id', '' ) );
 
-		if ( ! $tg_enabled && 'telegram' === $this->service() ) {
-			$tg_enabled = true;
-			if ( '' === $tg_token ) {
-				$tg_token = trim( (string) $this->settings->get( 'notify.token', '' ) );
-			}
-			if ( '' === $tg_chat_id ) {
-				$tg_chat_id = trim( (string) $this->settings->get( 'notify.chat_id', '' ) );
-			}
+		if ( '' === $tg_token ) {
+			$tg_token = trim( (string) $this->settings->get( 'notify.token', '' ) );
+		}
+		if ( '' === $tg_chat_id ) {
+			$tg_chat_id = trim( (string) $this->settings->get( 'notify.chat_id', '' ) );
 		}
 
 		if ( $tg_enabled && '' !== $tg_token && '' !== $tg_chat_id ) {
@@ -127,14 +124,11 @@ final class Notifier {
 		$bale_token   = trim( (string) $this->settings->get( 'notify.bale_token', '' ) );
 		$bale_chat_id = trim( (string) $this->settings->get( 'notify.bale_chat_id', '' ) );
 
-		if ( ! $bale_enabled && 'bale' === $this->service() ) {
-			$bale_enabled = true;
-			if ( '' === $bale_token ) {
-				$bale_token = trim( (string) $this->settings->get( 'notify.token', '' ) );
-			}
-			if ( '' === $bale_chat_id ) {
-				$bale_chat_id = trim( (string) $this->settings->get( 'notify.chat_id', '' ) );
-			}
+		if ( '' === $bale_token ) {
+			$bale_token = trim( (string) $this->settings->get( 'notify.token', '' ) );
+		}
+		if ( '' === $bale_chat_id ) {
+			$bale_chat_id = trim( (string) $this->settings->get( 'notify.chat_id', '' ) );
 		}
 
 		if ( $bale_enabled && '' !== $bale_token && '' !== $bale_chat_id ) {
@@ -297,6 +291,7 @@ final class Notifier {
 		$channels = $this->channels();
 
 		if ( array() === $channels ) {
+			$this->queue->clear();
 			return 0;
 		}
 

@@ -140,6 +140,21 @@ final class Importer {
 						$retried   = false;
 						$clean_sql = (string) preg_replace( '/CONSTRAINT\s+[`"]?[^`"\s]+[`"]?\s+FOREIGN\s+KEY/i', 'FOREIGN KEY', $statement );
 
+						// Attempt to unlink orphaned physical file directly if accessible
+						try {
+							$datadir_row = $this->connection->row( "SHOW VARIABLES LIKE 'datadir'" );
+							$datadir     = is_array( $datadir_row ) ? ( $datadir_row['Value'] ?? $datadir_row['value'] ?? '' ) : '';
+							$db_row      = $this->connection->row( 'SELECT DATABASE() AS db' );
+							$dbname      = is_array( $db_row ) ? ( $db_row['db'] ?? '' ) : '';
+							if ( '' !== $datadir && '' !== $dbname ) {
+								$base_file = rtrim( (string) $datadir, '/\\' ) . DIRECTORY_SEPARATOR . $dbname . DIRECTORY_SEPARATOR . $tbl_name;
+								@unlink( $base_file . '.ibd' );
+								@unlink( $base_file . '.frm' );
+							}
+						} catch ( \Throwable $fe ) {
+							// Ignore if datadir cannot be queried or accessed
+						}
+
 						for ( $attempt = 1; $attempt <= 3; ++$attempt ) {
 							usleep( 150000 * $attempt );
 							@$this->connection->query( "ALTER TABLE {$escaped} DISCARD TABLESPACE" );

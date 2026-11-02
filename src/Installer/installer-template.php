@@ -614,6 +614,29 @@ switch ( $backupino_action ) {
 						$connection->query( $drop_sql );
 					}
 				}
+
+				// If accessible on localhost / local disk, remove any leftover orphaned .ibd / .frm files
+				try {
+					$datadir_row = $connection->row( "SHOW VARIABLES LIKE 'datadir'" );
+					$datadir     = is_array( $datadir_row ) ? ( $datadir_row['Value'] ?? $datadir_row['value'] ?? '' ) : '';
+					$db_name     = (string) ( $db['name'] ?? '' );
+					if ( '' !== $datadir && '' !== $db_name ) {
+						$db_dir = rtrim( (string) $datadir, '/\\' ) . DIRECTORY_SEPARATOR . $db_name;
+						if ( is_dir( $db_dir ) && is_writable( $db_dir ) ) {
+							$orphans = @glob( $db_dir . DIRECTORY_SEPARATOR . '*.{ibd,frm,MYD,MYI}', GLOB_BRACE );
+							if ( is_array( $orphans ) ) {
+								foreach ( $orphans as $orphan_file ) {
+									if ( is_file( $orphan_file ) ) {
+										@unlink( $orphan_file );
+									}
+								}
+							}
+						}
+					}
+				} catch ( \Throwable $fe ) {
+					// Ignore if datadir cannot be queried or accessed
+				}
+
 				$connection->query( 'SET FOREIGN_KEY_CHECKS = 1' );
 				$connection->query( 'SET UNIQUE_CHECKS = 1' );
 			} catch ( \Throwable $e ) {

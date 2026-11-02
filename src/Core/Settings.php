@@ -180,6 +180,21 @@ final class Settings {
 	 * @return bool
 	 */
 	public function update( array $values ): bool {
+		if ( isset( $values['notify']['service'] ) ) {
+			if ( 'telegram' === $values['notify']['service'] && ! isset( $values['notify']['telegram_enabled'] ) ) {
+				$values['notify']['telegram_enabled'] = true;
+			} elseif ( 'bale' === $values['notify']['service'] && ! isset( $values['notify']['bale_enabled'] ) ) {
+				$values['notify']['bale_enabled'] = true;
+			} elseif ( 'none' === $values['notify']['service'] ) {
+				if ( ! isset( $values['notify']['telegram_enabled'] ) ) {
+					$values['notify']['telegram_enabled'] = false;
+				}
+				if ( ! isset( $values['notify']['bale_enabled'] ) ) {
+					$values['notify']['bale_enabled'] = false;
+				}
+			}
+		}
+
 		$merged      = self::merge( self::defaults(), $values );
 		$sanitized   = self::sanitize( $merged );
 		$this->cache = $sanitized;
@@ -242,6 +257,18 @@ final class Settings {
 
 		if ( ! in_array( $clean['notify']['service'], array( 'none', 'telegram', 'bale' ), true ) ) {
 			$clean['notify']['service'] = 'none';
+		}
+
+		// Keep notify.service in sync with the enabled checkboxes.
+		$tg_on   = ! empty( $clean['notify']['telegram_enabled'] );
+		$bale_on = ! empty( $clean['notify']['bale_enabled'] );
+
+		if ( ! $tg_on && ! $bale_on ) {
+			$clean['notify']['service'] = 'none';
+		} elseif ( $bale_on && ! $tg_on ) {
+			$clean['notify']['service'] = 'bale';
+		} elseif ( $tg_on && ! $bale_on ) {
+			$clean['notify']['service'] = 'telegram';
 		}
 
 		$clean['notify']['token']   = trim( sanitize_text_field( $clean['notify']['token'] ) );
