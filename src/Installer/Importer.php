@@ -141,11 +141,12 @@ final class Importer {
 						$clean_sql = (string) preg_replace( '/CONSTRAINT\s+[`"]?[^`"\s]+[`"]?\s+FOREIGN\s+KEY/i', 'FOREIGN KEY', $statement );
 
 						// Attempt to unlink orphaned physical file directly if accessible
+						$base_file = '';
 						try {
-							$datadir_row = $this->connection->row( "SHOW VARIABLES LIKE 'datadir'" );
-							$datadir     = is_array( $datadir_row ) ? ( $datadir_row['Value'] ?? $datadir_row['value'] ?? '' ) : '';
-							$db_row      = $this->connection->row( 'SELECT DATABASE() AS db' );
-							$dbname      = is_array( $db_row ) ? ( $db_row['db'] ?? '' ) : '';
+							$datadir_rows = $this->connection->rows( "SHOW VARIABLES LIKE 'datadir'" );
+							$datadir      = isset( $datadir_rows[0]['Value'] ) ? (string) $datadir_rows[0]['Value'] : ( $datadir_rows[0]['value'] ?? '' );
+							$db_rows      = $this->connection->rows( 'SELECT DATABASE() AS db' );
+							$dbname       = isset( $db_rows[0]['db'] ) ? (string) $db_rows[0]['db'] : '';
 							if ( '' !== $datadir && '' !== $dbname ) {
 								$base_file = rtrim( (string) $datadir, '/\\' ) . DIRECTORY_SEPARATOR . $dbname . DIRECTORY_SEPARATOR . $tbl_name;
 								@unlink( $base_file . '.ibd' );
@@ -159,6 +160,10 @@ final class Importer {
 							usleep( 150000 * $attempt );
 							@$this->connection->query( "ALTER TABLE {$escaped} DISCARD TABLESPACE" );
 							@$this->connection->query( "DROP TABLE IF EXISTS {$escaped}" );
+							if ( '' !== $base_file ) {
+								@unlink( $base_file . '.ibd' );
+								@unlink( $base_file . '.frm' );
+							}
 							usleep( 50000 );
 							if ( $this->connection->query( $clean_sql ) ) {
 								$retried = true;

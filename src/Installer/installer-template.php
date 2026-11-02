@@ -617,9 +617,9 @@ switch ( $backupino_action ) {
 
 				// If accessible on localhost / local disk, remove any leftover orphaned .ibd / .frm files
 				try {
-					$datadir_row = $connection->row( "SHOW VARIABLES LIKE 'datadir'" );
-					$datadir     = is_array( $datadir_row ) ? ( $datadir_row['Value'] ?? $datadir_row['value'] ?? '' ) : '';
-					$db_name     = (string) ( $db['name'] ?? '' );
+					$datadir_rows = $connection->rows( "SHOW VARIABLES LIKE 'datadir'" );
+					$datadir      = isset( $datadir_rows[0]['Value'] ) ? (string) $datadir_rows[0]['Value'] : ( $datadir_rows[0]['value'] ?? '' );
+					$db_name      = (string) ( $db['name'] ?? '' );
 					if ( '' !== $datadir && '' !== $db_name ) {
 						$db_dir = rtrim( (string) $datadir, '/\\' ) . DIRECTORY_SEPARATOR . $db_name;
 						if ( is_dir( $db_dir ) && is_writable( $db_dir ) ) {
