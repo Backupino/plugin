@@ -5,12 +5,12 @@
 **بکاپ‌گیری رایگان و انتقال آسان وردپرس با اینستالر مستقل خودکفا**
 
 [![Version](https://img.shields.io/badge/version-1.0.0--stable-blue.svg?style=for-the-badge)](https://github.com/Backupino/plugin)
-[![WordPress](https://img.shields.io/badge/WordPress-6.0%20--%206.8-21759b.svg?style=for-the-badge&logo=wordpress)](https://wordpress.org)
+[![WordPress](https://img.shields.io/badge/WordPress-6.0%20--%207.1-21759b.svg?style=for-the-badge&logo=wordpress)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%20--%208.4-777bb4.svg?style=for-the-badge&logo=php)](https://php.net)
 [![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![Offline First](https://img.shields.io/badge/Architecture-100%25%20Offline--First-orange.svg?style=for-the-badge)](#offline-first-architecture)
 
-[Official Website](https://backupino.com) • [Documentation Portal](https://github.com/Backupino/documents) • [WordPress Profile](https://profiles.wordpress.org/backupino/)
+[Documentation Portal](https://github.com/Backupino/documents) • [Source Repository](https://github.com/Backupino/plugin) • [WordPress Profile](https://profiles.wordpress.org/backupino/)
 
 </div>
 
@@ -100,6 +100,6 @@ Backupino is open-source software licensed under the [GNU General Public License
 
 <div align="center">
 
-Crafted with care by the [Backupino Team](https://backupino.com) • [Report Issues](https://github.com/Backupino/plugin/issues)
+Crafted with care by the [Backupino Team](https://profiles.wordpress.org/backupino/) • [Report Issues](https://github.com/Backupino/plugin/issues)
 
 </div>
