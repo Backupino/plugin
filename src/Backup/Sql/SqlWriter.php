@@ -67,7 +67,7 @@ final class SqlWriter {
 	public function open( bool $append = true ): bool {
 		$mode = $append ? 'ab' : 'wb';
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		$this->handle = @fopen( $this->path, $mode );
 
 		if ( false === $this->handle ) {
@@ -117,7 +117,7 @@ final class SqlWriter {
 			return false;
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.WP.AlternativeFunctions.file_system_read_fwrite
 		$written = fwrite( $this->handle, $sql );
 
 		if ( false === $written ) {

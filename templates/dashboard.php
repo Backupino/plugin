@@ -298,12 +298,12 @@ foreach ( $jobs as $backupino_j ) {
 					<?php else : ?>
 						<?php foreach ( $jobs as $backupino_job ) : ?>
 							<?php
-							$has_archive    = isset( $backupino_job->payload['package']['archive'] );
-							$archive_file   = $has_archive ? (string) $backupino_job->payload['package']['archive'] : '';
-							$installer_file = isset( $backupino_job->payload['package']['installer'] ) ? (string) $backupino_job->payload['package']['installer'] : '';
-							$archive_url    = $has_archive ? \Backupino\Admin\Views::download_url( $archive_file ) : '';
-							$installer_url  = '' !== $installer_file ? \Backupino\Admin\Views::download_url( $installer_file ) : '';
-							$package_size   = isset( $backupino_job->payload['package']['size'] ) ? (int) $backupino_job->payload['package']['size'] : 0;
+							$backupino_has_archive    = isset( $backupino_job->payload['package']['archive'] );
+							$backupino_archive_file   = $backupino_has_archive ? (string) $backupino_job->payload['package']['archive'] : '';
+							$backupino_installer_file = isset( $backupino_job->payload['package']['installer'] ) ? (string) $backupino_job->payload['package']['installer'] : '';
+							$backupino_archive_url    = $backupino_has_archive ? \Backupino\Admin\Views::download_url( $backupino_archive_file ) : '';
+							$backupino_installer_url  = '' !== $backupino_installer_file ? \Backupino\Admin\Views::download_url( $backupino_installer_file ) : '';
+							$backupino_package_size   = isset( $backupino_job->payload['package']['size'] ) ? (int) $backupino_job->payload['package']['size'] : 0;
 							?>
 							<tr data-job="<?php echo esc_attr( (string) $backupino_job->id ); ?>">
 								<td>
@@ -336,32 +336,32 @@ foreach ( $jobs as $backupino_j ) {
 								</td>
 								<td>
 									<?php
-									if ( $package_size > 0 ) {
-										echo esc_html( \Backupino\Support\Bytes::format( $package_size ) );
+									if ( $backupino_package_size > 0 ) {
+										echo esc_html( \Backupino\Support\Bytes::format( $backupino_package_size ) );
 									} else {
 										echo '&mdash;';
 									}
 									?>
 								</td>
 								<td class="backupino-actions-cell" style="white-space: nowrap;">
-									<?php if ( $has_archive && '' !== $archive_url ) : ?>
-										<a href="<?php echo esc_url( $archive_url ); ?>" class="backupino-btn-icon"
+									<?php if ( $backupino_has_archive && '' !== $backupino_archive_url ) : ?>
+										<a href="<?php echo esc_url( $backupino_archive_url ); ?>" class="backupino-btn-icon"
 											title="<?php esc_attr_e( 'Download Archive (.zip)', 'backupino' ); ?>"
 											aria-label="<?php esc_attr_e( 'Download Archive', 'backupino' ); ?>">
 											<span class="dashicons dashicons-archive"></span>
 										</a>
 									<?php endif; ?>
-									<?php if ( '' !== $installer_url ) : ?>
-										<a href="<?php echo esc_url( $installer_url ); ?>" class="backupino-btn-icon"
+									<?php if ( '' !== $backupino_installer_url ) : ?>
+										<a href="<?php echo esc_url( $backupino_installer_url ); ?>" class="backupino-btn-icon"
 											title="<?php esc_attr_e( 'Download Installer (installer.php)', 'backupino' ); ?>"
 											aria-label="<?php esc_attr_e( 'Download Installer', 'backupino' ); ?>">
 											<span class="dashicons dashicons-admin-tools"></span>
 										</a>
 									<?php endif; ?>
-									<?php if ( $has_archive && '' !== $archive_url && '' !== $installer_url ) : ?>
+									<?php if ( $backupino_has_archive && '' !== $backupino_archive_url && '' !== $backupino_installer_url ) : ?>
 										<button type="button" class="backupino-btn-icon backupino-download-pair"
-											data-archive="<?php echo esc_url( $archive_url ); ?>"
-											data-installer="<?php echo esc_url( $installer_url ); ?>"
+											data-archive="<?php echo esc_url( $backupino_archive_url ); ?>"
+											data-installer="<?php echo esc_url( $backupino_installer_url ); ?>"
 											title="<?php esc_attr_e( 'Download Archive and Installer simultaneously', 'backupino' ); ?>"
 											aria-label="<?php esc_attr_e( 'Download Both', 'backupino' ); ?>">
 											<span class="dashicons dashicons-download"></span>

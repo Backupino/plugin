@@ -131,7 +131,7 @@ final class BotApi {
 		// Convert <b> and <strong> to *bold*
 		$formatted = preg_replace( '/<(?:b|strong)>(.*?)<\/(?:b|strong)>/is', '*$1*', (string) $formatted );
 		// Strip any remaining HTML tags
-		return strip_tags( (string) $formatted );
+		return function_exists( 'wp_strip_all_tags' ) ? wp_strip_all_tags( (string) $formatted ) : strip_tags( (string) $formatted );
 	}
 
 	/**
@@ -226,7 +226,7 @@ final class BotApi {
 		if ( 200 !== $code && isset( $payload['parse_mode'] ) ) {
 			$fallback_payload = array(
 				'chat_id'                  => $this->chat_id,
-				'text'                     => strip_tags( $message->text() ),
+				'text'                     => function_exists( 'wp_strip_all_tags' ) ? wp_strip_all_tags( $message->text() ) : strip_tags( $message->text() ),
 				'disable_web_page_preview' => true,
 			);
 			$retry_result = ( $this->http )(

@@ -202,7 +202,7 @@ final class ConfigWriter {
 			try {
 				$index = random_int( 0, $max );
 			} catch ( \Exception $e ) {
-				$index = mt_rand( 0, $max );
+				$index = function_exists( 'wp_rand' ) ? (int) wp_rand( 0, $max ) : (int) random_int( 0, $max );
 			}
 
 			$out .= $alphabet[ $index ];

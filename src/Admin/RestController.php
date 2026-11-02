@@ -260,7 +260,8 @@ final class RestController {
 
 		// Give the browser enough time to finish one slice without hitting the
 		// gateway timeout, while keeping the loop responsive.
-		if ( function_exists( 'set_time_limit' ) ) {
+		if ( function_exists( 'set_time_limit' ) && false === strpos( (string) ini_get( 'disable_functions' ), 'set_time_limit' ) ) {
+			// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Extension of time limit for incremental backup slice.
 			@set_time_limit( 60 );
 		}
 

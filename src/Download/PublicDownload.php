@@ -55,7 +55,7 @@ final class PublicDownload {
 		$packages_dir = $plugin->paths()->packages();
 		$archive_path = null;
 
-		$ip_raw     = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
+		$ip_raw     = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REMOTE_ADDR'] ) ) : '127.0.0.1';
 		$rate_key   = 'backupino_dl_fails_' . md5( $ip_raw );
 		$fail_count = function_exists( 'get_transient' ) ? (int) get_transient( $rate_key ) : 0;
 
@@ -142,7 +142,7 @@ final class PublicDownload {
 		}
 
 		// CLI agents like curl or wget get the archive directly
-		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? (string) $_SERVER['HTTP_USER_AGENT'] : '';
+		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 		if ( false !== stripos( $user_agent, 'curl' ) || false !== stripos( $user_agent, 'wget' ) ) {
 			Fs::stream_download( $archive_path );
 		}
@@ -187,6 +187,7 @@ final class PublicDownload {
 			<meta charset="UTF-8">
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<title><?php esc_html_e( 'Download Backup Package', 'backupino' ); ?> &mdash; <?php echo esc_html( $site_name ); ?></title>
+			<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Standalone public landing page without WordPress theme ?>
 			<style>
 				*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 				body {
@@ -317,6 +318,7 @@ final class PublicDownload {
 				</div>
 			</div>
 
+			<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Standalone public landing page without WordPress theme ?>
 			<script>
 				function downloadBoth() {
 					var f1 = document.createElement('iframe');

@@ -12,7 +12,8 @@
 defined( 'ABSPATH' ) || exit;
 
 $backupino_values = $settings->all();
-$backupino_tab    = isset( $_GET['tab'] ) ? sanitize_key( (string) $_GET['tab'] ) : 'archive';
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Tab navigation flag only.
+$backupino_tab    = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : 'archive';
 
 $backupino_valid_tabs = array(
 	'archive'   => array(
@@ -449,11 +450,11 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 								</p>
 								<div class="backupino-field-group">
 									<?php
-									$backup_tpl_val = ! empty( $backupino_values['notify']['msg_backup_template'] )
+									$backupino_backup_tpl_val = ! empty( $backupino_values['notify']['msg_backup_template'] )
 										? (string) $backupino_values['notify']['msg_backup_template']
 										: \Backupino\Notify\Message::default_backup_template();
 									?>
-									<textarea name="notify.msg_backup_template" rows="5" class="large-text" style="font-family: inherit; font-size: 13px; line-height: 1.6;" placeholder="<?php echo esc_attr( \Backupino\Notify\Message::default_backup_template() ); ?>"><?php echo esc_textarea( $backup_tpl_val ); ?></textarea>
+									<textarea name="notify.msg_backup_template" rows="5" class="large-text" style="font-family: inherit; font-size: 13px; line-height: 1.6;" placeholder="<?php echo esc_attr( \Backupino\Notify\Message::default_backup_template() ); ?>"><?php echo esc_textarea( $backupino_backup_tpl_val ); ?></textarea>
 								</div>
 								<div style="margin-top: 10px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12.5px;">
 									<strong style="color: #334155; display: block; margin-bottom: 6px;"><?php esc_html_e( 'Available tags:', 'backupino' ); ?></strong>
@@ -481,11 +482,11 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 								</p>
 								<div class="backupino-field-group">
 									<?php
-									$restore_tpl_val = ! empty( $backupino_values['notify']['msg_restore_template'] )
+									$backupino_restore_tpl_val = ! empty( $backupino_values['notify']['msg_restore_template'] )
 										? (string) $backupino_values['notify']['msg_restore_template']
 										: \Backupino\Notify\Message::default_restore_template();
 									?>
-									<textarea name="notify.msg_restore_template" rows="5" class="large-text" style="font-family: inherit; font-size: 13px; line-height: 1.6;" placeholder="<?php echo esc_attr( \Backupino\Notify\Message::default_restore_template() ); ?>"><?php echo esc_textarea( $restore_tpl_val ); ?></textarea>
+									<textarea name="notify.msg_restore_template" rows="5" class="large-text" style="font-family: inherit; font-size: 13px; line-height: 1.6;" placeholder="<?php echo esc_attr( \Backupino\Notify\Message::default_restore_template() ); ?>"><?php echo esc_textarea( $backupino_restore_tpl_val ); ?></textarea>
 								</div>
 								<div style="margin-top: 10px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12.5px;">
 									<strong style="color: #334155; display: block; margin-bottom: 6px;"><?php esc_html_e( 'Available tags:', 'backupino' ); ?></strong>

@@ -95,6 +95,15 @@ interface Db {
 	public function update( string $table, array $data, array $where ): int;
 
 	/**
+	 * Prepare an SQL query for safe execution.
+	 *
+	 * @param string $query Query statement with %d, %s, %f placeholders.
+	 * @param mixed  ...$args Values to bind.
+	 * @return string Prepared SQL statement.
+	 */
+	public function prepare( string $query, ...$args ): string;
+
+	/**
 	 * Last error reported by the driver.
 	 *
 	 * @return string

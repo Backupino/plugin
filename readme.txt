@@ -2,7 +2,7 @@
 Contributors: backupino
 Tags: backup, restore, migration, clone, jalali
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 6.7
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -44,15 +44,17 @@ This plugin can optionally connect to external third-party services to deliver b
 * **Service**: Telegram Messenger (`https://api.telegram.org`)
 * **Purpose**: Dispatches backup completion notifications and download links to your personal Telegram chat or channel.
 * **Data Transmitted**: Site domain name, backup scope (files/database), formatted archive size, completion timestamp, and permanent download link.
-* **When Sent**: Data is transmitted ONLY when the site administrator explicitly enables notifications in Backupino Settings, selects "Telegram", and inputs their personal bot token and chat ID. If notification service is set to "None" (default), no requests are sent.
+* **When Sent**: Data is transmitted ONLY when the site administrator explicitly enables notifications in Backupino Settings, selects "Telegram", and inputs their personal bot token and chat ID (or when triggering a test alert or completing restoration in the standalone installer). If notification service is set to "None" (default), no requests are sent.
+* **Terms of Service**: [Telegram Terms of Service](https://telegram.org/tos)
 * **Privacy Policy**: [Telegram Privacy Policy](https://telegram.org/privacy)
 
 2. **Bale Bot API**
 * **Service**: Bale Messenger (`https://tapi.bale.ai`)
 * **Purpose**: Dispatches backup completion notifications and download links to your personal Bale chat or channel.
 * **Data Transmitted**: Site domain name, backup scope (files/database), formatted archive size, completion timestamp, and permanent download link.
-* **When Sent**: Data is transmitted ONLY when the site administrator explicitly enables notifications in Backupino Settings, selects "Bale", and inputs their personal bot token and chat ID. If notification service is set to "None" (default), no requests are sent.
-* **Terms of Service**: [Bale Terms and Privacy](https://bale.ai/terms)
+* **When Sent**: Data is transmitted ONLY when the site administrator explicitly enables notifications in Backupino Settings, selects "Bale", and inputs their personal bot token and chat ID (or when triggering a test alert or completing restoration in the standalone installer). If notification service is set to "None" (default), no requests are sent.
+* **Terms of Service**: [Bale Terms of Service](https://bale.ai/terms)
+* **Privacy Policy**: [Bale Privacy Policy](https://bale.ai/terms)
 
 == Installation ==
 

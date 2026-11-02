@@ -169,6 +169,10 @@ final class Admin {
 	 * @return void
 	 */
 	public function migration_notice(): void {
+		if ( ! Capabilities::user_can_manage() ) {
+			return;
+		}
+
 		if ( '1' !== (string) get_option( 'backupino_migration_notice', '0' ) ) {
 			return;
 		}

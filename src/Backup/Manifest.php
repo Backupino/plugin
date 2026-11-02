@@ -98,7 +98,7 @@ final class Manifest {
 			);
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		clearstatcache( true, $this->file );
 		$handle = @fopen( $this->file, 'rb' );
 
@@ -159,7 +159,7 @@ final class Manifest {
 			return 0;
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		clearstatcache( true, $this->file );
 		$handle = @fopen( $this->file, 'rb' );
 
@@ -171,7 +171,7 @@ final class Manifest {
 		$buffer = '';
 
 		while ( ! feof( $handle ) ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fread
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_read_fread
 			$chunk = fread( $handle, 1048576 );
 
 			if ( false === $chunk || '' === $chunk ) {

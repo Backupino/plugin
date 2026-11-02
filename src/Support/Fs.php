@@ -230,6 +230,7 @@ final class Fs {
 		}
 
 		$filename = '' !== $download_name ? $download_name : basename( $path );
+		$filename = str_replace( array( '"', "\r", "\n" ), '', $filename );
 
 		nocache_headers();
 		header( 'Content-Type: application/octet-stream' );
@@ -241,7 +242,7 @@ final class Fs {
 			ob_end_flush();
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_readfile
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile, WordPress.WP.AlternativeFunctions.file_system_read_readfile
 		readfile( $path );
 		exit;
 	}

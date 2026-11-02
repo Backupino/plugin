@@ -11,6 +11,8 @@ namespace Backupino\Installer;
 
 defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.RestrictedClasses.mysql_pdo -- Offline standalone installer without WordPress core.
+
 /**
  * {@see Connection} implemented on top of PDO, used when mysqli is disabled.
  */

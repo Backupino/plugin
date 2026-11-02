@@ -84,8 +84,9 @@ final class JobRepository {
 	 * @return Job|null
 	 */
 	public function find( int $id ): ?Job {
-		$row = $this->db->row(
-			'SELECT * FROM ' . Schema::jobs_table( $this->db ) . ' WHERE id = ' . (int) $id . ' LIMIT 1'
+		$table = Schema::jobs_table( $this->db );
+		$row   = $this->db->row(
+			$this->db->prepare( "SELECT * FROM {$table} WHERE id = %d LIMIT 1", $id )
 		);
 
 		return null === $row ? null : Job::from_row( $row );
@@ -98,9 +99,9 @@ final class JobRepository {
 	 * @return Job|null
 	 */
 	public function find_by_token( string $token ): ?Job {
-		$token = $this->db->escape( $token );
+		$table = Schema::jobs_table( $this->db );
 		$row   = $this->db->row(
-			'SELECT * FROM ' . Schema::jobs_table( $this->db ) . " WHERE token = '{$token}' LIMIT 1"
+			$this->db->prepare( "SELECT * FROM {$table} WHERE token = %s LIMIT 1", $token )
 		);
 
 		return null === $row ? null : Job::from_row( $row );
@@ -114,8 +115,9 @@ final class JobRepository {
 	 */
 	public function recent( int $limit = 20 ): array {
 		$limit = max( 1, min( 200, $limit ) );
+		$table = Schema::jobs_table( $this->db );
 		$rows  = $this->db->rows(
-			'SELECT * FROM ' . Schema::jobs_table( $this->db ) . ' ORDER BY id DESC LIMIT ' . $limit
+			$this->db->prepare( "SELECT * FROM {$table} ORDER BY id DESC LIMIT %d", $limit )
 		);
 
 		return array_map( array( Job::class, 'from_row' ), $rows );
@@ -157,7 +159,10 @@ final class JobRepository {
 	 * @return void
 	 */
 	public function delete( int $id ): void {
-		$this->db->query( 'DELETE FROM ' . Schema::jobs_table( $this->db ) . ' WHERE id = ' . (int) $id );
+		$table = Schema::jobs_table( $this->db );
+		$this->db->query(
+			$this->db->prepare( "DELETE FROM {$table} WHERE id = %d", $id )
+		);
 	}
 
 	/**

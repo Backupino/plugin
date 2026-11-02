@@ -249,7 +249,7 @@ final class Replacer {
 	 */
 	private static function url_variants( string $url ): array {
 		$variants = array();
-		$parsed   = parse_url( $url );
+		$parsed   = function_exists( 'wp_parse_url' ) ? wp_parse_url( $url ) : parse_url( $url );
 
 		if ( ! is_array( $parsed ) || ! isset( $parsed['host'] ) ) {
 			return $variants;

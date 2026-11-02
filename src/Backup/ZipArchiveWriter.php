@@ -176,6 +176,7 @@ final class ZipArchiveWriter implements ArchiveWriter {
 		$this->zip = null;
 
 		if ( ! $closed ) {
+			/* translators: %s: status description. */
 			$this->error = ( '' !== $status && 'No error' !== $status ) ? sprintf( __( 'The archive could not be finalized (%s).', 'backupino' ), $status ) : __( 'The archive could not be finalized.', 'backupino' );
 		}
 

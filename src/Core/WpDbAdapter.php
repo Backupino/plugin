@@ -88,8 +88,8 @@ final class WpDbAdapter implements Db {
 	 * {@inheritDoc}
 	 */
 	public function escape( string $value ): string {
-		if ( null !== $this->wpdb && isset( $this->wpdb->dbh ) && $this->wpdb->dbh instanceof \mysqli ) {
-			return mysqli_real_escape_string( $this->wpdb->dbh, $value );
+		if ( null !== $this->wpdb && method_exists( $this->wpdb, '_real_escape' ) ) {
+			return (string) $this->wpdb->_real_escape( $value );
 		}
 
 		return addcslashes( $value, "\0\n\r\\'\"\x1a" );
@@ -122,6 +122,13 @@ final class WpDbAdapter implements Db {
 		$result = $this->wpdb->update( $table, $data, $where );
 
 		return false === $result ? 0 : (int) $result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function prepare( string $query, ...$args ): string {
+		return $this->wpdb->prepare( $query, ...$args );
 	}
 
 	/**

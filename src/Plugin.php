@@ -156,7 +156,6 @@ final class Plugin {
 	 * @return void
 	 */
 	public function boot(): void {
-		$this->load_textdomain();
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 
 		if ( Compatibility::is_supported() ) {

@@ -63,23 +63,20 @@ function backupino_uninstall_site(): void {
 	delete_option( 'backupino_migration_notice' );
 
 	// Clear scheduled cron events
-	wp_clear_scheduled_hook( 'backupino_cron_worker' );
-	wp_clear_scheduled_hook( 'backupino_cron_scheduler' );
-	wp_clear_scheduled_hook( 'backupino_cron_queue' );
-	wp_clear_scheduled_hook( 'backupino_cron_retention' );
+	wp_clear_scheduled_hook( 'backupino_run_jobs' );
+	wp_clear_scheduled_hook( 'backupino_scheduled_backup' );
 
-	// Remove storage directories in wp-content/backupino
-	$content_dir = defined( 'WP_CONTENT_DIR' ) ? (string) WP_CONTENT_DIR : ( (string) ABSPATH . 'wp-content' );
-	$primary_dir = rtrim( $content_dir, '/' ) . '/backupino';
-	backupino_remove_directory( $primary_dir );
+	// Remove storage directories in uploads and legacy wp-content/backupino
+	$backupino_uploads = wp_upload_dir( null, false );
+	if ( ! empty( $backupino_uploads['basedir'] ) ) {
+		$backupino_primary_dir = rtrim( (string) $backupino_uploads['basedir'], '/' ) . '/backupino';
+		backupino_remove_directory( $backupino_primary_dir );
+	}
 
-	// Also remove upload-based directory if created in legacy installs
-	$uploads = wp_upload_dir( null, false );
-	if ( ! empty( $uploads['basedir'] ) ) {
-		$legacy_dir = rtrim( (string) $uploads['basedir'], '/' ) . '/backupino';
-		if ( $legacy_dir !== $primary_dir ) {
-			backupino_remove_directory( $legacy_dir );
-		}
+	$backupino_content_dir = defined( 'WP_CONTENT_DIR' ) ? (string) WP_CONTENT_DIR : ( (string) ABSPATH . 'wp-content' );
+	$backupino_legacy_dir  = rtrim( $backupino_content_dir, '/' ) . '/backupino';
+	if ( is_dir( $backupino_legacy_dir ) ) {
+		backupino_remove_directory( $backupino_legacy_dir );
 	}
 }
 

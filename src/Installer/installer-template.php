@@ -18,10 +18,27 @@ namespace Backupino\Installer;
 
 defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
 
-@ini_set( 'display_errors', '0' );
-@ini_set( 'max_execution_time', '180' );
-@set_time_limit( 180 );
-error_reporting( 0 );
+// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Standalone offline installer JSON/HTML template.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_unlink -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_setopt_array -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_exec -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_getinfo -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_close -- Standalone installer running outside WordPress environment.
+
+if ( ! defined( 'ABSPATH' ) ) {
+	@ini_set( 'display_errors', '0' );
+	@ini_set( 'max_execution_time', '180' );
+	@set_time_limit( 180 );
+	error_reporting( 0 );
+}
 
 register_shutdown_function( static function () {
 	$error = error_get_last();
@@ -61,7 +78,7 @@ function respond( array $data, int $status = 200 ): void {
 	exit;
 }
 
-$backupino_dir          = __DIR__;
+$backupino_dir          = getcwd() ? (string) getcwd() : dirname( __FILE__ );
 $backupino_state_file   = $backupino_dir . '/backupino-install.json';
 $backupino_archive_name = isset( $backupino_payload['archive'] ) ? basename( (string) $backupino_payload['archive'] ) : '';
 $backupino_archive      = $backupino_dir . '/' . $backupino_archive_name;
@@ -76,7 +93,7 @@ $backupino_subpath  = rtrim( str_replace( '\\', '/', dirname( $backupino_script 
 $backupino_auto_url = $backupino_scheme . '://' . $backupino_host . ( '/' === $backupino_subpath ? '' : $backupino_subpath );
 
 if ( 'index' === $backupino_action ) {
-	$backupino_checks = Env::check( $backupino_payload, __DIR__, $backupino_archive );
+	$backupino_checks = Env::check( $backupino_payload, $backupino_dir, $backupino_archive );
 	$backupino_body   = '<div id="app">
 	<section id="step1">
 		<h2 style="font-size:16px;margin:0 0 10px" data-i18n="env_check">Environment check</h2>'
@@ -849,7 +866,7 @@ switch ( $backupino_action ) {
 				if ( '' === $detected_login_slug ) {
 					$aiowps_row = $connection->rows( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = 'aio_wp_security_configs' LIMIT 1" );
 					if ( ! empty( $aiowps_row[0]['option_value'] ) ) {
-						$aiowps_data = @unserialize( (string) $aiowps_row[0]['option_value'] );
+						$aiowps_data = @unserialize( (string) $aiowps_row[0]['option_value'], array( 'allowed_classes' => false ) );
 						if ( is_array( $aiowps_data ) && ! empty( $aiowps_data['aiowps_enable_rename_login_page'] ) && ! empty( $aiowps_data['aiowps_login_page_slug'] ) ) {
 							$detected_login_slug = trim( (string) $aiowps_data['aiowps_login_page_slug'] );
 						}
@@ -860,7 +877,7 @@ switch ( $backupino_action ) {
 				if ( '' === $detected_login_slug ) {
 					$itsec_row = $connection->rows( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = 'itsec-storage' LIMIT 1" );
 					if ( ! empty( $itsec_row[0]['option_value'] ) ) {
-						$itsec_data = @unserialize( (string) $itsec_row[0]['option_value'] );
+						$itsec_data = @unserialize( (string) $itsec_row[0]['option_value'], array( 'allowed_classes' => false ) );
 						if ( is_array( $itsec_data ) && isset( $itsec_data['hide-backend'] ) && is_array( $itsec_data['hide-backend'] ) ) {
 							if ( ! empty( $itsec_data['hide-backend']['enabled'] ) && ! empty( $itsec_data['hide-backend']['slug'] ) ) {
 								$detected_login_slug = trim( (string) $itsec_data['hide-backend']['slug'] );
@@ -873,7 +890,7 @@ switch ( $backupino_action ) {
 				if ( '' === $detected_login_slug ) {
 					$perf_row = $connection->rows( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = 'perfmatters_options' LIMIT 1" );
 					if ( ! empty( $perf_row[0]['option_value'] ) ) {
-						$perf_data = @unserialize( (string) $perf_row[0]['option_value'] );
+						$perf_data = @unserialize( (string) $perf_row[0]['option_value'], array( 'allowed_classes' => false ) );
 						if ( is_array( $perf_data ) && ! empty( $perf_data['login_url'] ) ) {
 							$detected_login_slug = trim( (string) $perf_data['login_url'] );
 						}
@@ -1076,8 +1093,8 @@ function backupino_send_bot_message( string $service, string $token, string $cha
 					CURLOPT_RETURNTRANSFER => true,
 					CURLOPT_TIMEOUT        => 8,
 					CURLOPT_CONNECTTIMEOUT => 5,
-					CURLOPT_SSL_VERIFYPEER => false,
-					CURLOPT_SSL_VERIFYHOST => 0,
+					CURLOPT_SSL_VERIFYPEER => true,
+					CURLOPT_SSL_VERIFYHOST => 2,
 					CURLOPT_HTTPHEADER     => array( 'Content-Type: application/json' ),
 				)
 			);
@@ -1096,8 +1113,8 @@ function backupino_send_bot_message( string $service, string $token, string $cha
 			'timeout' => 8,
 		),
 		'ssl' => array(
-			'verify_peer'      => false,
-			'verify_peer_name' => false,
+			'verify_peer'      => true,
+			'verify_peer_name' => true,
 		),
 	);
 	$context = stream_context_create( $opts );

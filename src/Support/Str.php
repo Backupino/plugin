@@ -26,7 +26,8 @@ final class Str {
 		try {
 			return bin2hex( random_bytes( $bytes ) );
 		} catch ( \Exception $e ) {
-			return substr( md5( uniqid( (string) mt_rand(), true ) ), 0, $bytes * 2 );
+			$seed = function_exists( 'wp_rand' ) ? wp_rand() : random_int( 1, 999999 );
+			return substr( md5( uniqid( (string) $seed, true ) ), 0, $bytes * 2 );
 		}
 	}
 
