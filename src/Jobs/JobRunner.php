@@ -11,6 +11,9 @@ namespace Backupino\Jobs;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Atomic file lock for multi-process safety.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Atomic file lock for multi-process safety.
+
 use Backupino\Core\Db;
 use Backupino\Core\Paths;
 use Backupino\Core\Settings;

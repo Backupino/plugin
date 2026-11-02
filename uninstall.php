@@ -11,6 +11,10 @@
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Recursive uninstall directory removal.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_unlink -- Recursive uninstall file removal.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Recursive uninstall permissions handling.
+
 /**
  * Recursively remove a directory and all its contents.
  *

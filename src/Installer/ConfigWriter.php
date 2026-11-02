@@ -11,6 +11,8 @@ namespace Backupino\Installer;
 
 defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions -- Standalone installer running outside WordPress environment.
+
 /**
  * Renders or updates `wp-config.php` for the restored site.
  */

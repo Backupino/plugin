@@ -121,7 +121,7 @@ final class ZipArchiveReader implements ArchiveReader {
 
 			if ( '/' === substr( $name, -1 ) ) {
 				if ( ! is_dir( $target ) ) {
-					// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+					// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions
 					@mkdir( $target, 0755, true );
 				}
 
@@ -131,7 +131,7 @@ final class ZipArchiveReader implements ArchiveReader {
 			$parent = dirname( $target );
 
 			if ( ! is_dir( $parent ) ) {
-				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions
 				@mkdir( $parent, 0755, true );
 			}
 

@@ -47,13 +47,21 @@ final class Paths {
 	/**
 	 * Build from the current WordPress environment.
 	 *
-	 * Uses wp-content/backupino outside of public uploads for enhanced security and isolation.
+	 * Uses wp-content/backupino outside of public uploads for enhanced security and isolation,
+	 * with automatic fallback to uploads directory if wp-content is not writable.
 	 *
 	 * @return self
 	 */
 	public static function from_wordpress(): self {
 		$content_dir = defined( 'WP_CONTENT_DIR' ) ? (string) WP_CONTENT_DIR : ( (string) ABSPATH . 'wp-content' );
 		$base        = $content_dir . '/backupino';
+
+		if ( ! is_writable( $content_dir ) && function_exists( 'wp_upload_dir' ) ) {
+			$upload_dir = wp_upload_dir();
+			if ( ! empty( $upload_dir['basedir'] ) ) {
+				$base = (string) $upload_dir['basedir'] . '/backupino';
+			}
+		}
 
 		return new self( $base, (string) ABSPATH );
 	}

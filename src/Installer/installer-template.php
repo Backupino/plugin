@@ -19,19 +19,8 @@ namespace Backupino\Installer;
 defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Standalone offline installer JSON/HTML template.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_unlink -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_setopt_array -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_exec -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_getinfo -- Standalone installer running outside WordPress environment.
-// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_close -- Standalone installer running outside WordPress environment.
+// phpcs:disable WordPress.WP.AlternativeFunctions -- Standalone installer running outside WordPress environment.
+// phpcs:disable PluginCheck.CodeAnalysis.PHPErrorReporting -- Standalone installer outside WordPress environment.
 
 if ( ! defined( 'ABSPATH' ) ) {
 	@ini_set( 'display_errors', '0' );
@@ -78,7 +67,7 @@ function respond( array $data, int $status = 200 ): void {
 	exit;
 }
 
-$backupino_dir          = getcwd() ? (string) getcwd() : dirname( __FILE__ );
+$backupino_dir          = (string) getcwd();
 $backupino_state_file   = $backupino_dir . '/backupino-install.json';
 $backupino_archive_name = isset( $backupino_payload['archive'] ) ? basename( (string) $backupino_payload['archive'] ) : '';
 $backupino_archive      = $backupino_dir . '/' . $backupino_archive_name;
@@ -449,7 +438,7 @@ if ( 'index' === $backupino_action ) {
 })();
 </script>';
 
-	echo View::page( (string) json_encode( array( 'token' => $backupino_token ) ), $backupino_body ); // phpcs:ignore
+	echo View::page( (string) json_encode( array( 'token' => $backupino_token ) ), $backupino_body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML template output for standalone page.
 	exit;
 }
 
@@ -1002,7 +991,7 @@ switch ( $backupino_action ) {
 		}
 
 		// Delete installer script itself last
-		$self = __FILE__;
+		$self = isset( $_SERVER['SCRIPT_FILENAME'] ) ? (string) $_SERVER['SCRIPT_FILENAME'] : ( $backupino_dir . '/installer.php' );
 		@chmod( $self, 0777 );
 		@unlink( $self );
 		register_shutdown_function( static function () use ( $self ) {

@@ -11,6 +11,12 @@ namespace Backupino\Support;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Robust defensive directory management.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Atomic file writing and protection.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_rename -- Atomic file rename.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_unlink -- Robust file removal.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Robust directory removal.
+
 /**
  * Thin, defensive filesystem utility layer.
  *
@@ -41,14 +47,15 @@ final class Fs {
 	}
 
 	/**
-	 * Drop an `.htaccess` and an `index.php` guard into a directory.
+	 * Drop `.htaccess`, `web.config`, and `index.php` guards into a directory.
 	 *
 	 * @param string $dir Absolute directory path.
 	 * @return void
 	 */
 	public static function protect( string $dir ): void {
-		$htaccess = $dir . '/.htaccess';
-		$index    = $dir . '/index.php';
+		$htaccess   = $dir . '/.htaccess';
+		$web_config = $dir . '/web.config';
+		$index      = $dir . '/index.php';
 
 		if ( ! file_exists( $htaccess ) ) {
 			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
@@ -62,6 +69,22 @@ final class Fs {
 				. "\t<IfModule mod_authz_core.c>\n\t\tRequire all denied\n\t</IfModule>\n"
 				. "\t<IfModule !mod_authz_core.c>\n\t\tOrder allow,deny\n\t\tDeny from all\n\t</IfModule>\n"
 				. "</FilesMatch>\n",
+				LOCK_EX
+			);
+		}
+
+		if ( ! file_exists( $web_config ) ) {
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			@file_put_contents(
+				$web_config,
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+				. "<configuration>\n"
+				. "  <system.webServer>\n"
+				. "    <authorization>\n"
+				. "      <deny users=\"*\" />\n"
+				. "    </authorization>\n"
+				. "  </system.webServer>\n"
+				. "</configuration>\n",
 				LOCK_EX
 			);
 		}

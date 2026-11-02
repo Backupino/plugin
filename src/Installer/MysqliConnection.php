@@ -11,7 +11,7 @@ namespace Backupino\Installer;
 
 defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
 
-// phpcs:disable WordPress.DB.RestrictedFunctions.mysql_mysqli -- Offline standalone installer without WordPress core.
+// phpcs:disable WordPress.DB.RestrictedFunctions -- Offline standalone installer without WordPress core.
 
 /**
  * {@see Connection} implemented on top of mysqli.

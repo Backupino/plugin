@@ -98,8 +98,8 @@ final class Manifest {
 			);
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		clearstatcache( true, $this->file );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		$handle = @fopen( $this->file, 'rb' );
 
 		if ( false === $handle ) {
@@ -159,8 +159,8 @@ final class Manifest {
 			return 0;
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		clearstatcache( true, $this->file );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		$handle = @fopen( $this->file, 'rb' );
 
 		if ( false === $handle ) {

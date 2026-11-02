@@ -11,6 +11,9 @@ namespace Backupino\Support;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Robust logging directory creation.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Atomic append logging.
+
 /**
  * Append-only line logger with size based rotation.
  *

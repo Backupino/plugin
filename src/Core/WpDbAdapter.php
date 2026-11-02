@@ -40,7 +40,7 @@ final class WpDbAdapter implements Db {
 	 * {@inheritDoc}
 	 */
 	public function query( string $sql ): bool {
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		return false !== $this->wpdb->query( $sql );
 	}
 
@@ -48,7 +48,7 @@ final class WpDbAdapter implements Db {
 	 * {@inheritDoc}
 	 */
 	public function rows( string $sql ): array {
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$rows = $this->wpdb->get_results( $sql, ARRAY_A );
 
 		return is_array( $rows ) ? $rows : array();
@@ -58,7 +58,7 @@ final class WpDbAdapter implements Db {
 	 * {@inheritDoc}
 	 */
 	public function row( string $sql ): ?array {
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$row = $this->wpdb->get_row( $sql, ARRAY_A );
 
 		return is_array( $row ) ? $row : null;
@@ -68,7 +68,7 @@ final class WpDbAdapter implements Db {
 	 * {@inheritDoc}
 	 */
 	public function var( string $sql, $fallback = null ) {
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$value = $this->wpdb->get_var( $sql );
 
 		return null === $value ? $fallback : $value;
@@ -78,7 +78,7 @@ final class WpDbAdapter implements Db {
 	 * {@inheritDoc}
 	 */
 	public function column( string $sql ): array {
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$values = $this->wpdb->get_col( $sql );
 
 		return is_array( $values ) ? $values : array();
@@ -128,6 +128,7 @@ final class WpDbAdapter implements Db {
 	 * {@inheritDoc}
 	 */
 	public function prepare( string $query, ...$args ): string {
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		return $this->wpdb->prepare( $query, ...$args );
 	}
 

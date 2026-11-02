@@ -2,7 +2,7 @@
 Contributors: backupino
 Tags: backup, restore, migration, clone, jalali
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -22,7 +22,7 @@ Designed specifically for real shared hosting environments with strict execution
 * **Pure SQL Database Dumper**: Dumps tables with keyset pagination directly through WordPress database APIs. No `mysqldump`, `exec()`, or shell access required.
 * **Standalone Installer (`installer.php`)**: Ultra-lightweight (~72 KB) installer generated dynamically. Extracts archives, streams SQL dumps, replaces URLs, and builds a fresh `wp-config.php` with unique security salts.
 * **Deep URL Search & Replace**: Smart migration engine that accurately deserializes PHP structures (including nested arrays and objects) and rewrites JSON-encoded strings without corruption.
-* **Permanent Latest-Backup Link**: A secure, non-expiring URL that points directly to the newest backup. Protected by WordPress administrator authentication (`manage_options`).
+* **Permanent Latest-Backup Link**: A secure, non-expiring URL that points directly to the newest backup. Protected by WordPress administrator authentication (`manage_options`) or a dedicated secret access key (`?backupino_key=...`).
 * **Telegram & Bale Notifications**: Instant alerts sent to your personal bot upon backup completion. Includes backup scope, formatted size, completion date, and direct download link. Equipped with an automatic 3-attempt retry queue.
 * **Automated Monthly Backup**: Built-in scheduling triggered on the first day of each month. Native Jalali calendar calculation for Persian sites (`fa_IR`) and Gregorian for other locales.
 * **Automatic Retention Management**: Retains the latest backup packages (default: 3) and automatically prunes older archives to conserve disk space.
@@ -43,7 +43,7 @@ This plugin can optionally connect to external third-party services to deliver b
 1. **Telegram Bot API**
 * **Service**: Telegram Messenger (`https://api.telegram.org`)
 * **Purpose**: Dispatches backup completion notifications and download links to your personal Telegram chat or channel.
-* **Data Transmitted**: Site domain name, backup scope (files/database), formatted archive size, completion timestamp, and permanent download link.
+* **Data Transmitted**: Site domain name, backup scope (files/database), formatted archive size, completion timestamp, and permanent download link. On migration restoration, sends new site URL and admin dashboard login URL.
 * **When Sent**: Data is transmitted ONLY when the site administrator explicitly enables notifications in Backupino Settings, selects "Telegram", and inputs their personal bot token and chat ID (or when triggering a test alert or completing restoration in the standalone installer). If notification service is set to "None" (default), no requests are sent.
 * **Terms of Service**: [Telegram Terms of Service](https://telegram.org/tos)
 * **Privacy Policy**: [Telegram Privacy Policy](https://telegram.org/privacy)
@@ -51,7 +51,7 @@ This plugin can optionally connect to external third-party services to deliver b
 2. **Bale Bot API**
 * **Service**: Bale Messenger (`https://tapi.bale.ai`)
 * **Purpose**: Dispatches backup completion notifications and download links to your personal Bale chat or channel.
-* **Data Transmitted**: Site domain name, backup scope (files/database), formatted archive size, completion timestamp, and permanent download link.
+* **Data Transmitted**: Site domain name, backup scope (files/database), formatted archive size, completion timestamp, and permanent download link. On migration restoration, sends new site URL and admin dashboard login URL.
 * **When Sent**: Data is transmitted ONLY when the site administrator explicitly enables notifications in Backupino Settings, selects "Bale", and inputs their personal bot token and chat ID (or when triggering a test alert or completing restoration in the standalone installer). If notification service is set to "None" (default), no requests are sent.
 * **Terms of Service**: [Bale Terms of Service](https://bale.ai/terms)
 * **Privacy Policy**: [Bale Privacy Policy](https://bale.ai/terms)
@@ -78,7 +78,7 @@ No. Upload your backup archive along with `installer.php` into an empty web dire
 Packages are stored locally in `/wp-content/backupino/packages/` (outside of the public uploads directory for enhanced security and isolation). The directory is secured with `.htaccess`, `web.config`, and empty `index.php` guards to prevent direct public file browsing and execution.
 
 = Does the permanent download link ever expire? =
-No. The permanent link (`?backupino_download=latest`) never expires and always resolves to the most recent backup archive. For security, anyone clicking the link must log in with an administrator account (`manage_options` capability) before downloading.
+No. The permanent link (`?backupino_download=latest`) never expires and always resolves to the most recent backup archive. For security, requests are protected by WordPress administrator authentication (`manage_options` capability) or by providing the secret download access key generated in settings (`?backupino_key=...`).
 
 = Is there any file size or database limit in the free version? =
 No. There are no artificial limits on package size or database rows. Backupino is designed to handle sites of any size through chunked, resumable processing.
