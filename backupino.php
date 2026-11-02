@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Backupino
- * Plugin URI:        https://backupino.com
+ * Plugin URI:        https://github.com/Backupino/documents
  * Description:       Fast, resumable WordPress backups, cloning and migration with a self-contained installer.
  * Version:           1.0.0
  * Requires at least: 6.0
