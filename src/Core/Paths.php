@@ -47,20 +47,13 @@ final class Paths {
 	/**
 	 * Build from the current WordPress environment.
 	 *
-	 * Uses wp-content/uploads/backupino inside the standard uploads directory.
+	 * Uses wp-content/backupino outside of public uploads for enhanced security and isolation.
 	 *
 	 * @return self
 	 */
 	public static function from_wordpress(): self {
-		if ( function_exists( 'wp_upload_dir' ) ) {
-			$upload_dir = wp_upload_dir();
-			$base       = ! empty( $upload_dir['basedir'] )
-				? (string) $upload_dir['basedir'] . '/backupino'
-				: ( defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/uploads/backupino' : (string) ABSPATH . 'wp-content/uploads/backupino' );
-		} else {
-			$content_dir = defined( 'WP_CONTENT_DIR' ) ? (string) WP_CONTENT_DIR : ( (string) ABSPATH . 'wp-content' );
-			$base        = $content_dir . '/uploads/backupino';
-		}
+		$content_dir = defined( 'WP_CONTENT_DIR' ) ? (string) WP_CONTENT_DIR : ( (string) ABSPATH . 'wp-content' );
+		$base        = $content_dir . '/backupino';
 
 		return new self( $base, (string) ABSPATH );
 	}

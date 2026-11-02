@@ -75,7 +75,7 @@ This plugin can optionally connect to external third-party services to deliver b
 No. Upload your backup archive along with `installer.php` into an empty web directory and open `installer.php` in your browser. The installer unpacks files, imports your database, and sets up WordPress cleanly.
 
 = Where are backup packages stored? =
-Packages are stored locally in `/wp-content/uploads/backupino/packages/`. The directory is secured with an `.htaccess` rule and an empty `index.php` to prevent direct public file browsing.
+Packages are stored locally in `/wp-content/backupino/packages/` (outside of the public uploads directory for enhanced security and isolation). The directory is secured with `.htaccess`, `web.config`, and empty `index.php` guards to prevent direct public file browsing and execution.
 
 = Does the permanent download link ever expire? =
 No. The permanent link (`?backupino_download=latest`) never expires and always resolves to the most recent backup archive. For security, anyone clicking the link must log in with an administrator account (`manage_options` capability) before downloading.
