@@ -107,7 +107,11 @@ final class InstallerBuilder {
 			$template
 		);
 		$template = str_replace( '__BACKUPINO_PAYLOAD__', $encoded, $template );
-		$template = str_replace( '__BACKUPINO_BODY__', $this->library(), $template );
+		$template = str_replace(
+			array( '/* __BACKUPINO_BODY__ */', '__BACKUPINO_BODY__' ),
+			$this->library(),
+			$template
+		);
 
 		return $template;
 	}

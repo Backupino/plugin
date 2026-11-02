@@ -1,108 +1,101 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Backupino">
   <defs>
-    <!-- Background Gradient -->
+    <!-- Deep Brand Background Gradient -->
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e3a8a" />
-      <stop offset="50%" stop-color="#1e40af" />
-      <stop offset="100%" stop-color="#0f172a" />
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="50%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#0f172a"/>
     </linearGradient>
 
-    <!-- Orbit Stream Gradient -->
-    <linearGradient id="orbitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.1" />
-      <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.7" />
-      <stop offset="100%" stop-color="#60a5fa" stop-opacity="1" />
+    <!-- Soft Ambient Radial Glow -->
+    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.28"/>
+      <stop offset="65%" stop-color="#2563eb" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Directional Backup Stream Gradient -->
+    <linearGradient id="orbitGrad" gradientUnits="userSpaceOnUse" x1="196" y1="190" x2="128" y2="34">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.05"/>
+      <stop offset="45%" stop-color="#06b6d4" stop-opacity="0.65"/>
+      <stop offset="85%" stop-color="#38bdf8" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#e0f2fe" stop-opacity="1"/>
     </linearGradient>
 
-    <!-- "B" Gradient -->
+    <!-- Central "B" Emblem Gradient -->
     <linearGradient id="bGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="60%" stop-color="#f8fafc" />
-      <stop offset="100%" stop-color="#93c5fd" />
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="65%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#93c5fd"/>
     </linearGradient>
 
-    <!-- Glow Filter -->
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="2.5" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-
-    <style>
-      @keyframes backupinoOrbit {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      @keyframes backupinoPulse {
-        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(96,165,250,0.4)); }
-        50% { transform: scale(1.035); filter: drop-shadow(0 0 6px rgba(56,189,248,0.75)); }
-      }
-      @keyframes backupinoDash {
-        0% { stroke-dashoffset: 0; }
-        100% { stroke-dashoffset: -70; }
-      }
-      .orbit-group {
-        transform-origin: 64px 64px;
-        animation: backupinoOrbit 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-      }
-      .center-b {
-        transform-origin: 64px 64px;
-        animation: backupinoPulse 2.8s ease-in-out infinite;
-      }
-      .orbit-trail {
-        stroke-dasharray: 45 25;
-        animation: backupinoDash 1.8s linear infinite;
-      }
-    </style>
+    <!-- Fast-Recovery Accent Gradient -->
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
   </defs>
 
-  <!-- Base Rounded Container -->
-  <rect width="128" height="128" rx="28" fill="url(#bgGrad)" />
+  <!-- Rounded Square Container + Subtle Inner Rim -->
+  <rect x="0" y="0" width="256" height="256" rx="56" fill="url(#bgGrad)"/>
+  <rect x="3" y="3" width="250" height="250" rx="53" fill="none" stroke="#60a5fa" stroke-opacity="0.22" stroke-width="2"/>
 
-  <!-- Outer Track Ring (Subtle) -->
-  <circle cx="64" cy="64" r="48" fill="none" stroke="#2563eb" stroke-opacity="0.35" stroke-width="2.5" stroke-dasharray="4 6" />
+  <!-- Breathing Core Halo -->
+  <circle cx="128" cy="128" r="96" fill="url(#coreGlow)">
+    <animate attributeName="r" values="88;102;88" dur="3.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.75;1;0.75" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
 
-  <!-- Rotating Backup Orbit with Arrowhead -->
-  <g class="orbit-group">
-    <!-- Orbital Arc -->
-    <path d="M 64 16 A 48 48 0 1 1 20 78" fill="none" stroke="url(#orbitGrad)" stroke-width="4.5" stroke-linecap="round" class="orbit-trail" filter="url(#glow)" />
-    <!-- Arrowhead at Head of Orbit -->
-    <polygon points="64,9 73,18 64,27 67,18" fill="#38bdf8" filter="url(#glow)" />
+  <!-- Outer Resumable Checkpoint Track -->
+  <circle cx="128" cy="128" r="94" fill="none" stroke="#3b82f6" stroke-opacity="0.28" stroke-width="4" stroke-dasharray="6 10" stroke-linecap="round"/>
+
+  <!-- Counter-Rotating Inner Data-Chunk Ring -->
+  <g>
+    <circle cx="128" cy="128" r="74" fill="none" stroke="#38bdf8" stroke-opacity="0.22" stroke-width="2.5" stroke-dasharray="16 26" stroke-linecap="round"/>
+    <animateTransform attributeName="transform" type="rotate" from="360 128 128" to="0 128 128" dur="9s" repeatCount="indefinite"/>
   </g>
 
-  <!-- Central Backupino "B" Emblem -->
-  <g class="center-b">
-    <!-- Stylized Modern Letter "B" with Cloud/Shield Geometry & Data Arrow -->
-    <!-- Outer B Path -->
-    <path d="M 44 32
-             L 66 32
-             C 76 32, 83 38, 83 47
-             C 83 53, 79 58, 73 61
-             C 81 64, 86 70, 86 80
-             C 86 91, 77 96, 65 96
-             L 44 96
-             Z"
-          fill="url(#bGrad)"
-          filter="url(#glow)" />
+  <!-- Primary Rotating Backup & Restore Orbit -->
+  <g>
+    <!-- Concentric 231-deg Orbital Sweep on r=94 -->
+    <path d="M 205 181.92 A 94 94 0 1 1 121.44 34.23" fill="none" stroke="url(#orbitGrad)" stroke-width="9" stroke-linecap="round"/>
+    <!-- Tangential Arrowhead -->
+    <path d="M 141 34 L 118 21 L 124 34 L 118 47 Z" fill="#e0f2fe"/>
+    <!-- Pulsing Checkpoint Data Node -->
+    <circle cx="217.4" cy="98.95" r="4.5" fill="#38bdf8">
+      <animate attributeName="opacity" values="0.35;1;0.35" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <animateTransform attributeName="transform" type="rotate" from="0 128 128" to="360 128 128" dur="3.2s" repeatCount="indefinite"/>
+  </g>
 
-    <!-- Top Counter of "B" (With Cloud Curve Accent) -->
-    <path d="M 54 42
-             L 64 42
-             C 69 42, 73 44, 73 48
-             C 73 52, 69 54, 64 54
-             L 54 54
-             Z"
-          fill="#1e3a8a" />
+  <!-- Central Backupino "B" Emblem with True Cutout Counters -->
+  <g>
+    <path fill="url(#bGrad)" fill-rule="evenodd" d="
+      M 88 66
+      L 133 66
+      C 154 66, 167 77, 167 95
+      C 167 108, 159 118, 146 123
+      C 162 128, 173 140, 173 159
+      C 173 180, 156 190, 134 190
+      L 88 190
+      Z
+      M 110 86
+      L 130 86
+      C 140 86, 146 90, 146 98
+      C 146 106, 140 111, 130 111
+      L 110 111
+      Z
+      M 110 131
+      L 132 131
+      C 144 131, 151 137, 151 150
+      C 151 163, 144 169, 132 169
+      L 110 169
+      Z"/>
 
-    <!-- Bottom Counter of "B" (Merged with Fast-Restore Arrow Notch) -->
-    <path d="M 54 64
-             L 65 64
-             C 71 64, 76 67, 76 72
-             C 76 77, 71 86, 65 86
-             L 54 86
-             Z"
-          fill="#1e3a8a" />
-
-    <!-- Dynamic Lightning / Fast Recovery Accent Notch on Stem -->
-    <polygon points="44,58 54,64 44,70" fill="#38bdf8" opacity="0.9" />
+    <!-- Fast-Recovery Stem Chevron -->
+    <polygon points="88,115 108,128 88,141" fill="url(#boltGrad)">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="1.6s" repeatCount="indefinite"/>
+    </polygon>
   </g>
 </svg>

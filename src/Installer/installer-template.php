@@ -52,7 +52,7 @@ register_shutdown_function( static function () {
 $backupino_payload = json_decode( (string) base64_decode( '__BACKUPINO_PAYLOAD__' ), true );
 $backupino_payload = is_array( $backupino_payload ) ? $backupino_payload : array();
 
-__BACKUPINO_BODY__
+/* __BACKUPINO_BODY__ */
 
 /**
  * Send a JSON response and stop.
