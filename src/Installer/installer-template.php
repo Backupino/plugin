@@ -621,7 +621,10 @@ switch ( $backupino_action ) {
 			}
 		}
 
-		$importer = new Importer( $connection, new SqlSplitter( $sql_file ) );
+		$source_prefix = (string) ( $backupino_payload['table_prefix'] ?? 'wp_' );
+		$target_prefix = (string) ( $db['prefix'] ?? 'wp_' );
+
+		$importer = new Importer( $connection, new SqlSplitter( $sql_file ), $source_prefix, $target_prefix );
 		$result   = $importer->step( $offset, 262144, 8.0 );
 
 		if ( ! empty( $result['error'] ) ) {
@@ -718,9 +721,9 @@ switch ( $backupino_action ) {
 			$connection = ConnectionManager::connect( $db );
 
 			if ( $source_prefix !== $target_prefix && '' !== $source_prefix && '' !== $target_prefix ) {
-				// Rename all tables with source_prefix to target_prefix safely
+				// Safety check: rename any legacy tables that still have source_prefix
 				$esc_source = str_replace( array( '\\', '_', '%' ), array( '\\\\', '\\_', '\\%' ), $source_prefix );
-				$rows = $connection->rows( "SHOW TABLES LIKE '{$esc_source}%'" );
+				$rows       = $connection->rows( "SHOW TABLES LIKE '{$esc_source}%'" );
 				$tables_to_rename = array();
 				foreach ( $rows as $row ) {
 					$vals = array_values( $row );
@@ -734,57 +737,79 @@ switch ( $backupino_action ) {
 				}
 				if ( array() !== $tables_to_rename ) {
 					foreach ( $tables_to_rename as $pair ) {
-						$connection->query( 'DROP TABLE IF EXISTS `' . str_replace( '`', '``', $pair['new'] ) . '`' );
-						$connection->query( 'RENAME TABLE `' . str_replace( '`', '``', $pair['old'] ) . '` TO `' . str_replace( '`', '``', $pair['new'] ) . '`' );
+						try {
+							$connection->query( 'DROP TABLE IF EXISTS `' . str_replace( '`', '``', $pair['new'] ) . '`' );
+							$connection->query( 'RENAME TABLE `' . str_replace( '`', '``', $pair['old'] ) . '` TO `' . str_replace( '`', '``', $pair['new'] ) . '`' );
+						} catch ( \Throwable $rename_err ) {
+							try {
+								$connection->query( 'CREATE TABLE IF NOT EXISTS `' . str_replace( '`', '``', $pair['new'] ) . '` LIKE `' . str_replace( '`', '``', $pair['old'] ) . '`' );
+								$connection->query( 'INSERT IGNORE INTO `' . str_replace( '`', '``', $pair['new'] ) . '` SELECT * FROM `' . str_replace( '`', '``', $pair['old'] ) . '`' );
+								$connection->query( 'DROP TABLE IF EXISTS `' . str_replace( '`', '``', $pair['old'] ) . '`' );
+							} catch ( \Throwable $fallback_err ) {
+								// Non-fatal, continue so remaining tables are not blocked.
+							}
+						}
 					}
 				}
 
 				// Update user roles option name in options table
-				$new_opt_table = str_replace( '`', '``', $target_prefix ) . 'options';
-				$esc_old_roles = $connection->escape( $source_prefix . 'user_roles' );
-				$esc_new_roles = $connection->escape( $target_prefix . 'user_roles' );
-				$connection->query(
-					"UPDATE `{$new_opt_table}` SET option_name = '{$esc_new_roles}' WHERE option_name = '{$esc_old_roles}'"
-				);
+				$target_opt_table = str_replace( '`', '``', $target_prefix ) . 'options';
+				$esc_old_roles    = $connection->escape( $source_prefix . 'user_roles' );
+				$esc_new_roles    = $connection->escape( $target_prefix . 'user_roles' );
+				try {
+					$connection->query(
+						"UPDATE `{$target_opt_table}` SET option_name = '{$esc_new_roles}' WHERE option_name = '{$esc_old_roles}'"
+					);
+				} catch ( \Throwable $e ) {
+					// Ignore if option not present.
+				}
 
-				// Update prefixed meta keys in usermeta table for users
-				$new_meta_table = str_replace( '`', '``', $target_prefix ) . 'usermeta';
-				$source_len     = strlen( $source_prefix );
-				$esc_new        = $connection->escape( $target_prefix );
-				$esc_like       = $connection->escape( str_replace( array( '\\', '_', '%' ), array( '\\\\', '\\_', '\\%' ), $source_prefix ) );
-				$connection->query(
-					"UPDATE `{$new_meta_table}` SET meta_key = CONCAT('{$esc_new}', SUBSTRING(meta_key, " . ( $source_len + 1 ) . ")) WHERE meta_key LIKE '{$esc_like}%' AND (meta_key LIKE '{$esc_like}capabilities' OR meta_key LIKE '{$esc_like}user_level' OR meta_key LIKE '{$esc_like}user-settings%' OR meta_key LIKE '{$esc_like}dashboard_%' OR meta_key LIKE '{$esc_like}autosave_%')"
-				);
+				// Update all prefixed meta keys in usermeta table for users (capabilities, user_level, plugins, etc.)
+				$target_meta_table = str_replace( '`', '``', $target_prefix ) . 'usermeta';
+				$source_len        = strlen( $source_prefix );
+				$esc_new           = $connection->escape( $target_prefix );
+				$esc_like          = $connection->escape( str_replace( array( '\\', '_', '%' ), array( '\\\\', '\\_', '\\%' ), $source_prefix ) );
+				try {
+					$connection->query(
+						"UPDATE `{$target_meta_table}` SET meta_key = CONCAT('{$esc_new}', SUBSTRING(meta_key, " . ( $source_len + 1 ) . ")) WHERE meta_key LIKE '{$esc_like}%'"
+					);
+				} catch ( \Throwable $e ) {
+					// Ignore if table missing.
+				}
 			}
 
 			$target_opt_table = str_replace( '`', '``', $target_prefix ) . 'options';
-			$connection->query(
-				'UPDATE `' . $target_opt_table . "` SET option_value = '"
-				. $connection->escape( $new_url ) . "' WHERE option_name IN ('siteurl','home')"
-			);
+			try {
+				$connection->query(
+					'UPDATE `' . $target_opt_table . "` SET option_value = '"
+					. $connection->escape( $new_url ) . "' WHERE option_name IN ('siteurl','home')"
+				);
 
-			// Enforce site language based on the backup source locale
-			$target_locale = ! empty( $backupino_payload['locale'] ) ? (string) $backupino_payload['locale'] : 'fa_IR';
-			$esc_locale    = $connection->escape( $target_locale );
-			$connection->query(
-				"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('WPLANG', '{$esc_locale}', 'yes')"
-			);
+				// Enforce site language based on the backup source locale
+				$target_locale = ! empty( $backupino_payload['locale'] ) ? (string) $backupino_payload['locale'] : 'fa_IR';
+				$esc_locale    = $connection->escape( $target_locale );
+				$connection->query(
+					"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('WPLANG', '{$esc_locale}', 'yes')"
+				);
 
-			// Update user locale in usermeta for all users
-			$new_meta_table = str_replace( '`', '``', $target_prefix ) . 'usermeta';
-			$connection->query(
-				"UPDATE `{$new_meta_table}` SET meta_value = '{$esc_locale}' WHERE meta_key = 'locale'"
-			);
+				// Update user locale in usermeta for all users
+				$target_meta_table = str_replace( '`', '``', $target_prefix ) . 'usermeta';
+				$connection->query(
+					"UPDATE `{$target_meta_table}` SET meta_value = '{$esc_locale}' WHERE meta_key = 'locale'"
+				);
 
-			// Save post-migration admin notice flag in WordPress options
-			$esc_notice_key = $connection->escape( 'backupino_migration_notice' );
-			$esc_notice_val = $connection->escape( '1' );
-			$connection->query(
-				"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('{$esc_notice_key}', '{$esc_notice_val}', 'yes')"
-			);
+				// Save post-migration admin notice flag in WordPress options
+				$esc_notice_key = $connection->escape( 'backupino_migration_notice' );
+				$esc_notice_val = $connection->escape( '1' );
+				$connection->query(
+					"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('{$esc_notice_key}', '{$esc_notice_val}', 'yes')"
+				);
 
-			// Flush rewrite rules cache so WordPress recalculates fresh permalinks (including Persian/Unicode slugs)
-			$connection->query( "DELETE FROM `{$target_opt_table}` WHERE option_name = 'rewrite_rules'" );
+				// Flush rewrite rules cache so WordPress recalculates fresh permalinks (including Persian/Unicode slugs)
+				$connection->query( "DELETE FROM `{$target_opt_table}` WHERE option_name = 'rewrite_rules'" );
+			} catch ( \Throwable $e ) {
+				// Non-fatal if options table is customized or missing.
+			}
 
 			// Repair unconfigured Elementor dynamic tags with settings="" so PHP 8 never throws TypeError on get_tag_data_content
 			$target_meta_table  = str_replace( '`', '``', $target_prefix ) . 'postmeta';

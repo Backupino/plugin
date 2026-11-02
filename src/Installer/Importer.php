@@ -31,6 +31,20 @@ final class Importer {
 	private $splitter;
 
 	/**
+	 * Source table prefix.
+	 *
+	 * @var string
+	 */
+	private $source_prefix = '';
+
+	/**
+	 * Target table prefix.
+	 *
+	 * @var string
+	 */
+	private $target_prefix = '';
+
+	/**
 	 * Total file size.
 	 *
 	 * @var int
@@ -40,13 +54,17 @@ final class Importer {
 	/**
 	 * Constructor.
 	 *
-	 * @param Connection  $connection Database connection.
-	 * @param SqlSplitter $splitter   Statement splitter.
+	 * @param Connection  $connection    Database connection.
+	 * @param SqlSplitter $splitter      Statement splitter.
+	 * @param string      $source_prefix Source table prefix.
+	 * @param string      $target_prefix Target table prefix.
 	 */
-	public function __construct( Connection $connection, SqlSplitter $splitter ) {
-		$this->connection = $connection;
-		$this->splitter   = $splitter;
-		$this->size       = $splitter->size();
+	public function __construct( Connection $connection, SqlSplitter $splitter, string $source_prefix = '', string $target_prefix = '' ) {
+		$this->connection    = $connection;
+		$this->splitter      = $splitter;
+		$this->source_prefix = $source_prefix;
+		$this->target_prefix = $target_prefix;
+		$this->size          = $splitter->size();
 	}
 
 	/**
@@ -86,6 +104,10 @@ final class Importer {
 			}
 
 			foreach ( $batch['statements'] as $statement ) {
+				if ( '' !== $this->source_prefix && '' !== $this->target_prefix && $this->source_prefix !== $this->target_prefix ) {
+					$statement = $this->rewrite_prefix( $statement );
+				}
+
 				if ( ! $this->connection->query( $statement ) ) {
 					$err = $this->connection->error();
 					if ( false !== stripos( $err, 'max_allowed_packet' ) || false !== stripos( $err, 'packet bigger' ) ) {
@@ -272,5 +294,21 @@ final class Importer {
 		}
 
 		return $statements;
+	}
+
+	/**
+	 * Rewrite table prefix in SQL statement.
+	 *
+	 * @param string $statement SQL statement.
+	 * @return string
+	 */
+	public function rewrite_prefix( string $statement ): string {
+		if ( '' === $this->source_prefix || '' === $this->target_prefix || $this->source_prefix === $this->target_prefix ) {
+			return $statement;
+		}
+
+		$pattern = '/`' . preg_quote( $this->source_prefix, '/' ) . '([a-zA-Z0-9_]+)`/';
+
+		return (string) preg_replace( $pattern, '`' . addcslashes( $this->target_prefix, '\\$' ) . '$1`', $statement );
 	}
 }
