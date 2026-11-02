@@ -11,6 +11,11 @@ namespace Backupino\Backup;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Streaming NDJSON manifest reading and appending.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Streaming NDJSON manifest reading.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Streaming NDJSON manifest handle closing.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Manifest line append.
+
 /**
  * Newline delimited JSON index of every file in an archive.
  *

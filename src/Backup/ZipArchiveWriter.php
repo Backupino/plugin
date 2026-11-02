@@ -11,6 +11,8 @@ namespace Backupino\Backup;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Secure restrictive archive permissions.
+
 /**
  * `ZipArchive` based writer.
  *
@@ -158,7 +160,7 @@ final class ZipArchiveWriter implements ArchiveWriter {
 		try {
 			if ( '' !== $this->path ) {
 				clearstatcache( true, $this->path );
-				@chmod( $this->path, 0666 );
+				@chmod( $this->path, 0640 );
 			}
 			$closed = (bool) @$this->zip->close();
 		} catch ( \Throwable $t ) {

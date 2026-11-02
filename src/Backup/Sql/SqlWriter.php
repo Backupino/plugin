@@ -11,6 +11,10 @@ namespace Backupino\Backup\Sql;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Streaming SQL dump file writing.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- Streaming SQL dump file writing.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Streaming SQL dump file closing.
+
 /**
  * Append-only writer for the `database.sql` payload.
  *
