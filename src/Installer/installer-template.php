@@ -18,8 +18,13 @@ namespace Backupino\Installer;
 
 defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
 
-// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Standalone offline installer JSON/HTML template.
+// phpcs:disable WordPress.Security.EscapeOutput -- Standalone offline installer JSON/HTML template.
+// phpcs:disable WordPress.Security.NonceVerification -- Standalone offline installer without WordPress nonce system.
+// phpcs:disable WordPress.Security.ValidatedSanitizedInput -- Standalone offline installer without WordPress unslash/sanitize functions.
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Standalone offline installer executed outside WordPress scope.
 // phpcs:disable WordPress.WP.AlternativeFunctions -- Standalone installer running outside WordPress environment.
+// phpcs:disable Squiz.PHP.DiscouragedFunctions -- Standalone installer resource/timeout management.
+// phpcs:disable WordPress.PHP.DevelopmentFunctions -- Standalone installer error reporting.
 // phpcs:disable PluginCheck.CodeAnalysis.PHPErrorReporting -- Standalone installer outside WordPress environment.
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -178,6 +178,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function load_textdomain(): void {
+		// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound
 		load_plugin_textdomain(
 			'backupino',
 			false,

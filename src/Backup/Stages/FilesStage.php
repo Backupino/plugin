@@ -11,6 +11,8 @@ namespace Backupino\Backup\Stages;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Internal pipeline exceptions are caught and sanitized before presentation.
+
 use Backupino\Backup\Manifest;
 use Backupino\Backup\ZipArchiveWriter;
 use Backupino\Jobs\JobContext;

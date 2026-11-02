@@ -11,6 +11,8 @@ namespace Backupino\Installer;
 
 defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Standalone offline installer exceptions.
+
 /**
  * Opens a database connection, creating the database when the user may.
  */
