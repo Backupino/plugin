@@ -92,12 +92,13 @@ final class FilesStage implements Stage {
 
 			if ( array() === $chunk['entries'] ) {
 				$file_size = (int) @filesize( $manifest->path() );
-				$is_eof    = ( $file_size > 0 && (int) $state['offset'] >= $file_size )
-					|| ( (int) $state['total'] > 0 && (int) $state['added'] >= (int) $state['total'] );
+				$is_eof    = ( $file_size <= 0 || (int) $state['offset'] >= $file_size || (int) $chunk['offset'] >= $file_size );
 
 				if ( $is_eof ) {
-					$state['done'] = true;
+					$state['offset'] = max( (int) $state['offset'], (int) $chunk['offset'] );
+					$state['done']   = true;
 				} else {
+					$state['offset'] = (int) $chunk['offset'];
 					$context->logger()->warning(
 						'Empty manifest chunk before EOF reached.',
 						array(

@@ -83,7 +83,7 @@ final class Manifest {
 		}
 
 		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
-		return false !== @file_put_contents( $this->file, $line . "\n", FILE_APPEND );
+		return false !== @file_put_contents( $this->file, $line . "\n", FILE_APPEND | LOCK_EX );
 	}
 
 	/**

@@ -116,13 +116,32 @@ final class JobRunner {
 			return $job;
 		}
 
-		$lock_file = $this->paths->job_dir( $job->token ) . '/.step.lock';
+		$lock_dir = $this->paths->jobs();
+		if ( ! is_dir( $lock_dir ) ) {
+			Fs::mkdir( $lock_dir );
+		}
+
+		$lock_file = $lock_dir . '/' . $job->token . '.lock';
 		$lock_fp   = @fopen( $lock_file, 'c+' );
-		if ( false !== $lock_fp ) {
-			if ( ! @flock( $lock_fp, LOCK_EX | LOCK_NB ) ) {
-				@fclose( $lock_fp );
-				return $job;
-			}
+		if ( false === $lock_fp ) {
+			return $job;
+		}
+
+		if ( ! @flock( $lock_fp, LOCK_EX | LOCK_NB ) ) {
+			@fclose( $lock_fp );
+			return $job;
+		}
+
+		// Re-fetch latest state from DB in case another process updated it.
+		$refreshed = $this->jobs->find( $job->id );
+		if ( null !== $refreshed ) {
+			$job = $refreshed;
+		}
+
+		if ( ! $job->is_runnable() ) {
+			@flock( $lock_fp, LOCK_UN );
+			@fclose( $lock_fp );
+			return $job;
 		}
 
 		if ( $budget <= 0 ) {
@@ -174,6 +193,7 @@ final class JobRunner {
 						@fclose( $lock_fp );
 						$lock_fp = false;
 					}
+					@unlink( $lock_file );
 					$this->jobs->save( $job );
 					try {
 						Fs::delete_dir( $this->paths->job_dir( $job->token ) );
@@ -277,6 +297,7 @@ final class JobRunner {
 		$job->message = __( 'Cancelled by the user.', 'backupino' );
 
 		Fs::delete_dir( $this->paths->job_dir( $job->token ) );
+		@unlink( $this->paths->jobs() . '/' . $job->token . '.lock' );
 		$this->jobs->save( $job );
 
 		return $job;
