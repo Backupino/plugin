@@ -89,7 +89,13 @@ final class WpDbAdapter implements Db {
 	 */
 	public function escape( string $value ): string {
 		if ( null !== $this->wpdb && method_exists( $this->wpdb, '_real_escape' ) ) {
-			return (string) $this->wpdb->_real_escape( $value );
+			$escaped = (string) $this->wpdb->_real_escape( $value );
+
+			if ( method_exists( $this->wpdb, 'remove_placeholder_escape' ) ) {
+				$escaped = (string) $this->wpdb->remove_placeholder_escape( $escaped );
+			}
+
+			return $escaped;
 		}
 
 		return addcslashes( $value, "\0\n\r\\'\"\x1a" );

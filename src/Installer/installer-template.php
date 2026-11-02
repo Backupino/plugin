@@ -791,9 +791,43 @@ switch ( $backupino_action ) {
 			$target_posts_table = str_replace( '`', '``', $target_prefix ) . 'posts';
 			try {
 				$connection->query( "UPDATE `{$target_meta_table}` SET meta_value = REPLACE(meta_value, 'settings=\"\"', 'settings=\"%7B%7D\"') WHERE meta_key = '_elementor_data' AND meta_value LIKE '%settings=\"\"%'" );
+				$connection->query( "UPDATE `{$target_meta_table}` SET meta_value = REPLACE(meta_value, 'settings=\\\"\\\"', 'settings=\\\"%7B%7D\\\"') WHERE meta_key = '_elementor_data' AND meta_value LIKE '%settings=\\\"\\\"%'" );
 				$connection->query( "UPDATE `{$target_posts_table}` SET post_content = REPLACE(post_content, 'settings=\"\"', 'settings=\"%7B%7D\"') WHERE post_content LIKE '%settings=\"\"%'" );
+				$connection->query( "UPDATE `{$target_posts_table}` SET post_content = REPLACE(post_content, 'settings=\\\"\\\"', 'settings=\\\"%7B%7D\\\"') WHERE post_content LIKE '%settings=\\\"\\\"%'" );
 			} catch ( \Throwable $e ) {
 				// Non-fatal if tables missing.
+			}
+
+			// Auto-heal any orphaned WordPress placeholder hashes ({sha256}) in post_name from previous exports
+			try {
+				$rows_with_hash = $connection->rows( "SELECT `ID`, `post_name` FROM `{$target_posts_table}` WHERE `post_name` LIKE '%{%}%'" );
+				foreach ( $rows_with_hash as $r_hash ) {
+					$post_slug = (string) ( $r_hash['post_name'] ?? '' );
+					if ( preg_match( '/\{[a-f0-9]{64}\}/i', $post_slug ) ) {
+						$fixed_slug = (string) preg_replace( '/\{[a-f0-9]{64}\}/i', '%', $post_slug );
+						$connection->query(
+							"UPDATE `{$target_posts_table}` SET `post_name` = '" . $connection->escape( $fixed_slug ) . "' WHERE `ID` = " . (int) $r_hash['ID']
+						);
+					}
+				}
+			} catch ( \Throwable $e ) {
+				// Non-fatal.
+			}
+
+			// Auto-heal any orphaned WordPress placeholder hashes ({sha256}) in _elementor_data
+			try {
+				$meta_with_hash = $connection->rows( "SELECT `meta_id`, `meta_value` FROM `{$target_meta_table}` WHERE `meta_key` = '_elementor_data' AND `meta_value` LIKE '%{%}%'" );
+				foreach ( $meta_with_hash as $m_hash ) {
+					$meta_val = (string) ( $m_hash['meta_value'] ?? '' );
+					if ( preg_match( '/\{[a-f0-9]{64}\}/i', $meta_val ) ) {
+						$fixed_meta = (string) preg_replace( '/\{[a-f0-9]{64}\}/i', '%', $meta_val );
+						$connection->query(
+							"UPDATE `{$target_meta_table}` SET `meta_value` = '" . $connection->escape( $fixed_meta ) . "' WHERE `meta_id` = " . (int) $m_hash['meta_id']
+						);
+					}
+				}
+			} catch ( \Throwable $e ) {
+				// Non-fatal.
 			}
 
 			// Clean up backupino_jobs on the restored site so no ghost or in-progress job from source site exists
