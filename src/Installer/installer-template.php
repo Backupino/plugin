@@ -783,6 +783,19 @@ switch ( $backupino_action ) {
 				"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('{$esc_notice_key}', '{$esc_notice_val}', 'yes')"
 			);
 
+			// Flush rewrite rules cache so WordPress recalculates fresh permalinks (including Persian/Unicode slugs)
+			$connection->query( "DELETE FROM `{$target_opt_table}` WHERE option_name = 'rewrite_rules'" );
+
+			// Repair unconfigured Elementor dynamic tags with settings="" so PHP 8 never throws TypeError on get_tag_data_content
+			$target_meta_table  = str_replace( '`', '``', $target_prefix ) . 'postmeta';
+			$target_posts_table = str_replace( '`', '``', $target_prefix ) . 'posts';
+			try {
+				$connection->query( "UPDATE `{$target_meta_table}` SET meta_value = REPLACE(meta_value, 'settings=\"\"', 'settings=\"%7B%7D\"') WHERE meta_key = '_elementor_data' AND meta_value LIKE '%settings=\"\"%'" );
+				$connection->query( "UPDATE `{$target_posts_table}` SET post_content = REPLACE(post_content, 'settings=\"\"', 'settings=\"%7B%7D\"') WHERE post_content LIKE '%settings=\"\"%'" );
+			} catch ( \Throwable $e ) {
+				// Non-fatal if tables missing.
+			}
+
 			// Clean up backupino_jobs on the restored site so no ghost or in-progress job from source site exists
 			$target_jobs_table = str_replace( '`', '``', $target_prefix ) . 'backupino_jobs';
 			try {
@@ -805,31 +818,20 @@ switch ( $backupino_action ) {
 			@unlink( $orig_config );
 		}
 
-		// Reconfigure .htaccess rewrite base and rules for target environment
+		// Reconfigure .htaccess for target environment with clean WordPress rewrite rules
 		$url_path  = (string) parse_url( $new_url, PHP_URL_PATH );
 		$base_path = ( '' === $url_path || '/' === $url_path ) ? '/' : ( '/' . trim( $url_path, '/' ) . '/' );
 		$htaccess  = $backupino_dir . '/.htaccess';
+		$standard_htaccess = "# BEGIN WordPress\n<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]\nRewriteBase {$base_path}\nRewriteRule ^index\\.php$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . {$base_path}index.php [L]\n</IfModule>\n# END WordPress\n";
 
 		if ( is_file( $htaccess ) && is_writable( $htaccess ) ) {
-			$htaccess_content = (string) file_get_contents( $htaccess );
-			if ( preg_match( '/RewriteBase\s+[^\r\n]+/i', $htaccess_content ) ) {
-				$htaccess_content = (string) preg_replace(
-					'/RewriteBase\s+[^\r\n]+/i',
-					'RewriteBase ' . $base_path,
-					$htaccess_content
-				);
+			$htaccess_backup = $backupino_dir . '/.htaccess.backupino-orig';
+			if ( ! file_exists( $htaccess_backup ) ) {
+				@copy( $htaccess, $htaccess_backup );
 			}
-			if ( preg_match( '/RewriteRule\s+\.\s+[^\r\n]*index\.php\s+\[L\]/i', $htaccess_content ) ) {
-				$htaccess_content = (string) preg_replace(
-					'/RewriteRule\s+\.\s+[^\r\n]*index\.php\s+\[L\]/i',
-					'RewriteRule . ' . $base_path . 'index.php [L]',
-					$htaccess_content
-				);
-			}
-			file_put_contents( $htaccess, $htaccess_content );
+			file_put_contents( $htaccess, $standard_htaccess );
 		} elseif ( ! file_exists( $htaccess ) && is_writable( $backupino_dir ) ) {
-			$default_htaccess = "# BEGIN WordPress\n<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]\nRewriteBase {$base_path}\nRewriteRule ^index\\.php$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . {$base_path}index.php [L]\n</IfModule>\n# END WordPress\n";
-			@file_put_contents( $htaccess, $default_htaccess );
+			@file_put_contents( $htaccess, $standard_htaccess );
 		}
 
 		// Detect custom login URL configured by security plugins (WPS Hide Login, AIOWPS, iThemes, Perfmatters, Cerber)

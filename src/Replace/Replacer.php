@@ -86,16 +86,42 @@ final class Replacer {
 			}
 		}
 
+		$extended = array();
+		foreach ( $pairs as $pair ) {
+			$s = $pair[0];
+			$r = $pair[1];
+			if ( '' === $s || $s === $r ) {
+				continue;
+			}
+			$extended[] = array( $s, $r );
+
+			// JSON-escaped slashes variant: https:\/\/site -> https:\/\/newsite
+			if ( false !== strpos( $s, '/' ) ) {
+				$extended[] = array( str_replace( '/', '\/', $s ), str_replace( '/', '\/', $r ) );
+			}
+
+			// URL-encoded variants for query parameters and dynamic tag attributes
+			$enc_s = rawurlencode( $s );
+			$enc_r = rawurlencode( $r );
+			if ( $enc_s !== $s ) {
+				$extended[] = array( $enc_s, $enc_r );
+				$extended[] = array( strtolower( $enc_s ), strtolower( $enc_r ) );
+			}
+		}
+
+		// Sort pairs by search string length descending to replace longer paths before prefixes
+		usort( $extended, static function( array $a, array $b ): int {
+			return strlen( $b[0] ) <=> strlen( $a[0] );
+		} );
+
 		$search  = array();
 		$replace = array();
 
-		foreach ( $pairs as $pair ) {
-			if ( $pair[0] === $pair[1] || '' === $pair[0] ) {
-				continue;
+		foreach ( $extended as $pair ) {
+			if ( ! in_array( $pair[0], $search, true ) ) {
+				$search[]  = $pair[0];
+				$replace[] = $pair[1];
 			}
-
-			$search[]  = $pair[0];
-			$replace[] = $pair[1];
 		}
 
 		return new self( $search, $replace );
