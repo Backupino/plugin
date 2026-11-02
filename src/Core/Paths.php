@@ -11,6 +11,8 @@ namespace Backupino\Core;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Storage directory writability check.
+
 use Backupino\Support\Fs;
 use Backupino\Support\Str;
 

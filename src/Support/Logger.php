@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Robust logging directory creation.
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Atomic append logging.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_rename -- Log file rotation.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_rename, WordPress.WP.AlternativeFunctions.rename_rename -- Log file rotation.
 
 /**
  * Append-only line logger with size based rotation.

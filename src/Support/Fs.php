@@ -13,9 +13,10 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Robust defensive directory management.
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Atomic file writing and protection.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_rename -- Atomic file rename.
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_unlink -- Robust file removal.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_rename, WordPress.WP.AlternativeFunctions.rename_rename -- Atomic file rename.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_unlink, WordPress.WP.AlternativeFunctions.unlink_unlink -- Robust file removal.
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Robust directory removal.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Directory writability check.
 
 /**
  * Thin, defensive filesystem utility layer.
