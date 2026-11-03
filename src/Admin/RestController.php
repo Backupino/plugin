@@ -206,7 +206,7 @@ final class RestController {
 
 		$job = Job::create(
 			array(
-				'type'     => sanitize_key( (string) $request->get_param( 'type' ) ),
+				'type'     => sanitize_key( (string) ( $request->get_param( 'type' ) ?: 'manual' ) ),
 				'files'    => (bool) $request->get_param( 'files' ),
 				'database' => (bool) $request->get_param( 'database' ),
 				'note'     => sanitize_text_field( (string) $request->get_param( 'note' ) ),

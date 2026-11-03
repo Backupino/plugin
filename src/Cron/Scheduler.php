@@ -168,7 +168,7 @@ final class Scheduler {
 			}
 
 			// Do not step manual backup jobs that the browser is actively driving.
-			if ( 'manual' === $job->type ) {
+			if ( 'manual' === (string) $job->option( 'type', 'manual' ) ) {
 				$updated = strtotime( $job->updated_at );
 				if ( false !== $updated && ( time() - $updated ) < 45 ) {
 					continue;

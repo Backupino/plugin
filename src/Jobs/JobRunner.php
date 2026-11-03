@@ -119,7 +119,7 @@ final class JobRunner {
 
 		$lock_dir = $this->paths->jobs();
 		if ( ! is_dir( $lock_dir ) ) {
-			Fs::mkdir( $lock_dir );
+			Fs::ensure_dir( $lock_dir );
 		}
 
 		$lock_file = $lock_dir . '/' . $job->token . '.lock';
@@ -170,6 +170,12 @@ final class JobRunner {
 
 		if ( null === $stage ) {
 			$this->fail( $job, __( 'Unknown pipeline stage.', 'backupino' ) );
+			$this->jobs->save( $job );
+			if ( false !== $lock_fp ) {
+				@flock( $lock_fp, LOCK_UN );
+				@fclose( $lock_fp );
+			}
+			Fs::delete( $lock_file );
 
 			return $job;
 		}
@@ -257,6 +263,10 @@ final class JobRunner {
 		if ( false !== $lock_fp ) {
 			@flock( $lock_fp, LOCK_UN );
 			@fclose( $lock_fp );
+		}
+
+		if ( JobStatus::FAILED === $job->status ) {
+			Fs::delete( $lock_file );
 		}
 
 		return $job;

@@ -74,6 +74,13 @@ function respond( array $data, int $status = 200 ): void {
 
 $backupino_dir          = (string) getcwd();
 
+if ( false !== strpos( str_replace( '\\', '/', $backupino_dir ), '/wp-content/' ) ) {
+	if ( ! headers_sent() ) {
+		http_response_code( 403 );
+	}
+	exit( 'Forbidden: The standalone installer must not be executed inside wp-content.' );
+}
+
 // Quarantine any rogue server configuration files in destination directory that could crash LiteSpeed/Apache
 if ( is_file( $backupino_dir . '/.htaccess' ) && ! file_exists( $backupino_dir . '/.htaccess.backupino-orig' ) ) {
 	@rename( $backupino_dir . '/.htaccess', $backupino_dir . '/.htaccess.backupino-orig' );

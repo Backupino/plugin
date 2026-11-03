@@ -111,9 +111,6 @@ final class PublicDownload {
 
 		$archive_path = (string) $archive_path;
 		$installer_path = preg_replace( '/\.zip$/i', '-installer.php', $archive_path );
-		if ( ! is_readable( $installer_path ) ) {
-			$installer_path = $packages_dir . '/installer.php';
-		}
 
 		// Direct streaming requests
 		if ( 'installer' === $file_type ) {

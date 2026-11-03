@@ -11,6 +11,8 @@ namespace Backupino\Backup;
 
 defined( 'ABSPATH' ) || exit;
 
+use Backupino\Support\Str;
+
 /**
  * Describes a finished, downloadable package.
  */
@@ -123,6 +125,6 @@ final class Package {
 	public static function default_name( string $site_host ): string {
 		$host = strtolower( preg_replace( '/[^a-z0-9\.\-]+/i', '-', $site_host ) );
 
-		return trim( $host, '-' ) . '_' . gmdate( 'Ymd_His' );
+		return trim( $host, '-' ) . '_' . gmdate( 'Ymd_His' ) . '_' . Str::random( 6 );
 	}
 }
