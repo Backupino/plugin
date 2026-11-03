@@ -4,7 +4,7 @@
 ### Fast, Resumable WordPress Backup, Cloning & Easy Migration
 **A next-generation WordPress migration and disaster recovery platform with a self-contained offline installer**
 
-[![Version](https://img.shields.io/badge/version-1.0.0--stable-blue.svg?style=for-the-badge)](https://github.com/Backupino/plugin)
+[![Version](https://img.shields.io/badge/version-1.0.1--stable-blue.svg?style=for-the-badge)](https://github.com/Backupino/plugin)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%20--%207.1-21759b.svg?style=for-the-badge&logo=wordpress)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%20--%208.4-777bb4.svg?style=for-the-badge&logo=php)](https://php.net)
 [![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -23,7 +23,7 @@
 
 **Backupino** is an enterprise-grade WordPress backup, cloning, and migration plugin engineered specifically for real-world hosting environments with strict execution limits, memory constraints, and short timeouts.
 
-It bundles your entire WordPress installation — database, plugins, themes, uploads, and core files — into a single secure archive accompanied by a standalone, lightweight `installer.php` wizard. You can restore or migrate your entire website onto any fresh, empty server in 5 intuitive steps without needing WordPress pre-installed.
+It bundles your entire WordPress installation — database, plugins, themes, uploads, and core files — into a single secure archive accompanied by a standalone, lightweight `installer.php` wizard. You can restore or migrate your entire website onto any fresh, empty server in 7 intuitive steps without needing WordPress pre-installed.
 
 ---
 
@@ -31,7 +31,7 @@ It bundles your entire WordPress installation — database, plugins, themes, upl
 
 * **100% Free Forever**: Backing up, restoring, and cloning have zero arbitrary file size limits and zero fees. Restoring a site will never be locked behind a paywall.
 * **Anti-Timeout Chunked Resumable Engine**: Operations are split into micro-batches with persistent database checkpoints. If your server hits a 30-second FastCGI timeout, it automatically resumes exactly from the last processed file.
-* **Standalone Installer (`installer.php`)**: Rebuilds your website on fresh, empty hosting in 5 guided steps without WordPress installed.
+* **Standalone Installer (`installer.php`)**: Rebuilds your website on fresh, empty hosting in 7 guided steps without WordPress installed.
 * **Pure PHP SQL Streamer**: Dumps databases directly through native PDO and MySQLi APIs. No `mysqldump`, `exec()`, or shell permissions required.
 * **Permanent Latest-Backup Link**: A secure, non-expiring download URL that always resolves to your newest backup, guarded by administrator authentication or a 32-byte secret key.
 * **Telegram & Bale Messenger Alerts**: Instant dispatch of backup completion reports and direct download links to Telegram and Bale with an automatic 3-attempt retry queue.

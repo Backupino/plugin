@@ -4,7 +4,7 @@
 ### افزونه نسل جدید پشتیبان‌گیری، شبیه‌سازی و انتقال بی‌دردسر وب‌سایت‌های وردپرسی
 **Fast, Resumable WordPress Backup, Cloning & Easy Migration**
 
-[![Version](https://img.shields.io/badge/version-1.0.0--stable-blue.svg?style=for-the-badge)](https://github.com/Backupino/plugin)
+[![Version](https://img.shields.io/badge/version-1.0.1--stable-blue.svg?style=for-the-badge)](https://github.com/Backupino/plugin)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%20--%207.1-21759b.svg?style=for-the-badge&logo=wordpress)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%20--%208.4-777bb4.svg?style=for-the-badge&logo=php)](https://php.net)
 [![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -33,7 +33,7 @@
 
 * **۱۰۰٪ رایگان برای همیشه:** ساخت بکاپ، بازگردانی و انتقال سایت هیچ سقف حجمی ندارد و بازگردانی سایت هرگز پولی نخواهد شد.
 * **موتور قطعه‌بندی‌شده ضد تایم‌اوت (Anti-Timeout Resumable Engine):** عملیات در قطعات کوچک با ثبت مداوم وضعیت (Checkpoint) در دیتابیس انجام می‌شود؛ در صورت وقوع تایم‌اوت سرور، فرآیند دقیقاً از آخرین فایل متوقف‌شده ادامه می‌یابد.
-* **نصاب مستقل خودکفا (`installer.php`):** بازسازی و مهاجرت کامل سایت روی هاست خام و بدون نیاز به نصب وردپرس در ۵ مرحله راهنما.
+* **نصاب مستقل خودکفا (`installer.php`):** بازسازی و مهاجرت کامل سایت روی هاست خام و بدون نیاز به نصب وردپرس در ۷ مرحله راهنما.
 * **استخراج خالص دیتابیس بدون وابستگی:** استخراج ساختار و داده‌های SQL بدون نیاز به `mysqldump`، `exec()` یا دستورات شل، با استفاده از APIهای بومی دیتابیس.
 * **لینک دائمی هوشمند:** آدرسی امن و پایدار برای دسترسی و دانلود آخرین نسخه پشتیبان محافظت‌شده با دسترسی مدیرکل یا کلید اختصاصی.
 * **اعلان لحظه‌ای در پیام‌رسان‌ها:** ارسال گزارش اتمام بکاپ و لینک دانلود مستقیم به ربات شخصی تلگرام یا بله همراه با صف تلاش مجدد خودکار ۳ مرحله‌ای.
