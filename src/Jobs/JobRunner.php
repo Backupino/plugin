@@ -13,6 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Atomic file lock for multi-process safety.
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Atomic file lock for multi-process safety.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_unlink, WordPress.WP.AlternativeFunctions.unlink_unlink -- Lock file cleanup.
 
 use Backupino\Core\Db;
 use Backupino\Core\Paths;
@@ -193,7 +194,7 @@ final class JobRunner {
 						@fclose( $lock_fp );
 						$lock_fp = false;
 					}
-					@unlink( $lock_file );
+					Fs::delete( $lock_file );
 					$this->jobs->save( $job );
 					try {
 						Fs::delete_dir( $this->paths->job_dir( $job->token ) );
@@ -297,7 +298,7 @@ final class JobRunner {
 		$job->message = __( 'Cancelled by the user.', 'backupino' );
 
 		Fs::delete_dir( $this->paths->job_dir( $job->token ) );
-		@unlink( $this->paths->jobs() . '/' . $job->token . '.lock' );
+		Fs::delete( $this->paths->jobs() . '/' . $job->token . '.lock' );
 		$this->jobs->save( $job );
 
 		return $job;

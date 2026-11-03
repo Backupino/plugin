@@ -132,6 +132,13 @@ final class Fs {
 			return true;
 		}
 
+		if ( function_exists( 'wp_delete_file' ) ) {
+			wp_delete_file( $path );
+			if ( ! file_exists( $path ) ) {
+				return true;
+			}
+		}
+
 		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		return (bool) @unlink( $path );
 	}
