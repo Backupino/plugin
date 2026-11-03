@@ -4,7 +4,7 @@ Tags: backup, restore, migration, clone, jalali
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,10 +100,22 @@ No. Notifications are completely optional and disabled by default. If you do not
 
 == Upgrade Notice ==
 
+= 1.0.1 =
+Security and stability maintenance release. Adds wp-content execution protection for standalone installer, cryptographically random package name suffixes for Nginx safety, defensive directory handling in JobRunner, and proper job type option handling.
+
 = 1.0.0 =
 Initial production release of Backupino. Includes resumable backups, standalone installer, permanent login-gated download link, Telegram/Bale notifications, monthly scheduling with Jalali support, and 100% offline-first architecture.
 
 == Changelog ==
+
+= 1.0.1 =
+* Security: Standalone installer now rejects direct execution inside `wp-content/` with HTTP 403 Forbidden to protect Nginx servers against unauthorized calls.
+* Security: Package filenames now include a 12-character random cryptographic suffix preventing URL enumeration or guessing on Nginx setups.
+* Security: Removed static `installer.php` persistence from package storage; installer is safely served dynamically with clean download headers.
+* Fix: Replaced invalid `Fs::mkdir()` call with `Fs::ensure_dir()` in JobRunner to eliminate fatal error on clean WordPress environments.
+* Fix: Properly release and clean lock file on unexpected stage errors or job failures.
+* Fix: Background cron scheduler now reliably identifies manual jobs via `$job->option('type')` avoiding concurrent runner collisions.
+* Quality: 100% passed all 5 categories of the official WordPress Plugin Check (PCP).
 
 = 1.0.0 =
 * Initial public release.

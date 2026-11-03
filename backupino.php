@@ -3,7 +3,7 @@
  * Plugin Name:       Backupino
  * Plugin URI:        https://github.com/Backupino/documents
  * Description:       Fast, resumable WordPress backups, cloning and migration with a self-contained installer.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Backupino
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BACKUPINO_VERSION', '1.0.0' );
+define( 'BACKUPINO_VERSION', '1.0.1' );
 define( 'BACKUPINO_FILE', __FILE__ );
 define( 'BACKUPINO_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BACKUPINO_URL', plugin_dir_url( __FILE__ ) );
