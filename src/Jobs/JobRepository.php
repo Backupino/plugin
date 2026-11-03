@@ -56,6 +56,21 @@ final class JobRepository {
 
 		$job->id = $this->db->insert( Schema::JOBS_TABLE, $row );
 
+		if ( $job->id <= 0 ) {
+			if ( function_exists( 'dbDelta' ) || ( defined( 'ABSPATH' ) && file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) ) {
+				try {
+					Schema::install();
+					$job->id = $this->db->insert( Schema::JOBS_TABLE, $row );
+				} catch ( \Throwable $e ) {
+					// Fall through to validation check.
+				}
+			}
+		}
+
+		if ( $job->id <= 0 ) {
+			throw new \RuntimeException( 'Failed to register backup job: database record could not be created.' );
+		}
+
 		return $job;
 	}
 

@@ -218,7 +218,28 @@ final class RestController {
 		$job->payload['options']['files']    = (bool) $request->get_param( 'files' );
 		$job->payload['options']['database'] = (bool) $request->get_param( 'database' );
 
-		$plugin->jobs()->create( $job );
+		try {
+			$plugin->jobs()->create( $job );
+		} catch ( \Throwable $e ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'job_creation_failed',
+					'message' => $e->getMessage(),
+				),
+				500
+			);
+		}
+
+		if ( $job->id <= 0 ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'job_creation_failed',
+					'message' => __( 'Could not create backup job in database.', 'backupino' ),
+				),
+				500
+			);
+		}
+
 		$plugin->logger()->info( 'Job created.', array( 'job' => $job->id ) );
 
 		return new \WP_REST_Response( $this->present( $job ), 201 );
