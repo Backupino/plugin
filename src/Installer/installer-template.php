@@ -73,6 +73,18 @@ function respond( array $data, int $status = 200 ): void {
 }
 
 $backupino_dir          = (string) getcwd();
+
+// Quarantine any rogue server configuration files in destination directory that could crash LiteSpeed/Apache
+if ( is_file( $backupino_dir . '/.htaccess' ) && ! file_exists( $backupino_dir . '/.htaccess.backupino-orig' ) ) {
+	@rename( $backupino_dir . '/.htaccess', $backupino_dir . '/.htaccess.backupino-orig' );
+}
+if ( is_file( $backupino_dir . '/.user.ini' ) && ! file_exists( $backupino_dir . '/.user.ini.backupino-orig' ) ) {
+	@rename( $backupino_dir . '/.user.ini', $backupino_dir . '/.user.ini.backupino-orig' );
+}
+if ( is_file( $backupino_dir . '/php.ini' ) && ! file_exists( $backupino_dir . '/php.ini.backupino-orig' ) ) {
+	@rename( $backupino_dir . '/php.ini', $backupino_dir . '/php.ini.backupino-orig' );
+}
+
 $backupino_state_file   = $backupino_dir . '/backupino-install.json';
 $backupino_archive_name = isset( $backupino_payload['archive'] ) ? basename( (string) $backupino_payload['archive'] ) : '';
 $backupino_archive      = $backupino_dir . '/' . $backupino_archive_name;
@@ -569,6 +581,17 @@ switch ( $backupino_action ) {
 		break;
 
 	case 'import':
+		// Ensure any rogue server configuration extracted during files extraction is quarantined
+		if ( is_file( $backupino_dir . '/.htaccess' ) ) {
+			@rename( $backupino_dir . '/.htaccess', $backupino_dir . '/.htaccess.backupino-orig' );
+		}
+		if ( is_file( $backupino_dir . '/.user.ini' ) ) {
+			@rename( $backupino_dir . '/.user.ini', $backupino_dir . '/.user.ini.backupino-orig' );
+		}
+		if ( is_file( $backupino_dir . '/php.ini' ) ) {
+			@rename( $backupino_dir . '/php.ini', $backupino_dir . '/php.ini.backupino-orig' );
+		}
+
 		$sql_file = $backupino_dir . '/database.sql';
 
 		if ( ! is_readable( $sql_file ) ) {
@@ -649,6 +672,17 @@ switch ( $backupino_action ) {
 
 	case 'rewrite':
 		@set_time_limit( 180 );
+
+		if ( is_file( $backupino_dir . '/.htaccess' ) ) {
+			@rename( $backupino_dir . '/.htaccess', $backupino_dir . '/.htaccess.backupino-orig' );
+		}
+		if ( is_file( $backupino_dir . '/.user.ini' ) ) {
+			@rename( $backupino_dir . '/.user.ini', $backupino_dir . '/.user.ini.backupino-orig' );
+		}
+		if ( is_file( $backupino_dir . '/php.ini' ) ) {
+			@rename( $backupino_dir . '/php.ini', $backupino_dir . '/php.ini.backupino-orig' );
+		}
+
 		$db = $backupino_state->get( 'db' );
 
 		if ( ! is_array( $db ) ) {
@@ -884,15 +918,10 @@ switch ( $backupino_action ) {
 		$htaccess  = $backupino_dir . '/.htaccess';
 		$standard_htaccess = "# BEGIN WordPress\n<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]\nRewriteBase {$base_path}\nRewriteRule ^index\\.php$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . {$base_path}index.php [L]\n</IfModule>\n# END WordPress\n";
 
-		if ( is_file( $htaccess ) && is_writable( $htaccess ) ) {
-			$htaccess_backup = $backupino_dir . '/.htaccess.backupino-orig';
-			if ( ! file_exists( $htaccess_backup ) ) {
-				@copy( $htaccess, $htaccess_backup );
-			}
-			file_put_contents( $htaccess, $standard_htaccess );
-		} elseif ( ! file_exists( $htaccess ) && is_writable( $backupino_dir ) ) {
-			@file_put_contents( $htaccess, $standard_htaccess );
+		if ( is_file( $htaccess ) && ! file_exists( $backupino_dir . '/.htaccess.backupino-orig' ) ) {
+			@copy( $htaccess, $backupino_dir . '/.htaccess.backupino-orig' );
 		}
+		@file_put_contents( $htaccess, $standard_htaccess );
 
 		// Detect custom login URL configured by security plugins (WPS Hide Login, AIOWPS, iThemes, Perfmatters, Cerber)
 		$detected_login_slug = '';
@@ -1014,6 +1043,10 @@ switch ( $backupino_action ) {
 			$backupino_dir . '/backupino-package.json',
 			$backupino_state_file,
 			$backupino_archive,
+			$backupino_dir . '/wp-config.backupino-orig.php',
+			$backupino_dir . '/.htaccess.backupino-orig',
+			$backupino_dir . '/.user.ini.backupino-orig',
+			$backupino_dir . '/php.ini.backupino-orig',
 		);
 
 		$dir_files = @scandir( $backupino_dir );

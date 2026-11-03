@@ -274,6 +274,7 @@ final class FinalizeStage implements Stage {
 		}
 
 		$storage->put( (string) $state['installer'], $installer_key );
+		$storage->put( (string) $state['installer'], 'installer.php' );
 
 		$state['archive']   = $archive_key;
 		$state['installer'] = $installer_key;
