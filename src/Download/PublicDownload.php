@@ -219,7 +219,7 @@ final class PublicDownload {
 		}
 
 		$css_vars = sprintf(
-			'--primary:%s;--primary-hover:%s;--secondary:%s;--secondary-hover:%s;--both:%s;--both-hover:%s;--bg:%s;--card-bg:%s;--text:%s;--font:%s;',
+			'--bk-primary:%1$s;--bk-primary-hover:%2$s;--bk-secondary:%3$s;--bk-secondary-hover:%4$s;--bk-both:%5$s;--bk-both-hover:%6$s;--bk-bg:%7$s;--bk-card-bg:%8$s;--bk-text:%9$s;--bk-font:%10$s;--primary:%1$s;--primary-hover:%2$s;--secondary:%3$s;--secondary-hover:%4$s;--both:%5$s;--both-hover:%6$s;--bg:%7$s;--card-bg:%8$s;--text:%9$s;--font:%10$s;',
 			$tokens['primary_color'],
 			$tokens['primary_hover'],
 			$tokens['secondary_color'],
@@ -241,14 +241,20 @@ final class PublicDownload {
 		$custom_styles = (string) apply_filters( 'backupino_download_page_styles', '' );
 		$site_name     = get_bloginfo( 'name' );
 
-		$css_url = plugins_url( 'assets/css/public-download.css', dirname( __DIR__ ) . '/backupino.php' );
-		$js_url  = plugins_url( 'assets/js/public-download.js', dirname( __DIR__ ) . '/backupino.php' );
+		$css_url = defined( 'BACKUPINO_URL' )
+			? BACKUPINO_URL . 'assets/css/public-download.css'
+			: plugins_url( 'assets/css/public-download.css', dirname( dirname( __DIR__ ) ) . '/backupino.php' );
+		$js_url  = defined( 'BACKUPINO_URL' )
+			? BACKUPINO_URL . 'assets/js/public-download.js'
+			: plugins_url( 'assets/js/public-download.js', dirname( dirname( __DIR__ ) ) . '/backupino.php' );
 
 		wp_register_style( 'backupino-public-download', $css_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3' );
 		$inline_css = ':root { ' . $css_vars . ' } ' . $custom_styles;
 		wp_add_inline_style( 'backupino-public-download', $inline_css );
+		wp_enqueue_style( 'backupino-public-download' );
 
 		wp_register_script( 'backupino-public-download', $js_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3', true );
+		wp_enqueue_script( 'backupino-public-download' );
 
 		nocache_headers();
 		header( 'Content-Type: text/html; charset=UTF-8' );
@@ -273,7 +279,7 @@ final class PublicDownload {
 				<div class="info-box">
 					<div class="info-row">
 						<span class="info-label"><?php esc_html_e( 'Package Name', 'backupino' ); ?>:</span>
-						<span class="info-value"><?php echo esc_html( $archive_name ); ?></span>
+						<span class="info-value info-value-name" title="<?php echo esc_attr( $archive_name ); ?>"><?php echo esc_html( $archive_name ); ?></span>
 					</div>
 					<div class="info-row">
 						<span class="info-label"><?php esc_html_e( 'File Size', 'backupino' ); ?>:</span>
@@ -306,6 +312,10 @@ final class PublicDownload {
 						<li><?php esc_html_e( 'Upload both the .zip archive and installer.php into an empty directory on your destination server.', 'backupino' ); ?></li>
 						<li><?php esc_html_e( 'Open installer.php in your web browser and follow the on-screen steps.', 'backupino' ); ?></li>
 					</ol>
+				</div>
+
+				<div class="card-footer">
+					<span><?php esc_html_e( 'Powered by Backupino', 'backupino' ); ?></span>
 				</div>
 			</div>
 
