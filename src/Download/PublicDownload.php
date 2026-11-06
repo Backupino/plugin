@@ -172,7 +172,50 @@ final class PublicDownload {
 			backupino()->load_textdomain();
 		}
 
-		$is_rtl   = is_rtl();
+		$is_rtl    = is_rtl();
+		$default_tokens = array(
+			'primary_color'   => '#0284c7',
+			'primary_hover'   => '#0369a1',
+			'secondary_color' => '#0f172a',
+			'secondary_hover' => '#1e293b',
+			'both_color'      => '#16a34a',
+			'both_hover'      => '#15803d',
+			'bg_color'        => '#f1f5f9',
+			'card_bg'         => '#ffffff',
+			'text_color'      => '#1e293b',
+			'font_family'     => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+		);
+
+		/**
+		 * Filter the design tokens for the download landing page.
+		 *
+		 * @since 1.0.2
+		 * @param array<string,string> $tokens Design tokens map.
+		 */
+		$filtered_tokens = apply_filters( 'backupino_design_tokens', $default_tokens );
+		if ( ! is_array( $filtered_tokens ) ) {
+			$filtered_tokens = $default_tokens;
+		}
+
+		$tokens = array();
+		foreach ( $default_tokens as $t_key => $default_val ) {
+			$raw_val = isset( $filtered_tokens[ $t_key ] ) ? (string) $filtered_tokens[ $t_key ] : $default_val;
+			if ( 'font_family' === $t_key ) {
+				$clean = preg_replace( '/[^a-zA-Z0-9\s,\-\'"]/', '', $raw_val );
+				$tokens[ $t_key ] = ! empty( $clean ) ? $clean : $default_val;
+			} else {
+				$hex = sanitize_hex_color( $raw_val );
+				$tokens[ $t_key ] = ! empty( $hex ) ? $hex : $default_val;
+			}
+		}
+
+		/**
+		 * Filter additional inline CSS styles for the download landing page.
+		 *
+		 * @since 1.0.2
+		 * @param string $custom_styles Additional CSS code.
+		 */
+		$custom_styles = (string) apply_filters( 'backupino_download_page_styles', '' );
 		$site_name = get_bloginfo( 'name' );
 
 		nocache_headers();
@@ -186,11 +229,23 @@ final class PublicDownload {
 			<title><?php esc_html_e( 'Download Backup Package', 'backupino' ); ?> &mdash; <?php echo esc_html( $site_name ); ?></title>
 			<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Standalone public landing page without WordPress theme ?>
 			<style>
+				:root {
+					--bk-primary: <?php echo esc_attr( $tokens['primary_color'] ); ?>;
+					--bk-primary-hover: <?php echo esc_attr( $tokens['primary_hover'] ); ?>;
+					--bk-secondary: <?php echo esc_attr( $tokens['secondary_color'] ); ?>;
+					--bk-secondary-hover: <?php echo esc_attr( $tokens['secondary_hover'] ); ?>;
+					--bk-both: <?php echo esc_attr( $tokens['both_color'] ); ?>;
+					--bk-both-hover: <?php echo esc_attr( $tokens['both_hover'] ); ?>;
+					--bk-bg: <?php echo esc_attr( $tokens['bg_color'] ); ?>;
+					--bk-card-bg: <?php echo esc_attr( $tokens['card_bg'] ); ?>;
+					--bk-text: <?php echo esc_attr( $tokens['text_color'] ); ?>;
+					--bk-font: <?php echo esc_attr( $tokens['font_family'] ); ?>;
+				}
 				*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 				body {
-					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-					background: #f1f5f9;
-					color: #1e293b;
+					font-family: var(--bk-font);
+					background: var(--bk-bg);
+					color: var(--bk-text);
 					display: flex;
 					align-items: center;
 					justify-content: center;
@@ -198,7 +253,7 @@ final class PublicDownload {
 					padding: 24px;
 				}
 				.card {
-					background: #ffffff;
+					background: var(--bk-card-bg);
 					border: 1px solid #e2e8f0;
 					border-radius: 12px;
 					box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
@@ -250,12 +305,12 @@ final class PublicDownload {
 					border: none;
 					transition: all 0.15s ease;
 				}
-				.btn-primary { background: #0284c7; color: #ffffff; }
-				.btn-primary:hover { background: #0369a1; }
-				.btn-secondary { background: #0f172a; color: #ffffff; }
-				.btn-secondary:hover { background: #1e293b; }
-				.btn-both { background: #16a34a; color: #ffffff; }
-				.btn-both:hover { background: #15803d; }
+				.btn-primary { background: var(--bk-primary); color: #ffffff; }
+				.btn-primary:hover { background: var(--bk-primary-hover); }
+				.btn-secondary { background: var(--bk-secondary); color: #ffffff; }
+				.btn-secondary:hover { background: var(--bk-secondary-hover); }
+				.btn-both { background: var(--bk-both); color: #ffffff; }
+				.btn-both:hover { background: var(--bk-both-hover); }
 				.instructions {
 					margin-top: 24px;
 					padding-top: 20px;
@@ -265,6 +320,9 @@ final class PublicDownload {
 					line-height: 1.6;
 					text-align: <?php echo $is_rtl ? 'right' : 'left'; ?>;
 				}
+				<?php if ( '' !== $custom_styles ) : ?>
+				<?php echo wp_strip_all_tags( $custom_styles ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php endif; ?>
 			</style>
 		</head>
 		<body>

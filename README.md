@@ -4,7 +4,7 @@
 ### Fast, Resumable WordPress Backup, Cloning & Easy Migration
 **A next-generation WordPress migration and disaster recovery platform with a self-contained offline installer**
 
-[![Version](https://img.shields.io/badge/version-1.0.1--stable-blue.svg?style=for-the-badge)](https://github.com/Backupino/plugin)
+[![Version](https://img.shields.io/badge/version-1.0.2--stable-blue.svg?style=for-the-badge)](https://github.com/Backupino/plugin)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%20--%207.1-21759b.svg?style=for-the-badge&logo=wordpress)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%20--%208.4-777bb4.svg?style=for-the-badge&logo=php)](https://php.net)
 [![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-2.0.html)

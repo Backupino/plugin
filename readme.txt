@@ -4,7 +4,7 @@ Tags: backup, restore, migration, clone, jalali
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,6 +100,9 @@ No. Notifications are completely optional and disabled by default. If you do not
 
 == Upgrade Notice ==
 
+= 1.0.2 =
+Feature and consistency update. Adds design token hooks for download page theming, unifies installer locale fallbacks, and standardizes file line endings.
+
 = 1.0.1 =
 Security and stability maintenance release. Adds wp-content execution protection for standalone installer, cryptographically random package name suffixes for Nginx safety, defensive directory handling in JobRunner, and proper job type option handling.
 
@@ -107,6 +110,11 @@ Security and stability maintenance release. Adds wp-content execution protection
 Initial production release of Backupino. Includes resumable backups, standalone installer, permanent login-gated download link, Telegram/Bale notifications, monthly scheduling with Jalali support, and 100% offline-first architecture.
 
 == Changelog ==
+
+= 1.0.2 =
+* Feature: Added `backupino_design_tokens` and `backupino_download_page_styles` extension hooks for public download landing page customization.
+* Consistency: Unified standalone installer fallback locale to `en_US` across all extraction and notification stages.
+* Hardening: Fully normalized line endings to LF across all plugin files to prevent mixed line ending warnings.
 
 = 1.0.1 =
 * Security: Standalone installer now rejects direct execution inside `wp-content/` with HTTP 403 Forbidden to protect Nginx servers against unauthorized calls.

@@ -828,7 +828,7 @@ switch ( $backupino_action ) {
 				);
 
 				// Enforce site language based on the backup source locale
-				$target_locale = ! empty( $backupino_payload['locale'] ) ? (string) $backupino_payload['locale'] : 'fa_IR';
+				$target_locale = ! empty( $backupino_payload['locale'] ) ? (string) $backupino_payload['locale'] : 'en_US';
 				$esc_locale    = $connection->escape( $target_locale );
 				$connection->query(
 					"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('WPLANG', '{$esc_locale}', 'yes')"
@@ -1008,7 +1008,7 @@ switch ( $backupino_action ) {
 			$restore_date = gmdate( 'Y-m-d H:i' );
 			$tpl          = ! empty( $notif['msg_restore_template'] ) ? (string) $notif['msg_restore_template'] : '';
 			if ( '' === trim( $tpl ) ) {
-				$site_locale = ! empty( $backupino_payload['locale'] ) ? (string) $backupino_payload['locale'] : 'en';
+				$site_locale = ! empty( $backupino_payload['locale'] ) ? (string) $backupino_payload['locale'] : 'en_US';
 				if ( 0 === strpos( $site_locale, 'fa' ) ) {
 					$tpl = "🎉 بازگردانی وب‌سایت با موفقیت انجام شد:\n🔹 {site}\n\n   🌐 آدرس جدید سایت: {url}\n   📅 تاریخ بازگردانی: {date}\n\n🔑 ورود به مدیریت وردپرس:\n<a href=\"{admin_url}\">ورود به پیشخوان وردپرس</a>";
 				} else {
