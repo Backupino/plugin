@@ -69,9 +69,14 @@ final class LocalStorage implements Storage {
 	 * {@inheritDoc}
 	 */
 	public function put( string $local_path, string $remote_key ): bool {
-		Fs::ensure_dir( $this->directory );
-
 		$target = $this->path( $remote_key );
+
+		if ( preg_match( '/\.(php\d*|phtml|phar)$/i', $remote_key ) || preg_match( '/\.(php\d*|phtml|phar)$/i', $target ) ) {
+			$this->error = __( 'Executable files cannot be stored in backup storage.', 'backupino' );
+			return false;
+		}
+
+		Fs::ensure_dir( $this->directory );
 		$parent = dirname( $target );
 
 		Fs::ensure_dir( $parent );

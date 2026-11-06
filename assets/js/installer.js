@@ -19,6 +19,7 @@
 			back_btn: "← Back",
 			package_lbl: "Package",
 			built_lbl: "built",
+			installer_password: "Installer Password",
 			database: "Database",
 			db_host: "Host",
 			db_port: "Port",
@@ -55,6 +56,7 @@
 			back_btn: "← مرحله قبل",
 			package_lbl: "بسته پشتیبان",
 			built_lbl: "ساخته شده در",
+			installer_password: "رمز عبور نصاب",
 			database: "پایگاه داده (دیتابیس)",
 			db_host: "میزبان دیتابیس (Host)",
 			db_port: "پورت (اختیاری)",
@@ -267,6 +269,7 @@
 			};
 
 			var payload = {
+				installer_password: getVal("installer_password"),
 				db_host: getVal("db_host"),
 				db_port: getVal("db_port"),
 				db_name: getVal("db_name"),

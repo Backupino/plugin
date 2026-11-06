@@ -121,6 +121,7 @@ if ( 'index' === $backupino_action ) {
 	<section id="step2" class="hidden">
 		<h2 style="font-size:16px;margin:0 0 10px" data-i18n="database">Database</h2>
 		<form id="dbform" autocomplete="off">
+			' . ( '' !== (string) ( $backupino_payload['password'] ?? '' ) ? '<label for="installer_password" data-i18n="installer_password">Installer Password</label><input type="password" id="installer_password" name="installer_password" required placeholder="Enter package password">' : '' ) . '
 			<div class="grid">
 				<div><label for="db_host" data-i18n="db_host">Host</label><input id="db_host" name="db_host" value="localhost" required></div>
 				<div><label for="db_port" data-i18n="db_port">Port</label><input id="db_port" name="db_port" value="" placeholder="3306"></div>
@@ -180,6 +181,10 @@ if ( 'index' === $backupino_action ) {
 header( 'Content-Type: application/json; charset=utf-8' );
 header( 'Cache-Control: no-store, no-cache, must-revalidate' );
 header( 'X-Robots-Tag: noindex, nofollow' );
+
+if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
+	respond( array( 'ok' => false, 'error' => 'Method not allowed.' ), 405 );
+}
 
 $backupino_sent_token = isset( $_REQUEST['token'] ) ? (string) $_REQUEST['token'] : '';
 
@@ -271,6 +276,7 @@ switch ( $backupino_action ) {
 		respond(
 			array(
 				'ok'           => true,
+				'db'           => $config['name'],
 				'message'      => sprintf( 'Database connected (%d tables existing).', count( $tables ) ),
 				'tables_found' => count( $tables ),
 			)

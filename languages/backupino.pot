@@ -603,10 +603,6 @@ msgstr ""
 msgid "How to restore or migrate:"
 msgstr ""
 
-#: free/templates/settings.php:541
-msgid "In Free edition, monthly execution triggers on the 1st of each Persian/Gregorian month based on site language."
-msgstr ""
-
 #: free/templates/settings.php:198
 msgid "Inactive"
 msgstr ""
@@ -766,20 +762,12 @@ msgstr ""
 msgid "Once monthly (first day of the month)"
 msgstr ""
 
-#: free/src/Cron/Scheduler.php:67
-msgid "Once weekly"
-msgstr ""
-
 #: free/src/Download/PublicDownload.php:293
 msgid "Open installer.php in your web browser and follow the on-screen steps."
 msgstr ""
 
 #: free/templates/settings.php:197
 msgid "OpenSSL"
-msgstr ""
-
-#: free/src/Core/Compatibility.php:98
-msgid "OpenSSL is missing: S3 uploads that require HTTPS signatures and encrypted packages will be unavailable."
 msgstr ""
 
 #: free/templates/dashboard.php:176
@@ -858,10 +846,6 @@ msgstr ""
 
 #: free/templates/settings.php:324
 msgid "Primary Destination Driver"
-msgstr ""
-
-#: free/templates/settings.php:325
-msgid "Primary storage destination for completed packages. In the Free edition, local protected storage is used."
 msgstr ""
 
 #: free/templates/dashboard.php:285

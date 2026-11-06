@@ -168,7 +168,9 @@ final class FinalizeStage implements Stage {
 
 		$wp_config_file = Str::untrailingslash( $context->paths()->root() ) . '/wp-config.php';
 		if ( is_file( $wp_config_file ) && is_readable( $wp_config_file ) ) {
-			$writer->add_file( $wp_config_file, 'wp-config.backupino-orig.php' );
+			$raw_config = (string) file_get_contents( $wp_config_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+			$redacted   = \Backupino\Installer\ConfigWriter::redact_secrets( $raw_config );
+			$writer->add_from_string( 'backupino-wp-config.tpl', $redacted );
 		}
 
 		$meta = array(

@@ -114,6 +114,19 @@ final class PublicDownload {
 
 		// Direct streaming requests
 		if ( 'installer' === $file_type ) {
+			$builder = new \Backupino\Backup\InstallerBuilder();
+			$code    = $builder->build_for_package( $archive_path, $plugin->settings() );
+			if ( '' !== $code ) {
+				$plugin->logger()->info(
+					'Installer dynamically streamed through download link.',
+					array(
+						'user' => get_current_user_id(),
+						'file' => 'installer.php',
+					)
+				);
+				Fs::stream_string_download( $code, 'installer.php' );
+			}
+
 			if ( is_readable( $installer_path ) ) {
 				$plugin->logger()->info(
 					'Installer downloaded through download link.',
@@ -168,10 +181,6 @@ final class PublicDownload {
 		$archive_url   = $link->url( $target, 'archive' );
 		$installer_url = $link->url( $target, 'installer' );
 
-		if ( function_exists( 'backupino' ) ) {
-			backupino()->load_textdomain();
-		}
-
 		$is_rtl    = is_rtl();
 		$default_tokens = array(
 			'primary_color'   => '#0284c7',
@@ -209,6 +218,20 @@ final class PublicDownload {
 			}
 		}
 
+		$css_vars = sprintf(
+			'--primary:%s;--primary-hover:%s;--secondary:%s;--secondary-hover:%s;--both:%s;--both-hover:%s;--bg:%s;--card-bg:%s;--text:%s;--font:%s;',
+			$tokens['primary_color'],
+			$tokens['primary_hover'],
+			$tokens['secondary_color'],
+			$tokens['secondary_hover'],
+			$tokens['both_color'],
+			$tokens['both_hover'],
+			$tokens['bg_color'],
+			$tokens['card_bg'],
+			$tokens['text_color'],
+			$tokens['font_family']
+		);
+
 		/**
 		 * Filter additional inline CSS styles for the download landing page.
 		 *
@@ -216,7 +239,16 @@ final class PublicDownload {
 		 * @param string $custom_styles Additional CSS code.
 		 */
 		$custom_styles = (string) apply_filters( 'backupino_download_page_styles', '' );
-		$site_name = get_bloginfo( 'name' );
+		$site_name     = get_bloginfo( 'name' );
+
+		$css_url = plugins_url( 'assets/css/public-download.css', dirname( __DIR__ ) . '/backupino.php' );
+		$js_url  = plugins_url( 'assets/js/public-download.js', dirname( __DIR__ ) . '/backupino.php' );
+
+		wp_register_style( 'backupino-public-download', $css_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3' );
+		$inline_css = ':root { ' . $css_vars . ' } ' . $custom_styles;
+		wp_add_inline_style( 'backupino-public-download', $inline_css );
+
+		wp_register_script( 'backupino-public-download', $js_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3', true );
 
 		nocache_headers();
 		header( 'Content-Type: text/html; charset=UTF-8' );
@@ -227,8 +259,8 @@ final class PublicDownload {
 			<meta charset="UTF-8">
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<title><?php esc_html_e( 'Download Backup Package', 'backupino' ); ?> &mdash; <?php echo esc_html( $site_name ); ?></title>
-			<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Standalone public landing page without WordPress theme ?>
-			
+			<?php wp_print_styles( 'backupino-public-download' ); ?>
+		</head>
 		<body>
 			<div class="card">
 				<div class="logo-badge">
@@ -254,7 +286,7 @@ final class PublicDownload {
 				</div>
 
 				<div class="buttons-stack">
-					<button type="button" class="btn btn-both" onclick="downloadBoth()">
+					<button type="button" class="btn btn-both" id="backupino-download-both" data-archive-url="<?php echo esc_url( $archive_url ); ?>" data-installer-url="<?php echo esc_url( $installer_url ); ?>">
 						<span>📥</span>
 						<span><?php esc_html_e( 'Download Archive + Installer (Both)', 'backupino' ); ?></span>
 					</button>
@@ -277,7 +309,7 @@ final class PublicDownload {
 				</div>
 			</div>
 
-			
+			<?php wp_print_scripts( 'backupino-public-download' ); ?>
 		</body>
 		</html>
 		<?php

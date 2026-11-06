@@ -325,7 +325,7 @@ final class UrlRewrite {
 	 * @return string
 	 */
 	private function quoted( string $value ): string {
-		if ( is_numeric( $value ) ) {
+		if ( ctype_digit( $value ) ) {
 			return $value;
 		}
 

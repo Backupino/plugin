@@ -153,16 +153,18 @@ final class Extractor {
 				@mkdir( $parent, 0755, true );
 			}
 
+			$normalized = ltrim( str_replace( '\\', '/', $name ), '/' );
+			if ( in_array( $normalized, array( 'backupino-wp-config.tpl', 'wp-config.php', 'wp-config.backupino-orig.php' ), true ) ) {
+				continue;
+			}
+
 			if ( $this->zip->extractTo( $this->directory, $name ) ) {
-				$normalized = ltrim( str_replace( '\\', '/', $name ), '/' );
 				if ( '.htaccess' === $normalized ) {
 					@rename( $target, $this->directory . '/.htaccess.backupino-orig' );
 				} elseif ( '.user.ini' === $normalized ) {
 					@rename( $target, $this->directory . '/.user.ini.backupino-orig' );
 				} elseif ( 'php.ini' === $normalized ) {
 					@rename( $target, $this->directory . '/php.ini.backupino-orig' );
-				} elseif ( 'wp-config.php' === $normalized ) {
-					@rename( $target, $this->directory . '/wp-config.backupino-orig.php' );
 				}
 				++$done;
 			}

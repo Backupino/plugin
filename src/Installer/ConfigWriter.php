@@ -27,7 +27,10 @@ final class ConfigWriter {
 	 */
 	public static function redact_secrets( string $content ): string {
 		$sensitive_constants = array(
+			'DB_NAME',
+			'DB_USER',
 			'DB_PASSWORD',
+			'DB_HOST',
 			'AUTH_KEY',
 			'SECURE_AUTH_KEY',
 			'LOGGED_IN_KEY',
@@ -77,7 +80,13 @@ final class ConfigWriter {
 		foreach ( $constants as $key => $val ) {
 			$pattern = '/(define\s*\(\s*[\'"]' . preg_quote( $key, '/' ) . '[\'"]\s*,\s*)[\'"].*?[\'"](\s*\)\s*;)/i';
 			if ( preg_match( $pattern, $content ) ) {
-				$content = (string) preg_replace( $pattern, '${1}\'' . addcslashes( $val, "'\\" ) . '\'${2}', $content );
+				$content = (string) preg_replace_callback(
+					$pattern,
+					static function ( array $m ) use ( $val ): string {
+						return $m[1] . '\'' . addcslashes( $val, "'\\" ) . '\'' . $m[2];
+					},
+					$content
+				);
 			} else {
 				$insert       = "\ndefine( '" . $key . "', '" . addcslashes( $val, "'\\" ) . "' );\n";
 				$settings_pos = strpos( $content, 'wp-settings.php' );
@@ -99,7 +108,13 @@ final class ConfigWriter {
 		foreach ( $salts as $key => $val ) {
 			$pattern = '/(define\s*\(\s*[\'"]' . preg_quote( $key, '/' ) . '[\'"]\s*,\s*)[\'"].*?[\'"](\s*\)\s*;)/i';
 			if ( preg_match( $pattern, $content ) ) {
-				$content = (string) preg_replace( $pattern, '${1}\'' . addcslashes( $val, "'\\" ) . '\'${2}', $content );
+				$content = (string) preg_replace_callback(
+					$pattern,
+					static function ( array $m ) use ( $val ): string {
+						return $m[1] . '\'' . addcslashes( $val, "'\\" ) . '\'' . $m[2];
+					},
+					$content
+				);
 			} else {
 				$insert       = "\ndefine( '" . $key . "', '" . addcslashes( $val, "'\\" ) . "' );\n";
 				$settings_pos = strpos( $content, 'wp-settings.php' );
@@ -119,16 +134,29 @@ final class ConfigWriter {
 		if ( '' !== $prefix ) {
 			$pattern = '/(\$table_prefix\s*=\s*)[\'"].*?[\'"](\s*;)/i';
 			if ( preg_match( $pattern, $content ) ) {
-				$content = (string) preg_replace( $pattern, '${1}\'' . addcslashes( $prefix, "'\\" ) . '\'${2}', $content );
+				$content = (string) preg_replace_callback(
+					$pattern,
+					static function ( array $m ) use ( $prefix ): string {
+						return $m[1] . '\'' . addcslashes( $prefix, "'\\" ) . '\'' . $m[2];
+					},
+					$content
+				);
 			}
 		}
 
 		if ( '' !== $new_url ) {
 			$url_constants = array( 'WP_HOME', 'WP_SITEURL' );
+			$trimmed_url   = rtrim( $new_url, '/' );
 			foreach ( $url_constants as $url_const ) {
 				$pattern = '/(define\s*\(\s*[\'"]' . preg_quote( $url_const, '/' ) . '[\'"]\s*,\s*)[\'"].*?[\'"](\s*\)\s*;)/i';
 				if ( preg_match( $pattern, $content ) ) {
-					$content = (string) preg_replace( $pattern, '${1}\'' . addcslashes( rtrim( $new_url, '/' ), "'\\" ) . '\'${2}', $content );
+					$content = (string) preg_replace_callback(
+						$pattern,
+						static function ( array $m ) use ( $trimmed_url ): string {
+							return $m[1] . '\'' . addcslashes( $trimmed_url, "'\\" ) . '\'' . $m[2];
+						},
+						$content
+					);
 				}
 			}
 		}

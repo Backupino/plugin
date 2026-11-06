@@ -237,15 +237,11 @@ final class Settings {
 		$clean['runtime']['rows_per_tick']  = min( 20000, max( 50, (int) $clean['runtime']['rows_per_tick'] ) );
 		$clean['schedule']['keep']          = min( 100, max( 1, (int) $clean['schedule']['keep'] ) );
 
-		$allowed_drivers   = (array) apply_filters( 'backupino_storage_drivers', array( 'local' ) );
-		if ( ! in_array( $clean['storage']['driver'], $allowed_drivers, true ) ) {
+		if ( 'local' !== $clean['storage']['driver'] ) {
 			$clean['storage']['driver'] = 'local';
 		}
 
-		$allowed_intervals = (array) apply_filters( 'backupino_schedule_intervals', array( 'monthly' ) );
-		if ( ! in_array( $clean['schedule']['interval'], $allowed_intervals, true ) ) {
-			$clean['schedule']['interval'] = 'monthly';
-		}
+		$clean['schedule']['interval'] = 'monthly';
 
 		if ( ! in_array( $clean['notify']['service'], array( 'none', 'telegram', 'bale' ), true ) ) {
 			$clean['notify']['service'] = 'none';

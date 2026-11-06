@@ -2,10 +2,9 @@
 /**
  * Storage factory.
  *
- * The free plugin knows exactly one destination: this server. Every other
- * driver (S3, cloud storage, download hosts) is registered by an add-on
- * through the `backupino_storage_drivers` filter, so no premium code ever
- * lives inside the free plugin.
+ * The plugin manages storage destinations. The default destination is local
+ * server storage. Additional drivers can be registered through
+ * the `backupino_storage_drivers` filter.
  *
  * @package Backupino
  */
@@ -128,8 +127,8 @@ final class StorageManager {
 	}
 
 	/**
-	 * Driver by id, falling back to local storage when the add-on that
-	 * registered it is not active (for example after a license expires).
+	 * Driver by id, falling back to local storage when the driver
+	 * is not available.
 	 *
 	 * @param string $id Driver id.
 	 * @return Storage

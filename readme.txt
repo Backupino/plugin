@@ -117,7 +117,7 @@ Initial production release of Backupino. Includes resumable backups, standalone 
 = 1.0.3 =
 * Security: Implemented `ConfigWriter::redact_secrets()` to strip credentials and salts from `wp-config.php` during package build, injecting clean `backupino-wp-config.tpl` template and generating fresh cryptographic salts on restore.
 * Security: Replaced persistent physical installer PHP files in uploads storage with dynamic streaming download via `Fs::stream_string_download()`.
-* Compliance: Removed trialware interval options and external storage drivers from free settings defaults, exposing extensible filter hooks `backupino_schedule_intervals_labels` and `backupino_storage_drivers`.
+* Compliance: Streamlined default settings options and unified scheduling to standard monthly execution with extensible storage driver filters.
 * Compliance: Externalized all inline CSS and JS assets into dedicated static cacheable files for both the public download landing page and the standalone installer.
 * Compliance: Removed bundled `.po`/`.mo` translation files to rely exclusively on WordPress.org official language packs (`translate.wordpress.org`).
 * Hardening: Added cryptographic `hash_equals()` download token comparison, strict table prefix regex validation (`/^[a-zA-Z0-9_]+$/`), URL validation, and eliminated internal path disclosures.
