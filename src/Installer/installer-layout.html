@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Backupino Standalone Installer</title>
+<style>
+/* __INSTALLER_CSS__ */
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="header-row">
+      <h1>
+        <span id="txt-brand">Backupino</span>
+        <span class="badge-tag">Installer</span>
+      </h1>
+      <div class="lang-switch" id="lang-switch">
+        <button type="button" class="lang-btn active" data-lang="en">English</button>
+        <button type="button" class="lang-btn" data-lang="fa">فارسی</button>
+      </div>
+    </div>
+    <p class="lead" id="txt-lead">Restoring your site &mdash; step by step.</p>
+    <div class="steps" id="steps">
+      <span data-step="1" id="step-nav-1" class="active">1. Environment</span>
+      <span data-step="2" id="step-nav-2">2. Database</span>
+      <span data-step="3" id="step-nav-3">3. Files</span>
+      <span data-step="4" id="step-nav-4">4. Database import</span>
+      <span data-step="5" id="step-nav-5">5. URLs</span>
+      <span data-step="6" id="step-nav-6">6. Config</span>
+    </div>
+    <div id="backupino-root" data-config="__CONFIG_JSON__">
+<!-- __BODY__ -->
+    </div>
+  </div>
+</div>
+<script>
+/* __INSTALLER_JS__ */
+</script>
+</body>
+</html>

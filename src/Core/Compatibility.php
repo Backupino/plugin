@@ -97,7 +97,7 @@ final class Compatibility {
 		}
 
 		if ( ! extension_loaded( 'openssl' ) ) {
-			$warnings[] = __( 'OpenSSL is missing: S3 uploads that require HTTPS signatures and encrypted packages will be unavailable.', 'backupino' );
+			$warnings[] = __( 'OpenSSL extension is missing: secure HTTPS communications will be unavailable.', 'backupino' );
 		}
 
 		if ( ! extension_loaded( 'mbstring' ) ) {

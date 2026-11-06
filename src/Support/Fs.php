@@ -56,7 +56,7 @@ final class Fs {
 	public static function protect( string $dir ): void {
 		$htaccess   = $dir . '/.htaccess';
 		$web_config = $dir . '/web.config';
-		$index      = $dir . '/index.php';
+		$index      = $dir . '/index.html';
 
 		if ( ! file_exists( $htaccess ) ) {
 			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
@@ -92,7 +92,7 @@ final class Fs {
 
 		if ( ! file_exists( $index ) ) {
 			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-			@file_put_contents( $index, "<?php\n// Silence is golden.\n", LOCK_EX );
+			@file_put_contents( $index, "<!-- Silence is golden. -->\n", LOCK_EX );
 		}
 	}
 
@@ -251,6 +251,30 @@ final class Fs {
 	 * @param string $download_name Optional custom filename for the Content-Disposition header.
 	 * @return void
 	 */
+	/**
+	 * Stream in-memory string content as an attachment download and stop execution.
+	 *
+	 * @param string $content  File content.
+	 * @param string $filename Filename for Content-Disposition header.
+	 * @return void
+	 */
+	public static function stream_string_download( string $content, string $filename ): void {
+		$filename = str_replace( array( '"', "\r", "\n" ), '', $filename );
+
+		nocache_headers();
+		header( 'Content-Type: application/octet-stream' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Content-Length: ' . (string) strlen( $content ) );
+		header( 'X-Accel-Buffering: no' );
+
+		while ( ob_get_level() > 0 ) {
+			ob_end_flush();
+		}
+
+		echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		exit;
+	}
+
 	public static function stream_download( string $path, string $download_name = '' ): void {
 		if ( ! is_readable( $path ) ) {
 			wp_die(

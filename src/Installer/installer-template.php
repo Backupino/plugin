@@ -100,8 +100,10 @@ $backupino_action       = isset( $_REQUEST['action'] ) ? (string) preg_replace( 
 
 // Auto-detect current host and base URL
 $backupino_scheme   = ( ! empty( $_SERVER['HTTPS'] ) && 'off' !== $_SERVER['HTTPS'] ) ? 'https' : 'http';
-$backupino_host     = isset( $_SERVER['HTTP_HOST'] ) ? (string) $_SERVER['HTTP_HOST'] : 'localhost';
-$backupino_script   = isset( $_SERVER['SCRIPT_NAME'] ) ? (string) $_SERVER['SCRIPT_NAME'] : '';
+$backupino_raw_host = isset( $_SERVER['HTTP_HOST'] ) ? (string) $_SERVER['HTTP_HOST'] : 'localhost';
+$backupino_host     = (string) preg_replace( '/[^a-zA-Z0-9.:\-_]/', '', $backupino_raw_host );
+$backupino_raw_scr  = isset( $_SERVER['SCRIPT_NAME'] ) ? (string) $_SERVER['SCRIPT_NAME'] : '';
+$backupino_script   = (string) preg_replace( '/[^a-zA-Z0-9.\/_\-]/', '', $backupino_raw_scr );
 $backupino_subpath  = rtrim( str_replace( '\\', '/', dirname( $backupino_script ) ), '/' );
 $backupino_auto_url = $backupino_scheme . '://' . $backupino_host . ( '/' === $backupino_subpath ? '' : $backupino_subpath );
 
@@ -139,7 +141,7 @@ if ( 'index' === $backupino_action ) {
 			<p class="err" id="error2"></p>
 			<div style="display:flex;gap:10px;align-items:center;margin-top:16px;">
 				<button type="button" class="ghost" id="back-to-step1" data-i18n="back_btn" style="margin-top:0;">&larr; Back</button>
-				<button type="submit" id="connect" data-i18n="connect_btn" style="margin-top:0;">Connect &amp; continue</button>
+				<button type="button" id="connect" data-i18n="connect_btn" style="margin-top:0;">Connect &amp; continue</button>
 			</div>
 		</form>
 	</section>
@@ -163,306 +165,15 @@ if ( 'index' === $backupino_action ) {
 		</div>
 		<p class="err" id="error4"></p>
 	</section>
-</div>
-<script>
-(function () {
-	var currentLang = ' . ( ( isset( $backupino_payload['locale'] ) && 0 === strpos( (string) $backupino_payload['locale'], 'fa' ) ) ? '"fa"' : '"en"' ) . ';
-	var currentStep = 1;
-	var envPasses = ' . ( Env::passes( $backupino_checks ) ? 'true' : 'false' ) . ';
-	var I18N = {
-		en: {
-			lead: "Restoring your site — step by step.",
-			env_check: "Environment check",
-			continue: "Continue",
-			back_btn: "← Back",
-			package_lbl: "Package",
-			built_lbl: "built",
-			database: "Database",
-			db_host: "Host",
-			db_port: "Port",
-			db_name: "Database name",
-			db_user: "Username",
-			db_pass: "Password",
-			prefix: "Table prefix",
-			target_path: "Target Path",
-			new_url: "New site URL",
-			new_url_hint: "Auto-detected from current domain and path.",
-			connect_btn: "Connect & continue",
-			working: "Working…",
-			ready_title: "✓ Your site is ready",
-			cleanup_btn: "Delete installer files & Login",
-			open_admin: "Open wp-login.php →",
-			empty_db_lbl: "Empty existing database tables before import (Recommended)",
-			ext_files: "Extracting files",
-			imp_db: "Importing database",
-			rew_urls: "Rewriting URLs",
-			cfg_wp: "Configuring WordPress",
-			do_not_close_hint: "Please keep this browser window open and do not refresh or navigate away until the restoration is completely finished.",
-			cleaned: "Installer files deleted. Redirecting to login…",
-			s1: "1. Environment",
-			s2: "2. Database",
-			s3: "3. Files",
-			s4: "4. Database import",
-			s5: "5. URLs",
-			s6: "6. Done"
-		},
-		fa: {
-			lead: "بازیابی وب‌سایت شما — گام‌به‌گام و آسان.",
-			env_check: "بررسی نیازمندی‌های محیط سرور",
-			continue: "ادامه و مرحله بعد",
-			back_btn: "← مرحله قبل",
-			package_lbl: "بسته پشتیبان",
-			built_lbl: "ساخته شده در",
-			database: "پایگاه داده (دیتابیس)",
-			db_host: "میزبان دیتابیس (Host)",
-			db_port: "پورت (اختیاری)",
-			db_name: "نام دیتابیس",
-			db_user: "نام کاربری دیتابیس",
-			db_pass: "رمز عبور دیتابیس",
-			prefix: "پیشوند جداول",
-			target_path: "مسیر استخراج در سرور",
-			new_url: "آدرس جدید سایت (URL)",
-			new_url_hint: "به صورت خودکار بر اساس دامنه و پوشه فعلی شناسایی شد.",
-			connect_btn: "اتصال به دیتابیس و شروع بازیابی",
-			working: "در حال پردازش…",
-			ready_title: "✓ وبسایت شما با موفقیت بازیابی شد",
-			cleanup_btn: "حذف فایل‌های نصبی و ورود به مدیریت",
-			open_admin: "ورود مستقیم به wp-login.php ←",
-			empty_db_lbl: "پاک‌سازی و حذف جداول موجود در دیتابیس قبل از درون‌ریزی (پیشنهادی)",
-			ext_files: "در حال استخراج فایل‌ها",
-			imp_db: "در حال درون‌ریزی دیتابیس",
-			rew_urls: "در حال به‌روزرسانی آدرس‌ها و جداول",
-			cfg_wp: "پیکربندی وردپرس",
-			do_not_close_hint: "لطفاً این پنجره مرورگر را تا تکمیل کامل بازگردانی نبندید و از بازآوری (رفرش) صفحه خودداری فرمایید.",
-			cleaned: "فایل‌های نصبی با موفقیت حذف شدند. در حال هدایت به صفحه ورود…",
-			s1: "۱. نیازمندی‌ها",
-			s2: "۲. دیتابیس",
-			s3: "۳. استخراج فایل‌ها",
-			s4: "۴. درون‌ریزی داده",
-			s5: "۵. بازنویسی لینک‌ها",
-			s6: "۶. پایان"
-		}
-	};
+</div>';
 
-	function setLanguage(lang) {
-		currentLang = lang;
-		document.documentElement.setAttribute("lang", lang);
-		document.documentElement.setAttribute("dir", lang === "fa" ? "rtl" : "ltr");
+	$config_data = array(
+		'token'     => $backupino_token,
+		'locale'    => (string) ( $backupino_payload['locale'] ?? 'en_US' ),
+		'envPasses' => Env::passes( $backupino_checks ),
+	);
 
-		var btns = document.querySelectorAll(".lang-btn");
-		for (var i = 0; i < btns.length; i++) {
-			btns[i].classList.toggle("active", btns[i].getAttribute("data-lang") === lang);
-		}
-
-		var elements = document.querySelectorAll("[data-i18n]");
-		for (var j = 0; j < elements.length; j++) {
-			var key = elements[j].getAttribute("data-i18n");
-			if (I18N[lang] && I18N[lang][key]) {
-				elements[j].textContent = I18N[lang][key];
-			}
-		}
-
-		var lead = document.getElementById("txt-lead");
-		if (lead && I18N[lang].lead) {
-			lead.textContent = I18N[lang].lead;
-		}
-
-		var stepKeys = ["s1", "s2", "s3", "s4", "s5", "s6"];
-		for (var k = 0; k < stepKeys.length; k++) {
-			var stepEl = document.getElementById("step-nav-" + (k + 1));
-			if (stepEl && I18N[lang][stepKeys[k]]) {
-				stepEl.textContent = I18N[lang][stepKeys[k]];
-			}
-		}
-	}
-
-	var langSwitcher = document.getElementById("lang-switch");
-	if (langSwitcher) {
-		langSwitcher.addEventListener("click", function (e) {
-			var target = e.target;
-			if (target && target.hasAttribute("data-lang")) {
-				setLanguage(target.getAttribute("data-lang"));
-			}
-		});
-	}
-
-	if (currentLang === "fa") {
-		setLanguage("fa");
-	}
-
-	function updateStepNav(activeStepIndex) {
-		currentStep = activeStepIndex;
-		for (var i = 1; i <= 6; i++) {
-			var sEl = document.getElementById("step-nav-" + i);
-			if (sEl) {
-				sEl.classList.toggle("active", i === activeStepIndex);
-			}
-		}
-	}
-
-	function getToken() {
-		return (window.BACKUPINO_INSTALLER && window.BACKUPINO_INSTALLER.token) ? window.BACKUPINO_INSTALLER.token : "";
-	}
-
-	var log = document.getElementById("log");
-	var bar = document.getElementById("bar");
-	var title = document.getElementById("progress-title");
-	var busy = false;
-
-	function api(action, data) {
-		var params = Object.assign({ action: action, token: getToken() }, data || {});
-		var body = new URLSearchParams(params);
-		return fetch(window.location.pathname, {
-			method: "POST",
-			body: body,
-			credentials: "same-origin",
-			headers: { "Content-Type": "application/x-www-form-urlencoded" }
-		}).then(function (r) {
-			return r.text().then(function (raw) {
-				try {
-					return JSON.parse(raw);
-				} catch (e) {
-					return { ok: false, error: raw.trim() ? raw.substring(0, 300) : ("Empty response from server (HTTP " + r.status + ")") };
-				}
-			});
-		});
-	}
-
-	function note(text) {
-		if (!log) { return; }
-		log.textContent += text + "\n";
-		log.scrollTop = log.scrollHeight;
-	}
-
-	function show(id) {
-		["step1", "step2", "step3", "step4"].forEach(function (step) {
-			var el = document.getElementById(step);
-			if (el) { el.className = step === id ? "" : "hidden"; }
-		});
-	}
-
-	function fail(message, field) {
-		var el = document.getElementById(field || "error3");
-		if (el) {
-			el.textContent = message;
-			el.style.display = "block";
-		}
-		note("\n❌ [ERROR]: " + message);
-		if (title) {
-			title.textContent = "❌ " + ((currentLang === "fa") ? "خطا در عملیات" : "Operation failed");
-			title.style.color = "#dc2626";
-		}
-		if (bar) {
-			bar.style.background = "#dc2626";
-		}
-		busy = false;
-	}
-
-	function loop(action, label, done) {
-		api(action).then(function (res) {
-			if (!res.ok) { fail(res.error || "Request failed."); return; }
-			bar.style.width = (res.percent || 0) + "%";
-			title.textContent = label + " " + (res.percent || 0) + "%";
-			if (res.message) { note(res.message); }
-			if (res.done) { done(res); return; }
-			loop(action, label, done);
-		}).catch(function (e) { fail(String(e)); });
-	}
-
-	document.getElementById("start").addEventListener("click", function () {
-		show("step2");
-		updateStepNav(2);
-	});
-
-	var backBtn = document.getElementById("back-to-step1");
-	if (backBtn) {
-		backBtn.addEventListener("click", function () {
-			show("step1");
-			updateStepNav(1);
-		});
-	}
-
-	var stepNav1 = document.getElementById("step-nav-1");
-	if (stepNav1) {
-		stepNav1.style.cursor = "pointer";
-		stepNav1.addEventListener("click", function () {
-			if (currentStep <= 2) {
-				show("step1");
-				updateStepNav(1);
-			}
-		});
-	}
-
-	var stepNav2 = document.getElementById("step-nav-2");
-	if (stepNav2) {
-		stepNav2.style.cursor = "pointer";
-		stepNav2.addEventListener("click", function () {
-			if (currentStep <= 2 && envPasses) {
-				show("step2");
-				updateStepNav(2);
-			}
-		});
-	}
-
-	document.getElementById("dbform").addEventListener("submit", function (e) {
-		e.preventDefault();
-		if (busy) { return; }
-		busy = true;
-		var form = new FormData(e.target);
-		var data = {};
-		form.forEach(function (value, key) { data[key] = value; });
-
-		api("connect", data).then(function (res) {
-			if (!res.ok) { fail(res.error || "Connection failed.", "error2"); return; }
-			note(res.message || "Database connected.");
-			show("step3");
-			updateStepNav(3);
-			var extLabel = (I18N[currentLang] && I18N[currentLang].ext_files) ? I18N[currentLang].ext_files : "Extracting files";
-			loop("extract", extLabel, function () {
-				note("Files extracted.");
-				updateStepNav(4);
-				var impLabel = (I18N[currentLang] && I18N[currentLang].imp_db) ? I18N[currentLang].imp_db : "Importing database";
-				loop("import", impLabel, function () {
-					note("Database imported.");
-					updateStepNav(5);
-					var rewLabel = (I18N[currentLang] && I18N[currentLang].rew_urls) ? I18N[currentLang].rew_urls : "Rewriting URLs";
-					loop("rewrite", rewLabel, function () {
-						note("URLs rewritten.");
-						updateStepNav(6);
-						api("config").then(function (final) {
-							if (!final.ok) { fail(final.error || "Configuration failed."); return; }
-							show("step4");
-							var siteUrl = final.url || "";
-							var adminUrl = final.admin || (siteUrl ? siteUrl.replace(/\/+$/, "") + "/wp-login.php" : "/wp-login.php");
-							window.__adminUrl = adminUrl;
-							window.__siteUrl = siteUrl;
-							document.getElementById("done-url").textContent = siteUrl;
-						});
-					});
-				});
-			});
-		}).catch(function (err) { fail(String(err), "error2"); });
-	});
-
-	document.getElementById("cleanup").addEventListener("click", function () {
-		var btn = document.getElementById("cleanup");
-		btn.disabled = true;
-		btn.textContent = (currentLang === "fa") ? "در حال حذف فایل‌ها…" : "Deleting files…";
-		api("cleanup").then(function (res) {
-			if (!res.ok) { fail(res.error || "Cleanup failed.", "error4"); btn.disabled = false; return; }
-			btn.textContent = (I18N[currentLang] && I18N[currentLang].cleaned) ? I18N[currentLang].cleaned : "Installer files deleted.";
-			window.setTimeout(function () {
-				window.location.href = window.__adminUrl || "/wp-login.php";
-			}, 1000);
-		}).catch(function (err) {
-			fail(String(err), "error4");
-			btn.disabled = false;
-		});
-	});
-})();
-</script>';
-
-	echo View::page( (string) json_encode( array( 'token' => $backupino_token ) ), $backupino_body ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML template output for standalone page.
+	echo View::page( (string) json_encode( $config_data ), $backupino_body );
 	exit;
 }
 
@@ -510,16 +221,26 @@ switch ( $backupino_action ) {
 		break;
 
 	case 'connect':
+		$prefix = isset( $_POST['prefix'] ) && '' !== trim( (string) $_POST['prefix'] ) ? trim( (string) $_POST['prefix'] ) : 'wp_';
+		if ( ! preg_match( '/^[a-zA-Z0-9_]+$/', $prefix ) ) {
+			respond( array( 'ok' => false, 'error' => 'Invalid table prefix.' ), 400 );
+		}
+
 		$config = array(
 			'host'     => isset( $_POST['db_host'] ) ? sanitize_env( (string) $_POST['db_host'] ) : 'localhost',
 			'port'     => isset( $_POST['db_port'] ) ? (int) $_POST['db_port'] : 0,
 			'name'     => isset( $_POST['db_name'] ) ? trim( (string) $_POST['db_name'] ) : '',
 			'user'     => isset( $_POST['db_user'] ) ? trim( (string) $_POST['db_user'] ) : '',
 			'password' => isset( $_POST['db_pass'] ) ? (string) $_POST['db_pass'] : '',
-			'prefix'   => isset( $_POST['prefix'] ) && '' !== trim( (string) $_POST['prefix'] ) ? trim( (string) $_POST['prefix'] ) : 'wp_',
+			'prefix'   => $prefix,
 		);
 
 		$new_url = isset( $_POST['new_url'] ) ? trim( (string) $_POST['new_url'] ) : '';
+		if ( '' !== $new_url ) {
+			if ( false === filter_var( $new_url, FILTER_VALIDATE_URL ) || ! preg_match( '#^https?://#i', $new_url ) ) {
+				respond( array( 'ok' => false, 'error' => 'Invalid new site URL.' ), 400 );
+			}
+		}
 
 		if ( '' === $config['name'] || '' === $config['user'] ) {
 			respond( array( 'ok' => false, 'error' => 'Database name and user are required.' ), 400 );
@@ -910,13 +631,25 @@ switch ( $backupino_action ) {
 
 		// Preserve pre-compiled Elementor CSS files from the backup package so frontend loads immediately without dynamic tag recompilation errors.
 
-		$orig_config = $backupino_dir . '/wp-config.backupino-orig.php';
-		$orig_content = is_file( $orig_config ) && is_readable( $orig_config ) ? (string) file_get_contents( $orig_config ) : null;
+		$orig_config  = $backupino_dir . '/wp-config.backupino-orig.php';
+		$orig_content = null;
+		if ( is_file( $orig_config ) && is_readable( $orig_config ) ) {
+			$orig_content = (string) file_get_contents( $orig_config );
+			@unlink( $orig_config );
+		} elseif ( is_file( $backupino_archive ) && class_exists( 'ZipArchive' ) ) {
+			$zip = new \ZipArchive();
+			if ( true === $zip->open( $backupino_archive ) ) {
+				$tpl = $zip->getFromName( 'backupino-wp-config.tpl' );
+				if ( false !== $tpl && '' !== $tpl ) {
+					$orig_content = (string) $tpl;
+				}
+				$zip->close();
+			}
+		}
+
+		$db['new_url'] = $new_url;
 		if ( ! ConfigWriter::write( $backupino_dir . '/wp-config.php', $db, $orig_content ) ) {
 			respond( array( 'ok' => false, 'error' => 'wp-config.php could not be written.' ), 500 );
-		}
-		if ( is_file( $orig_config ) ) {
-			@unlink( $orig_config );
 		}
 
 		// Reconfigure .htaccess for target environment with clean WordPress rewrite rules
@@ -1048,6 +781,7 @@ switch ( $backupino_action ) {
 			$backupino_dir . '/database.sql',
 			$backupino_dir . '/backupino-manifest.ndjson',
 			$backupino_dir . '/backupino-package.json',
+			$backupino_dir . '/backupino-wp-config.tpl',
 			$backupino_state_file,
 			$backupino_archive,
 			$backupino_dir . '/wp-config.backupino-orig.php',
@@ -1087,7 +821,7 @@ switch ( $backupino_action ) {
 		}
 
 		// Delete installer script itself last
-		$self = isset( $_SERVER['SCRIPT_FILENAME'] ) ? (string) $_SERVER['SCRIPT_FILENAME'] : ( $backupino_dir . '/installer.php' );
+		$self = __FILE__;
 		@chmod( $self, 0777 );
 		@unlink( $self );
 		register_shutdown_function( static function () use ( $self ) {

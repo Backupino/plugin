@@ -76,10 +76,27 @@ final class InstallerBuilder {
 				continue;
 			}
 
-			$code .= self::strip( (string) file_get_contents( $path ) ) . "\n";
+			$code .= self::strip( (string) file_get_contents( $path ) ) . "\n"; // phpcs:ignore WordPress.WP.AlternativeFunctions
 		}
 
 		return $code;
+	}
+
+	/**
+	 * Compile the layout template with CSS and JS inlined.
+	 *
+	 * @return string
+	 */
+	public function compiled_layout(): string {
+		$template_file = $this->source_dir . '/installer-layout.html';
+		$raw           = is_readable( $template_file ) ? (string) file_get_contents( $template_file ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions
+		$css_file      = dirname( $this->source_dir, 2 ) . '/assets/css/installer.css';
+		$js_file       = dirname( $this->source_dir, 2 ) . '/assets/js/installer.js';
+		$css           = is_readable( $css_file ) ? (string) file_get_contents( $css_file ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions
+		$js            = is_readable( $js_file ) ? (string) file_get_contents( $js_file ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions
+
+		$raw = str_replace( '/* __INSTALLER_CSS__ */', $css, $raw );
+		return str_replace( '/* __INSTALLER_JS__ */', $js, $raw );
 	}
 
 	/**
@@ -95,7 +112,7 @@ final class InstallerBuilder {
 			return '';
 		}
 
-		$template = (string) file_get_contents( $template_path );
+		$template = (string) file_get_contents( $template_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 
 		$json = function_exists( 'wp_json_encode' ) ? wp_json_encode( $payload ) : json_encode( $payload );
 
@@ -107,13 +124,88 @@ final class InstallerBuilder {
 			$template
 		);
 		$template = str_replace( '__BACKUPINO_PAYLOAD__', $encoded, $template );
+
+		$compiled_layout = $this->compiled_layout();
+		$library         = $this->library();
+		$escaped_layout  = addcslashes( $compiled_layout, "'\\" );
+		$library         = str_replace( '/* __BACKUPINO_COMPILED_LAYOUT__ */', $escaped_layout, $library );
+
 		$template = str_replace(
 			array( '/* __BACKUPINO_BODY__ */', '__BACKUPINO_BODY__' ),
-			$this->library(),
+			$library,
 			$template
 		);
 
 		return $template;
+	}
+
+	/**
+	 * Build an installer on-the-fly for a package archive.
+	 *
+	 * @param string                   $archive_path Absolute path to the zip archive.
+	 * @param \Backupino\Core\Settings $settings     Plugin settings.
+	 * @return string
+	 */
+	public function build_for_package( string $archive_path, \Backupino\Core\Settings $settings ): string {
+		$stem      = preg_replace( '/\.zip$/i', '', $archive_path );
+		$meta_path = $stem . '.meta.json';
+		$payload   = array();
+
+		if ( is_readable( $meta_path ) ) {
+			$raw    = (string) file_get_contents( $meta_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+			$parsed = json_decode( $raw, true );
+			if ( is_array( $parsed ) ) {
+				$payload = $parsed;
+			}
+		}
+
+		if ( empty( $payload ) && class_exists( 'ZipArchive' ) && is_readable( $archive_path ) ) {
+			$zip = new \ZipArchive();
+			if ( true === $zip->open( $archive_path ) ) {
+				$pkg_json = $zip->getFromName( 'backupino-package.json' );
+				if ( false !== $pkg_json ) {
+					$parsed = json_decode( (string) $pkg_json, true );
+					if ( is_array( $parsed ) ) {
+						$payload = $parsed;
+					}
+				}
+				$zip->close();
+			}
+		}
+
+		$archive_name    = basename( $archive_path );
+		$name            = preg_replace( '/\.zip$/i', '', $archive_name );
+		$notify_settings = (array) $settings->get( 'notify', array() );
+
+		$defaults = array(
+			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3',
+			'name'         => $name,
+			'token'        => \Backupino\Support\Str::random( 16 ),
+			'archive'      => $archive_name,
+			'archive_hash' => is_readable( $archive_path ) ? (string) hash_file( 'sha256', $archive_path ) : '',
+			'archive_size' => is_readable( $archive_path ) ? (int) \Backupino\Support\Fs::size( $archive_path ) : 0,
+			'site_url'     => function_exists( 'home_url' ) ? home_url() : '',
+			'home_url'     => function_exists( 'home_url' ) ? home_url() : '',
+			'site_name'    => function_exists( 'get_bloginfo' ) ? (string) get_bloginfo( 'name' ) : ( function_exists( 'home_url' ) ? (string) wp_parse_url( home_url(), PHP_URL_HOST ) : '' ),
+			'locale'       => function_exists( 'get_locale' ) ? get_locale() : 'en_US',
+			'table_prefix' => $GLOBALS['table_prefix'] ?? 'wp_',
+			'created'      => gmdate( 'Y-m-d H:i:s' ),
+			'password'     => (string) $settings->get( 'installer.password', '' ),
+			'notify'       => array(
+				'telegram_enabled'     => ! empty( $notify_settings['telegram_enabled'] ),
+				'telegram_token'       => (string) ( $notify_settings['telegram_token'] ?? '' ),
+				'telegram_chat_id'     => (string) ( $notify_settings['telegram_chat_id'] ?? '' ),
+				'bale_enabled'         => ! empty( $notify_settings['bale_enabled'] ),
+				'bale_token'           => (string) ( $notify_settings['bale_token'] ?? '' ),
+				'bale_chat_id'         => (string) ( $notify_settings['bale_chat_id'] ?? '' ),
+				'msg_restore_template' => (string) ( $notify_settings['msg_restore_template'] ?? '' ),
+			),
+		);
+
+		$merged = array_merge( $defaults, $payload );
+		$merged['archive'] = $archive_name;
+
+		return $this->build( $merged );
 	}
 
 	/**

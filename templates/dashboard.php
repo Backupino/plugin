@@ -32,7 +32,7 @@ foreach ( $jobs as $backupino_j ) {
 			<div>
 				<h1 class="backupino-brand-title">
 					<?php esc_html_e( 'Backupino', 'backupino' ); ?>
-					<span class="backupino-version-badge"><?php echo esc_html( BACKUPINO_VERSION ); ?> <?php esc_html_e( 'Free', 'backupino' ); ?></span>
+					<span class="backupino-version-badge"><?php echo esc_html( BACKUPINO_VERSION ); ?></span>
 				</h1>
 			</div>
 		</div>

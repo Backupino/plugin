@@ -70,16 +70,6 @@ final class Settings {
 				'local'  => array(
 					'path' => '',
 				),
-				's3'     => array(
-					'endpoint'    => '',
-					'region'      => 'us-east-1',
-					'bucket'      => '',
-					'access_key'  => '',
-					'secret_key'  => '',
-					'path_prefix' => 'backupino',
-					'path_style'  => true,
-					'use_ssl'     => true,
-				),
 			),
 			'schedule'  => array(
 				'enabled'  => false,
@@ -247,11 +237,13 @@ final class Settings {
 		$clean['runtime']['rows_per_tick']  = min( 20000, max( 50, (int) $clean['runtime']['rows_per_tick'] ) );
 		$clean['schedule']['keep']          = min( 100, max( 1, (int) $clean['schedule']['keep'] ) );
 
-		if ( ! in_array( $clean['storage']['driver'], array( 'local', 's3' ), true ) ) {
+		$allowed_drivers   = (array) apply_filters( 'backupino_storage_drivers', array( 'local' ) );
+		if ( ! in_array( $clean['storage']['driver'], $allowed_drivers, true ) ) {
 			$clean['storage']['driver'] = 'local';
 		}
 
-		if ( ! in_array( $clean['schedule']['interval'], (array) apply_filters( 'backupino_schedule_intervals', array( 'monthly', 'hourly', 'twicedaily', 'daily', 'weekly' ) ), true ) ) {
+		$allowed_intervals = (array) apply_filters( 'backupino_schedule_intervals', array( 'monthly' ) );
+		if ( ! in_array( $clean['schedule']['interval'], $allowed_intervals, true ) ) {
 			$clean['schedule']['interval'] = 'monthly';
 		}
 

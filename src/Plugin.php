@@ -156,7 +156,6 @@ final class Plugin {
 	 * @return void
 	 */
 	public function boot(): void {
-		add_action( 'init', array( $this, 'load_textdomain' ) );
 
 		if ( Compatibility::is_supported() ) {
 			( new Admin() )->register();
@@ -172,19 +171,6 @@ final class Plugin {
 		}
 	}
 
-	/**
-	 * Load plugin textdomain for translations.
-	 *
-	 * @return void
-	 */
-	public function load_textdomain(): void {
-		// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound
-		load_plugin_textdomain(
-			'backupino',
-			false,
-			dirname( plugin_basename( BACKUPINO_FILE ) ) . '/languages'
-		);
-	}
 
 	/**
 	 * Show blocking requirements as an admin notice.

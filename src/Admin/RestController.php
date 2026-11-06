@@ -533,7 +533,7 @@ final class RestController {
 	 */
 	private function scan_packages(): array {
 		$paths = Plugin::instance()->paths()->packages();
-		$files = glob( $paths . '/*' );
+		$files = glob( $paths . '/*.zip' );
 
 		if ( ! is_array( $files ) ) {
 			return array();

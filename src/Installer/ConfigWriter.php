@@ -19,8 +19,36 @@ defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
 final class ConfigWriter {
 
 	/**
+	 * Strips passwords and cryptographic salts from wp-config content
+	 * so raw database credentials and auth keys are never saved in the backup archive.
+	 *
+	 * @param string $content Raw wp-config.php content.
+	 * @return string Redacted wp-config template.
+	 */
+	public static function redact_secrets( string $content ): string {
+		$sensitive_constants = array(
+			'DB_PASSWORD',
+			'AUTH_KEY',
+			'SECURE_AUTH_KEY',
+			'LOGGED_IN_KEY',
+			'NONCE_KEY',
+			'AUTH_SALT',
+			'SECURE_AUTH_SALT',
+			'LOGGED_IN_SALT',
+			'NONCE_SALT',
+		);
+
+		foreach ( $sensitive_constants as $key ) {
+			$pattern = '/(define\s*\(\s*[\'"]' . preg_quote( $key, '/' ) . '[\'"]\s*,\s*)[\'"].*?[\'"](\s*\)\s*;)/i';
+			$content = (string) preg_replace( $pattern, '${1}\'\'${2}', $content );
+		}
+
+		return $content;
+	}
+
+	/**
 	 * Preserves all original custom settings, comments, constants, and structure,
-	 * modifying ONLY the database credentials and table prefix.
+	 * updating database credentials, salts, and table prefix.
 	 *
 	 * @param string               $content Original wp-config.php content.
 	 * @param array<string, mixed> $config  New database configuration.
@@ -33,6 +61,7 @@ final class ConfigWriter {
 		$host     = (string) ( $config['host'] ?? 'localhost' );
 		$port     = isset( $config['port'] ) ? (int) $config['port'] : 0;
 		$prefix   = (string) ( $config['prefix'] ?? 'wp_' );
+		$new_url  = (string) ( $config['new_url'] ?? '' );
 
 		if ( $port > 0 && false === strpos( $host, ':' ) ) {
 			$host .= ':' . $port;
@@ -65,6 +94,28 @@ final class ConfigWriter {
 			}
 		}
 
+		// Regenerate all 8 fresh random salts
+		$salts = self::salts();
+		foreach ( $salts as $key => $val ) {
+			$pattern = '/(define\s*\(\s*[\'"]' . preg_quote( $key, '/' ) . '[\'"]\s*,\s*)[\'"].*?[\'"](\s*\)\s*;)/i';
+			if ( preg_match( $pattern, $content ) ) {
+				$content = (string) preg_replace( $pattern, '${1}\'' . addcslashes( $val, "'\\" ) . '\'${2}', $content );
+			} else {
+				$insert       = "\ndefine( '" . $key . "', '" . addcslashes( $val, "'\\" ) . "' );\n";
+				$settings_pos = strpos( $content, 'wp-settings.php' );
+				if ( false !== $settings_pos ) {
+					$line_start = strrpos( substr( $content, 0, $settings_pos ), "\n" );
+					if ( false !== $line_start ) {
+						$content = substr_replace( $content, $insert, $line_start, 0 );
+					} else {
+						$content .= $insert;
+					}
+				} else {
+					$content .= $insert;
+				}
+			}
+		}
+
 		if ( '' !== $prefix ) {
 			$pattern = '/(\$table_prefix\s*=\s*)[\'"].*?[\'"](\s*;)/i';
 			if ( preg_match( $pattern, $content ) ) {
@@ -72,11 +123,21 @@ final class ConfigWriter {
 			}
 		}
 
+		if ( '' !== $new_url ) {
+			$url_constants = array( 'WP_HOME', 'WP_SITEURL' );
+			foreach ( $url_constants as $url_const ) {
+				$pattern = '/(define\s*\(\s*[\'"]' . preg_quote( $url_const, '/' ) . '[\'"]\s*,\s*)[\'"].*?[\'"](\s*\)\s*;)/i';
+				if ( preg_match( $pattern, $content ) ) {
+					$content = (string) preg_replace( $pattern, '${1}\'' . addcslashes( rtrim( $new_url, '/' ), "'\\" ) . '\'${2}', $content );
+				}
+			}
+		}
+
 		return $content;
 	}
 
 	/**
-	 * Render the file contents.
+	 * Render the file contents from scratch.
 	 *
 	 * @param array<string, mixed> $config Configuration:
 	 *                                     `name`, `user`, `password`, `host`, `port`, `prefix`, `debug`.
@@ -145,13 +206,6 @@ final class ConfigWriter {
 			$contents = self::update_wp_config( $original_content, $config );
 		} else {
 			$contents = self::render( $config );
-		}
-
-		if ( is_file( $path ) && is_readable( $path ) ) {
-			$backup = $path . '.backupino-' . gmdate( 'YmdHis' );
-
-			@copy( $path, $backup );
-			@chmod( $backup, 0600 );
 		}
 
 		if ( false === @file_put_contents( $path, $contents, LOCK_EX ) ) {

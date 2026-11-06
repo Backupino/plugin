@@ -62,7 +62,7 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 			<div>
 				<h1 class="backupino-brand-title">
 					<?php esc_html_e( 'Backupino', 'backupino' ); ?>
-					<span class="backupino-version-badge"><?php echo esc_html( BACKUPINO_VERSION ); ?> <?php esc_html_e( 'Free', 'backupino' ); ?></span>
+					<span class="backupino-version-badge"><?php echo esc_html( BACKUPINO_VERSION ); ?></span>
 				</h1>
 			</div>
 		</div>
@@ -323,7 +323,7 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 							<div class="backupino-field-group">
 								<label class="backupino-label">
 									<span class="backupino-label-text"><?php esc_html_e( 'Primary Destination Driver', 'backupino' ); ?></span>
-									<span class="backupino-tooltip" data-tooltip="<?php esc_attr_e( 'Primary storage destination for completed packages. In the Free edition, local protected storage is used.', 'backupino' ); ?>" tabindex="0">?</span>
+									<span class="backupino-tooltip" data-tooltip="<?php esc_attr_e( 'Primary storage destination for completed packages. Local protected storage is used.', 'backupino' ); ?>" tabindex="0">?</span>
 								</label>
 								<select name="storage.driver" id="backupino-driver">
 									<?php foreach ( $plugin->storages()->available() as $backupino_driver => $backupino_label ) : ?>
@@ -539,14 +539,12 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 								<div class="backupino-field-group">
 									<label class="backupino-label">
 										<span class="backupino-label-text"><?php esc_html_e( 'Frequency', 'backupino' ); ?></span>
-										<span class="backupino-tooltip" data-tooltip="<?php esc_attr_e( 'In Free edition, monthly execution triggers on the 1st of each Persian/Gregorian month based on site language.', 'backupino' ); ?>" tabindex="0">?</span>
+										<span class="backupino-tooltip" data-tooltip="<?php esc_attr_e( 'Monthly execution triggers on the 1st of each Persian/Gregorian month based on site language.', 'backupino' ); ?>" tabindex="0">?</span>
 									</label>
 									<select name="schedule.interval">
-										<?php foreach ( (array) apply_filters( 'backupino_schedule_intervals_labels', array( 'monthly' => __( 'Monthly (first day of the month)', 'backupino' ) ) ) as $backupino_interval => $backupino_interval_label ) : ?>
-											<option value="<?php echo esc_attr( $backupino_interval ); ?>" <?php selected( $backupino_interval, $backupino_values['schedule']['interval'] ); ?>>
-												<?php echo esc_html( is_string( $backupino_interval_label ) ? $backupino_interval_label : $backupino_interval ); ?>
-											</option>
-										<?php endforeach; ?>
+										<option value="monthly" <?php selected( (string) ( $backupino_values['schedule']['interval'] ?? 'monthly' ), 'monthly' ); ?>>
+											<?php esc_html_e( 'Monthly (first day of the month)', 'backupino' ); ?>
+										</option>
 									</select>
 								</div>
 

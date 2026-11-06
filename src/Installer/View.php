@@ -56,85 +56,29 @@ final class View {
 	 * @return string
 	 */
 	public static function page( string $payload_json, string $body ): string {
-		$title = 'Backupino Standalone Installer';
+		$layout = self::layout();
 
-		return '<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>' . self::e( $title ) . '</title>
-<script>window.BACKUPINO_INSTALLER = ' . $payload_json . ';</script>
-<style>
-:root{--bg:#0f172a;--card:#ffffff;--ink:#111827;--muted:#64748b;--accent:#2563eb;--accent-hover:#1d4ed8;--ok:#16a34a;--fail:#dc2626;--line:#e2e8f0;--radius:12px}
-*{box-sizing:border-box}
-@font-face{font-family:"Arad";src:local("Arad"),local("B Arad"),local("Arad-Regular");font-weight:400;font-style:normal;font-display:swap}
-@font-face{font-family:"Arad";src:local("Arad Bold"),local("B Arad Bold"),local("Arad-Bold");font-weight:700;font-style:normal;font-display:swap}
-body{margin:0;font:14px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Inter","Helvetica Neue",Arial,sans-serif;background:linear-gradient(160deg,#eef2ff,#f8fafc 45%);color:var(--ink);min-height:100vh}
-html[dir="rtl"] body{font-family:"Arad","Vazirmatn","Segoe UI",Tahoma,system-ui,sans-serif}
-.wrap{max-width:740px;margin:0 auto;padding:36px 16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px -16px rgba(15,23,42,.2);padding:26px 28px}
-.header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-h1{margin:0;font-size:20px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:8px}
-.badge-free{font-size:11px;background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:999px;font-weight:700}
-p.lead{margin:0 0 18px;color:var(--muted);font-size:13px}
-.lang-switch{display:flex;gap:4px;background:#f1f5f9;padding:3px;border-radius:8px}
-.lang-btn{margin:0;padding:4px 10px;font-size:11.5px;font-weight:600;border-radius:6px;background:transparent;color:var(--muted);border:0;cursor:pointer;transition:all .15s}
-.lang-btn.active{background:#fff;color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.06)}
-.steps{display:flex;gap:6px;margin:0 0 20px;flex-wrap:wrap}
-.steps span{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:#f1f5f9;color:var(--muted)}
-.steps span.active{background:var(--accent);color:#fff}
-.checks{list-style:none;margin:0;padding:0}
-.checks li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
-.checks li:last-child{border-bottom:0}
-.checks li em{margin-inline-start:auto;color:var(--muted);font-style:normal;font-size:12px;max-width:45%;text-align:end;word-break:break-all}
-.badge{width:18px;height:18px;border-radius:999px;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:700}
-li.ok .badge{background:var(--ok)} li.fail .badge{background:var(--fail)}
-label{display:block;font-weight:600;font-size:12.5px;margin:12px 0 4px;color:#334155}
-input,select{width:100%;padding:7px 11px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;font-size:13px;background:#fff;color:#1e293b}
-input:focus,select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-button{margin-top:16px;background:var(--accent);color:#fff;border:0;border-radius:6px;padding:8px 16px;font-weight:600;cursor:pointer;font-size:13px;transition:all .15s}
-button:hover{background:var(--accent-hover)}
-button[disabled]{opacity:.5;cursor:not-allowed}
-button.ghost{background:#fff;color:var(--accent);border:1px solid #cbd5e1}
-button.ghost:hover{background:#f8fafc;border-color:#94a3b8}
-.bar{height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:14px 0}
-.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2563eb,#06b6d4);transition:width .25s;border-radius:999px}
-pre#log{margin:0;background:#090d16;color:#cbd5e1;border-radius:8px;padding:12px 14px;font-size:11.5px;max-height:180px;overflow:auto;white-space:pre-wrap;font-family:Consolas,Monaco,monospace;direction:ltr;text-align:left}
-.hidden{display:none}
-.err{color:var(--fail);font-size:12.5px;min-height:18px;margin-top:8px}
-small.hint{display:block;color:var(--muted);font-size:12px;margin-top:4px}
-.info-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-top:10px;font-size:12.5px}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="card">
-    <div class="header-row">
-      <h1>
-        <span id="txt-brand">Backupino</span>
-        <span class="badge-free">Installer</span>
-      </h1>
-      <div class="lang-switch" id="lang-switch">
-        <button type="button" class="lang-btn active" data-lang="en">English</button>
-        <button type="button" class="lang-btn" data-lang="fa">فارسی</button>
-      </div>
-    </div>
-    <p class="lead" id="txt-lead">Restoring your site &mdash; step by step.</p>
-    <div class="steps" id="steps">
-      <span data-step="1" id="step-nav-1" class="active">1. Environment</span>
-      <span data-step="2" id="step-nav-2">2. Database</span>
-      <span data-step="3" id="step-nav-3">3. Files</span>
-      <span data-step="4" id="step-nav-4">4. Database import</span>
-      <span data-step="5" id="step-nav-5">5. URLs</span>
-      <span data-step="6" id="step-nav-6">6. Config</span>
-    </div>
-' . $body . '
-  </div>
-</div>
-</body>
-</html>';
+		$output = str_replace( '__CONFIG_JSON__', htmlspecialchars( $payload_json, ENT_QUOTES, 'UTF-8' ), $layout );
+		return str_replace( '<!-- __BODY__ -->', $body, $output );
+	}
+
+	/**
+	 * Base HTML layout template.
+	 *
+	 * @return string
+	 */
+	private static function layout(): string {
+		$template_file = __DIR__ . '/installer-layout.html';
+		if ( is_readable( $template_file ) ) {
+			$raw      = (string) file_get_contents( $template_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+			$css_file = dirname( __DIR__, 2 ) . '/assets/css/installer.css';
+			$js_file  = dirname( __DIR__, 2 ) . '/assets/js/installer.js';
+			$css      = is_readable( $css_file ) ? (string) file_get_contents( $css_file ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions
+			$js       = is_readable( $js_file ) ? (string) file_get_contents( $js_file ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions
+			$raw      = str_replace( '/* __INSTALLER_CSS__ */', $css, $raw );
+			return str_replace( '/* __INSTALLER_JS__ */', $js, $raw );
+		}
+
+		return '/* __BACKUPINO_COMPILED_LAYOUT__ */';
 	}
 }

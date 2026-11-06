@@ -228,103 +228,7 @@ final class PublicDownload {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<title><?php esc_html_e( 'Download Backup Package', 'backupino' ); ?> &mdash; <?php echo esc_html( $site_name ); ?></title>
 			<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Standalone public landing page without WordPress theme ?>
-			<style>
-				:root {
-					--bk-primary: <?php echo esc_attr( $tokens['primary_color'] ); ?>;
-					--bk-primary-hover: <?php echo esc_attr( $tokens['primary_hover'] ); ?>;
-					--bk-secondary: <?php echo esc_attr( $tokens['secondary_color'] ); ?>;
-					--bk-secondary-hover: <?php echo esc_attr( $tokens['secondary_hover'] ); ?>;
-					--bk-both: <?php echo esc_attr( $tokens['both_color'] ); ?>;
-					--bk-both-hover: <?php echo esc_attr( $tokens['both_hover'] ); ?>;
-					--bk-bg: <?php echo esc_attr( $tokens['bg_color'] ); ?>;
-					--bk-card-bg: <?php echo esc_attr( $tokens['card_bg'] ); ?>;
-					--bk-text: <?php echo esc_attr( $tokens['text_color'] ); ?>;
-					--bk-font: <?php echo esc_attr( $tokens['font_family'] ); ?>;
-				}
-				*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-				body {
-					font-family: var(--bk-font);
-					background: var(--bk-bg);
-					color: var(--bk-text);
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					min-height: 100vh;
-					padding: 24px;
-				}
-				.card {
-					background: var(--bk-card-bg);
-					border: 1px solid #e2e8f0;
-					border-radius: 12px;
-					box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
-					max-width: 540px;
-					width: 100%;
-					padding: 32px;
-					text-align: center;
-				}
-				.logo-badge {
-					display: inline-flex;
-					align-items: center;
-					gap: 8px;
-					background: #f0fdf4;
-					border: 1px solid #bbf7d0;
-					color: #166534;
-					font-size: 13px;
-					font-weight: 600;
-					padding: 6px 14px;
-					border-radius: 9999px;
-					margin-bottom: 20px;
-				}
-				h1 { font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
-				p.subtitle { font-size: 14px; color: #64748b; margin-bottom: 24px; }
-				.info-box {
-					background: #f8fafc;
-					border: 1px solid #e2e8f0;
-					border-radius: 8px;
-					padding: 16px;
-					margin-bottom: 24px;
-					text-align: <?php echo $is_rtl ? 'right' : 'left'; ?>;
-					font-size: 13.5px;
-				}
-				.info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; }
-				.info-row:last-child { border-bottom: none; }
-				.info-label { color: #64748b; }
-				.info-value { font-weight: 600; color: #1e293b; }
-				.buttons-stack { display: flex; flex-direction: column; gap: 12px; }
-				.btn {
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					gap: 8px;
-					padding: 13px 20px;
-					border-radius: 8px;
-					font-size: 14px;
-					font-weight: 600;
-					text-decoration: none;
-					cursor: pointer;
-					border: none;
-					transition: all 0.15s ease;
-				}
-				.btn-primary { background: var(--bk-primary); color: #ffffff; }
-				.btn-primary:hover { background: var(--bk-primary-hover); }
-				.btn-secondary { background: var(--bk-secondary); color: #ffffff; }
-				.btn-secondary:hover { background: var(--bk-secondary-hover); }
-				.btn-both { background: var(--bk-both); color: #ffffff; }
-				.btn-both:hover { background: var(--bk-both-hover); }
-				.instructions {
-					margin-top: 24px;
-					padding-top: 20px;
-					border-top: 1px solid #f1f5f9;
-					font-size: 12.5px;
-					color: #64748b;
-					line-height: 1.6;
-					text-align: <?php echo $is_rtl ? 'right' : 'left'; ?>;
-				}
-				<?php if ( '' !== $custom_styles ) : ?>
-				<?php echo wp_strip_all_tags( $custom_styles ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<?php endif; ?>
-			</style>
-		</head>
+			
 		<body>
 			<div class="card">
 				<div class="logo-badge">
@@ -373,22 +277,7 @@ final class PublicDownload {
 				</div>
 			</div>
 
-			<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Standalone public landing page without WordPress theme ?>
-			<script>
-				function downloadBoth() {
-					var f1 = document.createElement('iframe');
-					f1.style.display = 'none';
-					f1.src = <?php echo wp_json_encode( $installer_url ); ?>;
-					document.body.appendChild(f1);
-
-					setTimeout(function() {
-						var f2 = document.createElement('iframe');
-						f2.style.display = 'none';
-						f2.src = <?php echo wp_json_encode( $archive_url ); ?>;
-						document.body.appendChild(f2);
-					}, 800);
-				}
-			</script>
+			
 		</body>
 		</html>
 		<?php

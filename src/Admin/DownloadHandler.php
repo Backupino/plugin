@@ -11,6 +11,7 @@ namespace Backupino\Admin;
 
 defined( 'ABSPATH' ) || exit;
 
+use Backupino\Backup\InstallerBuilder;
 use Backupino\Core\Capabilities;
 use Backupino\Plugin;
 use Backupino\Support\Fs;
@@ -55,17 +56,31 @@ final class DownloadHandler {
 			wp_die( esc_html__( 'Invalid file name.', 'backupino' ), '', array( 'response' => 400 ) );
 		}
 
-		$path = Plugin::instance()->paths()->packages() . '/' . $file;
+		$packages_dir = Plugin::instance()->paths()->packages();
+		$path         = $packages_dir . '/' . $file;
+
+		if ( preg_match( '/(?:^|-)installer\.php$/i', $file ) ) {
+			$stem         = preg_replace( '/(?:^|-)installer\.php$/i', '', $file );
+			$archive_path = $packages_dir . '/' . $stem . '.zip';
+			if ( is_readable( $archive_path ) ) {
+				$builder = new InstallerBuilder();
+				$code    = $builder->build_for_package( $archive_path, Plugin::instance()->settings() );
+				if ( '' !== $code ) {
+					Fs::stream_string_download( $code, 'installer.php' );
+				}
+			}
+
+			if ( is_readable( $path ) ) {
+				Fs::stream_download( $path, 'installer.php' );
+			}
+
+			wp_die( esc_html__( 'This package no longer exists on the server.', 'backupino' ), '', array( 'response' => 404 ) );
+		}
 
 		if ( ! is_readable( $path ) ) {
 			wp_die( esc_html__( 'This package no longer exists on the server.', 'backupino' ), '', array( 'response' => 404 ) );
 		}
 
-		$download_name = '';
-		if ( preg_match( '/(?:^|-)installer\.php$/i', $file ) ) {
-			$download_name = 'installer.php';
-		}
-
-		Fs::stream_download( $path, $download_name );
+		Fs::stream_download( $path );
 	}
 }

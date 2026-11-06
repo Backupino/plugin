@@ -44,7 +44,7 @@ final class Admin {
 	 */
 	public function menu(): void {
 		add_menu_page(
-			__( 'Backupino - Free WordPress Backup & Migration', 'backupino' ),
+			__( 'Backupino - WordPress Backup & Migration', 'backupino' ),
 			__( 'Backupino', 'backupino' ),
 			Capabilities::manage(),
 			self::SLUG,

@@ -93,13 +93,14 @@ final class FinalizeStage implements Stage {
 		$name = isset( $state['name'] ) ? (string) $state['name'] : Package::default_name( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
 
 		if ( 'installer' === $state['step'] ) {
-			$installer = $this->build_installer( $context, $state, $name );
+			$meta_file = $this->build_meta_payload( $context, $state, $name );
 
-			if ( '' === $installer ) {
-				throw new JobException( __( 'The installer file could not be generated.', 'backupino' ) );
+			if ( '' === $meta_file ) {
+				throw new JobException( __( 'The package metadata could not be generated.', 'backupino' ) );
 			}
 
-			$state['installer'] = $installer;
+			$state['meta_file'] = $meta_file;
+			$state['installer'] = $name . '-installer.php';
 			$state['name']      = $name;
 			$state['step']      = 'publish';
 		}
@@ -199,15 +200,14 @@ final class FinalizeStage implements Stage {
 	 * @param string               $name    Package name.
 	 * @return string Absolute installer path.
 	 */
-	private function build_installer( JobContext $context, array $state, string $name ): string {
-		$builder = new InstallerBuilder();
-
+	private function build_meta_payload( JobContext $context, array $state, string $name ): string {
 		$notify_settings = (array) $context->settings()->get( 'notify', array() );
 
 		$payload = array(
-			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.0',
+			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3',
 			'name'         => $name,
 			'token'        => Str::random( 16 ),
+			'archive'      => $name . '.zip',
 			'archive_hash' => (string) $state['hash'],
 			'archive_size' => (int) $state['size'],
 			'site_url'     => home_url(),
@@ -228,17 +228,10 @@ final class FinalizeStage implements Stage {
 			),
 		);
 
-		$payload['archive'] = $name . '.zip';
+		$meta_json = function_exists( 'wp_json_encode' ) ? wp_json_encode( $payload, JSON_PRETTY_PRINT ) : json_encode( $payload, JSON_PRETTY_PRINT );
+		$path      = $context->work_dir() . '/' . $name . '.meta.json';
 
-		$code = $builder->build( $payload );
-
-		if ( '' === $code ) {
-			return '';
-		}
-
-		$path = $context->work_dir() . '/installer.php';
-
-		if ( ! Fs::atomic_put( $path, $code ) ) {
+		if ( ! Fs::atomic_put( $path, (string) $meta_json ) ) {
 			return '';
 		}
 
@@ -273,7 +266,9 @@ final class FinalizeStage implements Stage {
 			);
 		}
 
-		$storage->put( (string) $state['installer'], $installer_key );
+		if ( ! empty( $state['meta_file'] ) && is_readable( (string) $state['meta_file'] ) ) {
+			$storage->put( (string) $state['meta_file'], $name . '.meta.json' );
+		}
 
 		$state['archive']   = $archive_key;
 		$state['installer'] = $installer_key;

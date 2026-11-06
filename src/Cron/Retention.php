@@ -70,6 +70,7 @@ final class Retention {
 			}
 
 			Fs::delete( $stem . '-installer.php' );
+			Fs::delete( $stem . '.meta.json' );
 		}
 
 		return $removed;
