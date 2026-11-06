@@ -100,6 +100,9 @@ No. Notifications are completely optional and disabled by default. If you do not
 
 == Upgrade Notice ==
 
+= 1.0.3 =
+Security, compliance, and bug-fix release addressing official WordPress.org review requirements, externalizing assets, redacting database credentials, and fixing installer form submission.
+
 = 1.0.2 =
 Feature and consistency update. Adds design token hooks for download page theming, unifies installer locale fallbacks, and standardizes file line endings.
 
@@ -110,6 +113,17 @@ Security and stability maintenance release. Adds wp-content execution protection
 Initial production release of Backupino. Includes resumable backups, standalone installer, permanent login-gated download link, Telegram/Bale notifications, monthly scheduling with Jalali support, and 100% offline-first architecture.
 
 == Changelog ==
+
+= 1.0.3 =
+* Security: Implemented `ConfigWriter::redact_secrets()` to strip credentials and salts from `wp-config.php` during package build, injecting clean `backupino-wp-config.tpl` template and generating fresh cryptographic salts on restore.
+* Security: Replaced persistent physical installer PHP files in uploads storage with dynamic streaming download via `Fs::stream_string_download()`.
+* Compliance: Removed trialware interval options and external storage drivers from free settings defaults, exposing extensible filter hooks `backupino_schedule_intervals_labels` and `backupino_storage_drivers`.
+* Compliance: Externalized all inline CSS and JS assets into dedicated static cacheable files for both the public download landing page and the standalone installer.
+* Compliance: Removed bundled `.po`/`.mo` translation files to rely exclusively on WordPress.org official language packs (`translate.wordpress.org`).
+* Hardening: Added cryptographic `hash_equals()` download token comparison, strict table prefix regex validation (`/^[a-zA-Z0-9_]+$/`), URL validation, and eliminated internal path disclosures.
+* Hardening: Standardized all text files to Unix line endings (`LF`) with `.gitattributes` to eliminate `Internal.LineEndings.Mixed` warnings.
+* Fix: Fixed undefined variable `$backupino_settings` in `templates/settings.php` causing a fatal error on the options page.
+* Fix: Prevented native form GET submission in Step 2 of the standalone installer and resolved button ID mismatch (`back-to-step1`) to ensure uninterrupted progression to extraction.
 
 = 1.0.2 =
 * Feature: Added `backupino_design_tokens` and `backupino_download_page_styles` extension hooks for public download landing page customization.
