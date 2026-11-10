@@ -104,7 +104,7 @@ final class Importer {
 			}
 
 			foreach ( $batch['statements'] as $statement ) {
-				if ( '' !== $this->source_prefix && '' !== $this->target_prefix && $this->source_prefix !== $this->target_prefix ) {
+				if ( '' !== $this->source_prefix && '' !== $this->target_prefix && 0 !== strcasecmp( $this->source_prefix, $this->target_prefix ) ) {
 					$statement = $this->rewrite_prefix( $statement );
 				}
 
@@ -302,11 +302,11 @@ final class Importer {
 	 * @return string
 	 */
 	public function rewrite_prefix( string $statement ): string {
-		if ( '' === $this->source_prefix || '' === $this->target_prefix || $this->source_prefix === $this->target_prefix ) {
+		if ( '' === $this->source_prefix || '' === $this->target_prefix || 0 === strcasecmp( $this->source_prefix, $this->target_prefix ) ) {
 			return $statement;
 		}
 
-		$pattern = '/`' . preg_quote( $this->source_prefix, '/' ) . '([a-zA-Z0-9_]+)`/';
+		$pattern = '/`' . preg_quote( $this->source_prefix, '/' ) . '([a-zA-Z0-9_]+)`/i';
 
 		return (string) preg_replace( $pattern, '`' . addcslashes( $this->target_prefix, '\\$' ) . '$1`', $statement );
 	}

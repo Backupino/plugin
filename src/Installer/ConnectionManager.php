@@ -28,35 +28,22 @@ final class ConnectionManager {
 	 * @throws \RuntimeException On failure.
 	 */
 	public static function connect( array $config, bool $select = true ): Connection {
-		$errors = array();
-
-		foreach ( array( 'mysqli', 'pdo' ) as $driver ) {
-			try {
-				$conn_config = $config;
-				if ( ! $select ) {
-					unset( $conn_config['name'] );
-				}
-
-				/** @var Connection $connection */
-				$connection = 'mysqli' === $driver
-					? new MysqliConnection( $conn_config )
-					: new PdoConnection( $conn_config );
-
-				if ( ! $select ) {
-					return $connection;
-				}
-
-				if ( $connection->select( (string) ( $config['name'] ?? '' ) ) ) {
-					return $connection;
-				}
-
-				$errors[] = $connection->error();
-			} catch ( \RuntimeException $e ) {
-				$errors[] = $e->getMessage();
-			}
+		$conn_config = $config;
+		if ( ! $select ) {
+			unset( $conn_config['name'] );
 		}
 
-		throw new \RuntimeException( implode( ' / ', array_filter( $errors ) ) );
+		$connection = new PdoConnection( $conn_config );
+
+		if ( ! $select ) {
+			return $connection;
+		}
+
+		if ( $connection->select( (string) ( $config['name'] ?? '' ) ) ) {
+			return $connection;
+		}
+
+		throw new \RuntimeException( $connection->error() );
 	}
 
 	/**

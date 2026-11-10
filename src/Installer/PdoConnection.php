@@ -122,6 +122,26 @@ final class PdoConnection implements Connection {
 	/**
 	 * {@inheritDoc}
 	 */
+	public function execute( string $sql, array $params = array() ): bool {
+		$stmt = $this->pdo->prepare( $sql );
+		if ( false === $stmt ) {
+			$this->error = (string) ( $this->pdo->errorInfo()[2] ?? '' );
+			return false;
+		}
+
+		$success = $stmt->execute( array_values( $params ) );
+		if ( ! $success ) {
+			$this->error = (string) ( $stmt->errorInfo()[2] ?? $this->pdo->errorInfo()[2] ?? '' );
+		}
+
+		$stmt->closeCursor();
+
+		return $success;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public function rows( string $sql ): array {
 		$result = $this->pdo->query( $sql );
 
@@ -132,6 +152,29 @@ final class PdoConnection implements Connection {
 		}
 
 		$rows = $result->fetchAll( \PDO::FETCH_ASSOC );
+
+		return is_array( $rows ) ? $rows : array();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function fetch_all( string $sql, array $params = array() ): array {
+		$stmt = $this->pdo->prepare( $sql );
+		if ( false === $stmt ) {
+			$this->error = (string) ( $this->pdo->errorInfo()[2] ?? '' );
+			return array();
+		}
+
+		$success = $stmt->execute( array_values( $params ) );
+		if ( ! $success ) {
+			$this->error = (string) ( $stmt->errorInfo()[2] ?? $this->pdo->errorInfo()[2] ?? '' );
+			$stmt->closeCursor();
+			return array();
+		}
+
+		$rows = $stmt->fetchAll( \PDO::FETCH_ASSOC );
+		$stmt->closeCursor();
 
 		return is_array( $rows ) ? $rows : array();
 	}

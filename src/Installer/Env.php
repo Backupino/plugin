@@ -44,7 +44,7 @@ final class Env {
 		}
 
 		$has_zip    = class_exists( 'ZipArchive' );
-		$has_driver = extension_loaded( 'mysqli' ) || extension_loaded( 'pdo_mysql' );
+		$has_driver = extension_loaded( 'pdo_mysql' );
 
 		$checks[] = self::result(
 			__( 'Archive support', 'backupino' ),
@@ -55,7 +55,7 @@ final class Env {
 		$checks[] = self::result(
 			__( 'MySQL driver', 'backupino' ),
 			$has_driver,
-			extension_loaded( 'mysqli' ) ? 'mysqli' : ( extension_loaded( 'pdo_mysql' ) ? 'pdo_mysql' : __( 'none', 'backupino' ) )
+			$has_driver ? 'pdo_mysql' : __( 'pdo_mysql missing', 'backupino' )
 		);
 
 		$checks[] = self::result(

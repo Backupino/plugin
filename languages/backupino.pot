@@ -147,8 +147,8 @@ msgstr ""
 msgid "Backupino Navigation"
 msgstr ""
 
-#: free/src/Download/PublicDownload.php:254
-msgid "Backupino Verified Package"
+#: free/src/Download/PublicDownload.php:274
+msgid "Verified Backup Package"
 msgstr ""
 
 #: free/backupino.php:1

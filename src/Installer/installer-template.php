@@ -24,19 +24,18 @@ defined( 'BACKUPINO_INSTALLER' ) || defined( 'ABSPATH' ) || exit;
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Standalone offline installer executed outside WordPress scope.
 // phpcs:disable WordPress.WP.AlternativeFunctions -- Standalone installer running outside WordPress environment.
 // phpcs:disable Squiz.PHP.DiscouragedFunctions -- Standalone installer resource/timeout management.
-// phpcs:disable WordPress.PHP.DevelopmentFunctions -- Standalone installer error reporting.
-// phpcs:disable PluginCheck.CodeAnalysis.PHPErrorReporting -- Standalone installer outside WordPress environment.
 
 if ( ! defined( 'ABSPATH' ) ) {
-	@ini_set( 'display_errors', '0' );
-	@ini_set( 'max_execution_time', '180' );
 	@set_time_limit( 180 );
-	error_reporting( 0 );
+	ob_start();
 }
 
 register_shutdown_function( static function () {
 	$error = error_get_last();
 	if ( $error && in_array( $error['type'], array( E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ), true ) ) {
+		while ( ob_get_level() > 0 ) {
+			@ob_end_clean();
+		}
 		if ( ! headers_sent() ) {
 			http_response_code( 200 );
 			header( 'Content-Type: application/json; charset=UTF-8' );
@@ -62,6 +61,9 @@ $backupino_payload = is_array( $backupino_payload ) ? $backupino_payload : array
  * @return void
  */
 function respond( array $data, int $status = 200 ): void {
+	while ( ob_get_level() > 0 ) {
+		@ob_end_clean();
+	}
 	if ( ! headers_sent() ) {
 		// Use HTTP 200 so web servers (cPanel, LiteSpeed, Nginx) do not intercept or suppress the JSON error body
 		http_response_code( 200 );
@@ -192,7 +194,6 @@ if ( '' === $backupino_token || ! hash_equals( $backupino_token, $backupino_sent
 	respond( array( 'ok' => false, 'error' => 'Invalid installer token.' ), 403 );
 }
 
-@ini_set( 'max_execution_time', '180' );
 @set_time_limit( 180 );
 
 $backupino_state = new State( $backupino_state_file );
@@ -315,15 +316,17 @@ switch ( $backupino_action ) {
 		break;
 
 	case 'import':
-		// Ensure any rogue server configuration extracted during files extraction is quarantined
-		if ( is_file( $backupino_dir . '/.htaccess' ) ) {
-			@rename( $backupino_dir . '/.htaccess', $backupino_dir . '/.htaccess.backupino-orig' );
-		}
-		if ( is_file( $backupino_dir . '/.user.ini' ) ) {
-			@rename( $backupino_dir . '/.user.ini', $backupino_dir . '/.user.ini.backupino-orig' );
-		}
-		if ( is_file( $backupino_dir . '/php.ini' ) ) {
-			@rename( $backupino_dir . '/php.ini', $backupino_dir . '/php.ini.backupino-orig' );
+		// Ensure any rogue server configuration extracted during files extraction is quarantined safely without overwriting destination backups
+		foreach ( array( '.htaccess', '.user.ini', 'php.ini' ) as $cfg_file ) {
+			$file_path = $backupino_dir . '/' . $cfg_file;
+			$orig_path = $backupino_dir . '/' . $cfg_file . '.backupino-orig';
+			if ( is_file( $file_path ) ) {
+				if ( ! file_exists( $orig_path ) ) {
+					@rename( $file_path, $orig_path );
+				} else {
+					@unlink( $file_path );
+				}
+			}
 		}
 
 		$sql_file = $backupino_dir . '/database.sql';
@@ -407,14 +410,16 @@ switch ( $backupino_action ) {
 	case 'rewrite':
 		@set_time_limit( 180 );
 
-		if ( is_file( $backupino_dir . '/.htaccess' ) ) {
-			@rename( $backupino_dir . '/.htaccess', $backupino_dir . '/.htaccess.backupino-orig' );
-		}
-		if ( is_file( $backupino_dir . '/.user.ini' ) ) {
-			@rename( $backupino_dir . '/.user.ini', $backupino_dir . '/.user.ini.backupino-orig' );
-		}
-		if ( is_file( $backupino_dir . '/php.ini' ) ) {
-			@rename( $backupino_dir . '/php.ini', $backupino_dir . '/php.ini.backupino-orig' );
+		foreach ( array( '.htaccess', '.user.ini', 'php.ini' ) as $cfg_file ) {
+			$file_path = $backupino_dir . '/' . $cfg_file;
+			$orig_path = $backupino_dir . '/' . $cfg_file . '.backupino-orig';
+			if ( is_file( $file_path ) ) {
+				if ( ! file_exists( $orig_path ) ) {
+					@rename( $file_path, $orig_path );
+				} else {
+					@unlink( $file_path );
+				}
+			}
 		}
 
 		$db = $backupino_state->get( 'db' );
@@ -489,18 +494,22 @@ switch ( $backupino_action ) {
 		try {
 			$connection = ConnectionManager::connect( $db );
 
-			if ( $source_prefix !== $target_prefix && '' !== $source_prefix && '' !== $target_prefix ) {
-				// Safety check: rename any legacy tables that still have source_prefix
-				$esc_source = str_replace( array( '\\', '_', '%' ), array( '\\\\', '\\_', '\\%' ), $source_prefix );
-				$rows       = $connection->rows( "SHOW TABLES LIKE '{$esc_source}%'" );
+			// 1. Rename any legacy tables when the user explicitly changed prefix across different names
+			if ( '' !== $source_prefix && '' !== $target_prefix && 0 !== strcasecmp( $source_prefix, $target_prefix ) ) {
+				$raw_tables = $connection->rows( "SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'" );
+				if ( empty( $raw_tables ) ) {
+					$raw_tables = $connection->rows( 'SHOW TABLES' );
+				}
 				$tables_to_rename = array();
-				foreach ( $rows as $row ) {
-					$vals = array_values( $row );
+				foreach ( $raw_tables as $r ) {
+					$vals = array_values( $r );
 					if ( isset( $vals[0] ) ) {
 						$old_name = (string) $vals[0];
-						if ( 0 === strpos( $old_name, $source_prefix ) ) {
+						if ( 0 === stripos( $old_name, $source_prefix ) ) {
 							$new_name = $target_prefix . substr( $old_name, strlen( $source_prefix ) );
-							$tables_to_rename[] = array( 'old' => $old_name, 'new' => $new_name );
+							if ( 0 !== strcasecmp( $old_name, $new_name ) ) {
+								$tables_to_rename[] = array( 'old' => $old_name, 'new' => $new_name );
+							}
 						}
 					}
 				}
@@ -515,92 +524,180 @@ switch ( $backupino_action ) {
 								$connection->query( 'INSERT IGNORE INTO `' . str_replace( '`', '``', $pair['new'] ) . '` SELECT * FROM `' . str_replace( '`', '``', $pair['old'] ) . '`' );
 								$connection->query( 'DROP TABLE IF EXISTS `' . str_replace( '`', '``', $pair['old'] ) . '`' );
 							} catch ( \Throwable $fallback_err ) {
-								// Non-fatal, continue so remaining tables are not blocked.
+								// Non-fatal.
+							}
+						}
+					}
+				}
+			}
+
+			// 2. Physical Table Prefix Healing (Windows lower_case_table_names <-> Linux case-sensitive tables)
+			$all_raw_tables = $connection->rows( "SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'" );
+			if ( empty( $all_raw_tables ) ) {
+				$all_raw_tables = $connection->rows( 'SHOW TABLES' );
+			}
+			$physical_tables = array();
+			foreach ( $all_raw_tables as $r ) {
+				$vals = array_values( $r );
+				if ( isset( $vals[0] ) && '' !== $vals[0] ) {
+					$physical_tables[] = (string) $vals[0];
+				}
+			}
+
+			if ( ! in_array( $target_prefix . 'options', $physical_tables, true ) ) {
+				$matched_table = null;
+				// First check case-insensitive match for target prefix options
+				foreach ( $physical_tables as $ptbl ) {
+					if ( 0 === strcasecmp( $ptbl, $target_prefix . 'options' ) ) {
+						$matched_table = $ptbl;
+						break;
+					}
+				}
+				// Fallback: match case-insensitive source prefix options
+				if ( null === $matched_table && '' !== $source_prefix ) {
+					foreach ( $physical_tables as $ptbl ) {
+						if ( 0 === strcasecmp( $ptbl, $source_prefix . 'options' ) ) {
+							$matched_table = $ptbl;
+							break;
+						}
+					}
+				}
+				// Fallback: match any table ending in 'options' whose prefix also has posts or users
+				if ( null === $matched_table ) {
+					foreach ( $physical_tables as $ptbl ) {
+						if ( strlen( $ptbl ) > 7 && 0 === strcasecmp( substr( $ptbl, -7 ), 'options' ) ) {
+							$candidate_prefix = substr( $ptbl, 0, strlen( $ptbl ) - 7 );
+							$has_companion    = false;
+							foreach ( $physical_tables as $check_tbl ) {
+								if ( 0 === strcasecmp( $check_tbl, $candidate_prefix . 'posts' ) || 0 === strcasecmp( $check_tbl, $candidate_prefix . 'users' ) ) {
+									$has_companion = true;
+									break;
+								}
+							}
+							if ( $has_companion ) {
+								$matched_table = $ptbl;
+								break;
 							}
 						}
 					}
 				}
 
-				// Update user roles option name in options table
-				$target_opt_table = str_replace( '`', '``', $target_prefix ) . 'options';
-				$esc_old_roles    = $connection->escape( $source_prefix . 'user_roles' );
-				$esc_new_roles    = $connection->escape( $target_prefix . 'user_roles' );
-				try {
-					$connection->query(
-						"UPDATE `{$target_opt_table}` SET option_name = '{$esc_new_roles}' WHERE option_name = '{$esc_old_roles}'"
-					);
-				} catch ( \Throwable $e ) {
-					// Ignore if option not present.
+				if ( null !== $matched_table ) {
+					$healed_prefix = substr( $matched_table, 0, strlen( $matched_table ) - 7 );
+					if ( preg_match( '/^[a-zA-Z0-9_]+$/', $healed_prefix ) ) {
+						$target_prefix = $healed_prefix;
+						$db['prefix']  = $healed_prefix;
+						$backupino_state->set( 'db', $db );
+						$backupino_state->save();
+					}
 				}
+			}
 
-				// Update all prefixed meta keys in usermeta table for users (capabilities, user_level, plugins, etc.)
-				$target_meta_table = str_replace( '`', '``', $target_prefix ) . 'usermeta';
-				$source_len        = strlen( $source_prefix );
-				$esc_new           = $connection->escape( $target_prefix );
-				$esc_like          = $connection->escape( str_replace( array( '\\', '_', '%' ), array( '\\\\', '\\_', '\\%' ), $source_prefix ) );
+			// 3. User roles & usermeta key normalization with healed prefix (prepared statements)
+			$target_opt_table  = str_replace( '`', '``', $target_prefix ) . 'options';
+			$target_meta_table = str_replace( '`', '``', $target_prefix ) . 'usermeta';
+
+			$target_roles_key = $target_prefix . 'user_roles';
+			try {
+				$opt_rows = $connection->fetch_all( "SELECT option_name FROM `{$target_opt_table}` WHERE option_name LIKE '%user_roles'" );
+				foreach ( $opt_rows as $orow ) {
+					$oname = (string) ( $orow['option_name'] ?? '' );
+					if ( 0 === strcasecmp( $oname, $target_roles_key ) && $oname !== $target_roles_key ) {
+						$connection->execute(
+							"UPDATE `{$target_opt_table}` SET option_name = ? WHERE option_name = ?",
+							array( $target_roles_key, $oname )
+						);
+					}
+				}
+			} catch ( \Throwable $e ) {
+				// Ignore if option not present.
+			}
+
+			try {
+				$meta_rows = $connection->fetch_all( "SELECT DISTINCT meta_key FROM `{$target_meta_table}` WHERE meta_key LIKE '%capabilities' OR meta_key LIKE '%user_level'" );
+				foreach ( $meta_rows as $mrow ) {
+					$mkey   = (string) ( $mrow['meta_key'] ?? '' );
+					$suffix = '';
+					if ( substr( $mkey, -12 ) === 'capabilities' ) {
+						$suffix = 'capabilities';
+					} elseif ( substr( $mkey, -10 ) === 'user_level' ) {
+						$suffix = 'user_level';
+					}
+					if ( '' !== $suffix && 0 === strcasecmp( $mkey, $target_prefix . $suffix ) && $mkey !== ( $target_prefix . $suffix ) ) {
+						$connection->execute(
+							"UPDATE `{$target_meta_table}` SET meta_key = ? WHERE meta_key = ?",
+							array( $target_prefix . $suffix, $mkey )
+						);
+					}
+				}
+			} catch ( \Throwable $e ) {
+				// Ignore if usermeta missing.
+			}
+
+			if ( $source_prefix !== $target_prefix && '' !== $source_prefix && '' !== $target_prefix ) {
+				$source_len = strlen( $source_prefix );
+				$like_param = str_replace( array( '\\', '_', '%' ), array( '\\\\', '\\_', '\\%' ), $source_prefix ) . '%';
 				try {
-					$connection->query(
-						"UPDATE `{$target_meta_table}` SET meta_key = CONCAT('{$esc_new}', SUBSTRING(meta_key, " . ( $source_len + 1 ) . ")) WHERE meta_key LIKE '{$esc_like}%'"
+					$connection->execute(
+						"UPDATE `{$target_meta_table}` SET meta_key = CONCAT(?, SUBSTRING(meta_key, ?)) WHERE meta_key LIKE ?",
+						array( $target_prefix, $source_len + 1, $like_param )
 					);
 				} catch ( \Throwable $e ) {
 					// Ignore if table missing.
 				}
 			}
 
-			$target_opt_table = str_replace( '`', '``', $target_prefix ) . 'options';
+			// 4. Update core options & locales using prepared statements
 			try {
-				$connection->query(
-					'UPDATE `' . $target_opt_table . "` SET option_value = '"
-					. $connection->escape( $new_url ) . "' WHERE option_name IN ('siteurl','home')"
+				$connection->execute(
+					"UPDATE `{$target_opt_table}` SET option_value = ? WHERE option_name IN ('siteurl','home')",
+					array( $new_url )
 				);
 
-				// Enforce site language based on the backup source locale
 				$target_locale = ! empty( $backupino_payload['locale'] ) ? (string) $backupino_payload['locale'] : 'en_US';
-				$esc_locale    = $connection->escape( $target_locale );
-				$connection->query(
-					"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('WPLANG', '{$esc_locale}', 'yes')"
+				$connection->execute(
+					"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('WPLANG', ?, 'yes')",
+					array( $target_locale )
 				);
 
-				// Update user locale in usermeta for all users
-				$target_meta_table = str_replace( '`', '``', $target_prefix ) . 'usermeta';
-				$connection->query(
-					"UPDATE `{$target_meta_table}` SET meta_value = '{$esc_locale}' WHERE meta_key = 'locale'"
+				$connection->execute(
+					"UPDATE `{$target_meta_table}` SET meta_value = ? WHERE meta_key = 'locale'",
+					array( $target_locale )
 				);
 
-				// Save post-migration admin notice flag in WordPress options
-				$esc_notice_key = $connection->escape( 'backupino_migration_notice' );
-				$esc_notice_val = $connection->escape( '1' );
-				$connection->query(
-					"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('{$esc_notice_key}', '{$esc_notice_val}', 'yes')"
+				$connection->execute(
+					"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES ('backupino_migration_notice', '1', 'yes')"
 				);
 
-				// Flush rewrite rules cache so WordPress recalculates fresh permalinks (including Persian/Unicode slugs)
-				$connection->query( "DELETE FROM `{$target_opt_table}` WHERE option_name = 'rewrite_rules'" );
+				$connection->execute(
+					"DELETE FROM `{$target_opt_table}` WHERE option_name = 'rewrite_rules'"
+				);
 			} catch ( \Throwable $e ) {
 				// Non-fatal if options table is customized or missing.
 			}
 
-			// Repair unconfigured Elementor dynamic tags with settings="" so PHP 8 never throws TypeError on get_tag_data_content
-			$target_meta_table  = str_replace( '`', '``', $target_prefix ) . 'postmeta';
-			$target_posts_table = str_replace( '`', '``', $target_prefix ) . 'posts';
+			// Repair unconfigured Elementor dynamic tags with settings=""
+			$target_postmeta_table = str_replace( '`', '``', $target_prefix ) . 'postmeta';
+			$target_posts_table    = str_replace( '`', '``', $target_prefix ) . 'posts';
 			try {
-				$connection->query( "UPDATE `{$target_meta_table}` SET meta_value = REPLACE(meta_value, 'settings=\"\"', 'settings=\"%7B%7D\"') WHERE meta_key = '_elementor_data' AND meta_value LIKE '%settings=\"\"%'" );
-				$connection->query( "UPDATE `{$target_meta_table}` SET meta_value = REPLACE(meta_value, 'settings=\\\"\\\"', 'settings=\\\"%7B%7D\\\"') WHERE meta_key = '_elementor_data' AND meta_value LIKE '%settings=\\\"\\\"%'" );
+				$connection->query( "UPDATE `{$target_postmeta_table}` SET meta_value = REPLACE(meta_value, 'settings=\"\"', 'settings=\"%7B%7D\"') WHERE meta_key = '_elementor_data' AND meta_value LIKE '%settings=\"\"%'" );
+				$connection->query( "UPDATE `{$target_postmeta_table}` SET meta_value = REPLACE(meta_value, 'settings=\\\"\\\"', 'settings=\\\"%7B%7D\\\"') WHERE meta_key = '_elementor_data' AND meta_value LIKE '%settings=\\\"\\\"%'" );
 				$connection->query( "UPDATE `{$target_posts_table}` SET post_content = REPLACE(post_content, 'settings=\"\"', 'settings=\"%7B%7D\"') WHERE post_content LIKE '%settings=\"\"%'" );
 				$connection->query( "UPDATE `{$target_posts_table}` SET post_content = REPLACE(post_content, 'settings=\\\"\\\"', 'settings=\\\"%7B%7D\\\"') WHERE post_content LIKE '%settings=\\\"\\\"%'" );
 			} catch ( \Throwable $e ) {
 				// Non-fatal if tables missing.
 			}
 
-			// Auto-heal any orphaned WordPress placeholder hashes ({sha256}) in post_name from previous exports
+			// Auto-heal any orphaned WordPress placeholder hashes ({sha256}) in post_name with prepared statements
 			try {
-				$rows_with_hash = $connection->rows( "SELECT `ID`, `post_name` FROM `{$target_posts_table}` WHERE `post_name` LIKE '%{%}%'" );
+				$rows_with_hash = $connection->fetch_all( "SELECT `ID`, `post_name` FROM `{$target_posts_table}` WHERE `post_name` LIKE '%{%}%'" );
 				foreach ( $rows_with_hash as $r_hash ) {
 					$post_slug = (string) ( $r_hash['post_name'] ?? '' );
 					if ( preg_match( '/\{[a-f0-9]{64}\}/i', $post_slug ) ) {
 						$fixed_slug = (string) preg_replace( '/\{[a-f0-9]{64}\}/i', '%', $post_slug );
-						$connection->query(
-							"UPDATE `{$target_posts_table}` SET `post_name` = '" . $connection->escape( $fixed_slug ) . "' WHERE `ID` = " . (int) $r_hash['ID']
+						$connection->execute(
+							"UPDATE `{$target_posts_table}` SET `post_name` = ? WHERE `ID` = ?",
+							array( $fixed_slug, (int) $r_hash['ID'] )
 						);
 					}
 				}
@@ -608,15 +705,16 @@ switch ( $backupino_action ) {
 				// Non-fatal.
 			}
 
-			// Auto-heal any orphaned WordPress placeholder hashes ({sha256}) in _elementor_data
+			// Auto-heal any orphaned WordPress placeholder hashes ({sha256}) in _elementor_data with prepared statements
 			try {
-				$meta_with_hash = $connection->rows( "SELECT `meta_id`, `meta_value` FROM `{$target_meta_table}` WHERE `meta_key` = '_elementor_data' AND `meta_value` LIKE '%{%}%'" );
+				$meta_with_hash = $connection->fetch_all( "SELECT `meta_id`, `meta_value` FROM `{$target_postmeta_table}` WHERE `meta_key` = '_elementor_data' AND `meta_value` LIKE '%{%}%'" );
 				foreach ( $meta_with_hash as $m_hash ) {
 					$meta_val = (string) ( $m_hash['meta_value'] ?? '' );
 					if ( preg_match( '/\{[a-f0-9]{64}\}/i', $meta_val ) ) {
 						$fixed_meta = (string) preg_replace( '/\{[a-f0-9]{64}\}/i', '%', $meta_val );
-						$connection->query(
-							"UPDATE `{$target_meta_table}` SET `meta_value` = '" . $connection->escape( $fixed_meta ) . "' WHERE `meta_id` = " . (int) $m_hash['meta_id']
+						$connection->execute(
+							"UPDATE `{$target_postmeta_table}` SET `meta_value` = ? WHERE `meta_id` = ?",
+							array( $fixed_meta, (int) $m_hash['meta_id'] )
 						);
 					}
 				}
@@ -674,7 +772,7 @@ switch ( $backupino_action ) {
 		if ( isset( $connection ) && isset( $target_opt_table ) ) {
 			try {
 				// 1. WPS Hide Login
-				$whl_row = $connection->rows( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = 'whl_page' LIMIT 1" );
+				$whl_row = $connection->fetch_all( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = ? LIMIT 1", array( 'whl_page' ) );
 				if ( ! empty( $whl_row[0]['option_value'] ) ) {
 					$val = trim( (string) $whl_row[0]['option_value'] );
 					if ( '' !== $val ) {
@@ -684,7 +782,7 @@ switch ( $backupino_action ) {
 
 				// 2. All In One Security (AIOWPS)
 				if ( '' === $detected_login_slug ) {
-					$aiowps_row = $connection->rows( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = 'aio_wp_security_configs' LIMIT 1" );
+					$aiowps_row = $connection->fetch_all( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = ? LIMIT 1", array( 'aio_wp_security_configs' ) );
 					if ( ! empty( $aiowps_row[0]['option_value'] ) ) {
 						$aiowps_data = @unserialize( (string) $aiowps_row[0]['option_value'], array( 'allowed_classes' => false ) );
 						if ( is_array( $aiowps_data ) && ! empty( $aiowps_data['aiowps_enable_rename_login_page'] ) && ! empty( $aiowps_data['aiowps_login_page_slug'] ) ) {
@@ -695,7 +793,7 @@ switch ( $backupino_action ) {
 
 				// 3. iThemes / Solid Security
 				if ( '' === $detected_login_slug ) {
-					$itsec_row = $connection->rows( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = 'itsec-storage' LIMIT 1" );
+					$itsec_row = $connection->fetch_all( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = ? LIMIT 1", array( 'itsec-storage' ) );
 					if ( ! empty( $itsec_row[0]['option_value'] ) ) {
 						$itsec_data = @unserialize( (string) $itsec_row[0]['option_value'], array( 'allowed_classes' => false ) );
 						if ( is_array( $itsec_data ) && isset( $itsec_data['hide-backend'] ) && is_array( $itsec_data['hide-backend'] ) ) {
@@ -708,7 +806,7 @@ switch ( $backupino_action ) {
 
 				// 4. Perfmatters
 				if ( '' === $detected_login_slug ) {
-					$perf_row = $connection->rows( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = 'perfmatters_options' LIMIT 1" );
+					$perf_row = $connection->fetch_all( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = ? LIMIT 1", array( 'perfmatters_options' ) );
 					if ( ! empty( $perf_row[0]['option_value'] ) ) {
 						$perf_data = @unserialize( (string) $perf_row[0]['option_value'], array( 'allowed_classes' => false ) );
 						if ( is_array( $perf_data ) && ! empty( $perf_data['login_url'] ) ) {
@@ -719,7 +817,7 @@ switch ( $backupino_action ) {
 
 				// 5. WP Cerber
 				if ( '' === $detected_login_slug ) {
-					$cerber_row = $connection->rows( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = 'cerber_login_path' LIMIT 1" );
+					$cerber_row = $connection->fetch_all( "SELECT option_value FROM `{$target_opt_table}` WHERE option_name = ? LIMIT 1", array( 'cerber_login_path' ) );
 					if ( ! empty( $cerber_row[0]['option_value'] ) ) {
 						$val = trim( (string) $cerber_row[0]['option_value'] );
 						if ( '' !== $val ) {
@@ -739,9 +837,9 @@ switch ( $backupino_action ) {
 		$backupino_state->set( 'finished', true );
 		$backupino_state->save();
 
-		// Dispatch restore notification to Telegram or Bale if configured
-		if ( isset( $backupino_payload['notify'] ) && is_array( $backupino_payload['notify'] ) ) {
-			$notif        = $backupino_payload['notify'];
+		// Enqueue restore notification in WordPress options so it is dispatched cleanly via WordPress HTTP API on first boot
+		if ( ! empty( $backupino_payload['notify']['enabled'] ) && isset( $connection ) && isset( $target_opt_table ) ) {
+			$notif        = (array) $backupino_payload['notify'];
 			$site_name    = ! empty( $backupino_payload['site_name'] ) ? (string) $backupino_payload['site_name'] : $new_url;
 			$admin_url    = $admin_login_url;
 			$restore_date = gmdate( 'Y-m-d H:i' );
@@ -760,11 +858,21 @@ switch ( $backupino_action ) {
 				$tpl
 			);
 
-			if ( ! empty( $notif['telegram_enabled'] ) && ! empty( $notif['telegram_token'] ) && ! empty( $notif['telegram_chat_id'] ) ) {
-				backupino_send_bot_message( 'telegram', (string) $notif['telegram_token'], (string) $notif['telegram_chat_id'], $restore_msg );
-			}
-			if ( ! empty( $notif['bale_enabled'] ) && ! empty( $notif['bale_token'] ) && ! empty( $notif['bale_chat_id'] ) ) {
-				backupino_send_bot_message( 'bale', (string) $notif['bale_token'], (string) $notif['bale_chat_id'], $restore_msg );
+			$queue_data = serialize(
+				array(
+					array(
+						'text'     => $restore_msg,
+						'attempts' => 0,
+					),
+				)
+			);
+			try {
+				$connection->execute(
+					"REPLACE INTO `{$target_opt_table}` (`option_name`, `option_value`, `autoload`) VALUES (?, ?, ?)",
+					array( 'backupino_notify_queue', $queue_data, 'no' )
+				);
+			} catch ( \Throwable $e ) {
+				// Non-fatal if table unavailable.
 			}
 		}
 
@@ -782,6 +890,25 @@ switch ( $backupino_action ) {
 
 	case 'cleanup':
 		$backupino_state->destroy();
+
+		// Restore preserved destination host php configuration (.user.ini / php.ini) if valid
+		foreach ( array( '.user.ini', 'php.ini' ) as $ini_file ) {
+			$orig_path = $backupino_dir . '/' . $ini_file . '.backupino-orig';
+			$dest_path = $backupino_dir . '/' . $ini_file;
+			if ( is_file( $orig_path ) && ! file_exists( $dest_path ) ) {
+				$content = (string) @file_get_contents( $orig_path );
+				$has_broken_prepend = false;
+				if ( preg_match( '/auto_prepend_file\s*=\s*[\'"]?([^\r\n\'"]+)[\'"]?/i', $content, $m ) ) {
+					$prepended = trim( $m[1] );
+					if ( '' !== $prepended && ! file_exists( $prepended ) ) {
+						$has_broken_prepend = true;
+					}
+				}
+				if ( ! $has_broken_prepend ) {
+					@rename( $orig_path, $dest_path );
+				}
+			}
+		}
 
 		$targets = array(
 			$backupino_dir . '/database.sql',
@@ -857,92 +984,4 @@ function sanitize_env( string $value ): string {
 	$value = trim( $value );
 
 	return '' === $value ? 'localhost' : preg_replace( '/[^A-Za-z0-9\.\-_:]/', '', $value );
-}
-
-/**
- * Send notification message via Telegram or Bale API.
- *
- * @param string $service Service ('telegram'|'bale').
- * @param string $token   Bot token.
- * @param string $chat_id Target chat or channel ID.
- * @param string $text    Message text.
- * @return bool
- */
-function backupino_send_bot_message( string $service, string $token, string $chat_id, string $text ): bool {
-	if ( '' === $token || '' === $chat_id || '' === trim( $text ) ) {
-		return false;
-	}
-
-	$url = 'telegram' === $service
-		? "https://api.telegram.org/bot{$token}/sendMessage"
-		: "https://tapi.bale.ai/bot{$token}/sendMessage";
-
-	if ( 'bale' === $service ) {
-		// Convert HTML links to Markdown links for Bale: <a href="URL">TEXT</a> -> [TEXT](URL)
-		$formatted = preg_replace( '/<a(?:\s+[^>]*)?\bhref=[\'"]([^\'"]+)[\'"][^>]*>(.*?)<\/a>/is', '[$2]($1)', $text );
-		$formatted = preg_replace( '/<(?:b|strong)>(.*?)<\/(?:b|strong)>/is', '*$1*', (string) $formatted );
-		$payload_text = strip_tags( (string) $formatted );
-		$parse_mode   = 'Markdown';
-	} else {
-		// Telegram: Convert Markdown [TEXT](URL) to HTML <a href="URL">TEXT</a>
-		$formatted = preg_replace( '/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/i', '<a href="$2">$1</a>', $text );
-		// Ensure any raw & inside <a href="..."> is escaped as &amp;
-		$payload_text = (string) preg_replace_callback(
-			'/(<a\s+href=[\'"])([^\'"]+)([\'"])/i',
-			static function( array $m ): string {
-				$url = htmlspecialchars( htmlspecialchars_decode( $m[2] ), ENT_COMPAT, 'UTF-8' );
-				return $m[1] . $url . $m[3];
-			},
-			(string) $formatted
-		);
-		$parse_mode = 'HTML';
-	}
-
-	$payload = json_encode(
-		array(
-			'chat_id'                  => $chat_id,
-			'text'                     => $payload_text,
-			'parse_mode'               => $parse_mode,
-			'disable_web_page_preview' => false,
-		)
-	);
-
-	if ( function_exists( 'curl_init' ) ) {
-		$ch = curl_init( $url );
-		if ( false !== $ch ) {
-			curl_setopt_array(
-				$ch,
-				array(
-					CURLOPT_POST           => true,
-					CURLOPT_POSTFIELDS     => $payload,
-					CURLOPT_RETURNTRANSFER => true,
-					CURLOPT_TIMEOUT        => 8,
-					CURLOPT_CONNECTTIMEOUT => 5,
-					CURLOPT_SSL_VERIFYPEER => true,
-					CURLOPT_SSL_VERIFYHOST => 2,
-					CURLOPT_HTTPHEADER     => array( 'Content-Type: application/json' ),
-				)
-			);
-			$res = curl_exec( $ch );
-			$http_code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
-			curl_close( $ch );
-			return 200 === (int) $http_code;
-		}
-	}
-
-	$opts = array(
-		'http' => array(
-			'method'  => 'POST',
-			'header'  => "Content-Type: application/json\r\n",
-			'content' => $payload,
-			'timeout' => 8,
-		),
-		'ssl' => array(
-			'verify_peer'      => true,
-			'verify_peer_name' => true,
-		),
-	);
-	$context = stream_context_create( $opts );
-	$res = @file_get_contents( $url, false, $context );
-	return false !== $res;
 }

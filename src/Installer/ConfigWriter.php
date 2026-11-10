@@ -141,6 +141,14 @@ final class ConfigWriter {
 					},
 					$content
 				);
+			} else {
+				$marker    = "require_once ABSPATH . 'wp-settings.php';";
+				$insertion = "\n\$table_prefix = '" . addcslashes( $prefix, "'\\" ) . "';\n";
+				if ( false !== strpos( $content, $marker ) ) {
+					$content = str_replace( $marker, $insertion . $marker, $content );
+				} else {
+					$content .= $insertion;
+				}
 			}
 		}
 

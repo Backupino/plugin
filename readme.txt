@@ -4,7 +4,7 @@ Tags: backup, restore, migration, clone, jalali
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -113,6 +113,14 @@ Security and stability maintenance release. Adds wp-content execution protection
 Initial production release of Backupino. Includes resumable backups, standalone installer, permanent login-gated download link, Telegram/Bale notifications, monthly scheduling with Jalali support, and 100% offline-first architecture.
 
 == Changelog ==
+
+= 1.0.4 =
+* Compliance: Removed unconsented public attribution text and credit links from public download landing page to comply with WordPress.org guidelines.
+* Compliance: Removed error_reporting and ini_set production calls, replacing them with output buffering cleanup in standalone installer.
+* Compliance: Eliminated raw cURL usage in standalone installer; post-restore notifications are safely enqueued and dispatched via native WordPress HTTP API (wp_remote_post).
+* Security: Eliminated all procedural mysqli_* database calls; standalone installer now relies exclusively on PDO with parameterized prepared statements.
+* Reliability: Quarantined server configuration files (.htaccess, .user.ini, php.ini) safely during extraction to prevent overwriting existing destination host configurations.
+* Compatibility: Added case-insensitive table prefix healing to automatically resolve mixed-case table prefixes and user roles/capabilities when migrating between Windows and Linux environments.
 
 = 1.0.3 =
 * Security: Implemented `ConfigWriter::redact_secrets()` to strip credentials and salts from `wp-config.php` during package build, injecting clean `backupino-wp-config.tpl` template and generating fresh cryptographic salts on restore.

@@ -162,6 +162,7 @@ final class Plugin {
 			( new Scheduler( $this ) )->register();
 			PublicDownload::register();
 			add_action( 'backupino_job_completed', array( $this, 'notify_completed_job' ) );
+			add_action( 'init', array( $this, 'maybe_flush_notifications' ), 20 );
 		} else {
 			add_action( 'admin_notices', array( $this, 'render_compatibility_notice' ) );
 		}
@@ -301,6 +302,18 @@ final class Plugin {
 		}
 
 		$this->notifier()->announce( $job, $this->site_name() );
+	}
+
+	/**
+	 * Flush any queued notifications via native WordPress HTTP API.
+	 *
+	 * @return void
+	 */
+	public function maybe_flush_notifications(): void {
+		$queue = get_option( 'backupino_notify_queue', array() );
+		if ( is_array( $queue ) && ! empty( $queue ) ) {
+			$this->notifier()->flush();
+		}
 	}
 
 	/**

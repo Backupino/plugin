@@ -249,9 +249,11 @@ final class UrlRewrite {
 			. implode( ', ', array_map( array( self::class, 'quote' ), $columns ) )
 			. ' FROM ' . self::quote( $table );
 
+		$select_params = array();
 		if ( '' !== $primary ) {
 			if ( null !== $cursor && '' !== $cursor ) {
-				$select .= ' WHERE ' . self::quote( $primary ) . ' > ' . $this->quoted( $cursor );
+				$select .= ' WHERE ' . self::quote( $primary ) . ' > ?';
+				$select_params[] = $cursor;
 			}
 
 			$select .= ' ORDER BY ' . self::quote( $primary ) . ' ASC';
@@ -259,7 +261,9 @@ final class UrlRewrite {
 
 		$select .= ' LIMIT ' . (int) $rows . ( '' !== $primary ? '' : ' OFFSET ' . (int) $offset );
 
-		$result = $this->connection->rows( $select );
+		$result = empty( $select_params )
+			? $this->connection->rows( $select )
+			: $this->connection->fetch_all( $select, $select_params );
 
 		if ( array() === $result ) {
 			return array(
@@ -281,22 +285,26 @@ final class UrlRewrite {
 				break;
 			}
 
-			$updates = array();
+			$updates       = array();
+			$update_params = array();
 
 			foreach ( $columns as $column ) {
 				$value = isset( $row[ $column ] ) ? (string) $row[ $column ] : '';
 				$new   = $this->replacer->text( $value );
 
 				if ( $new !== $value ) {
-					$updates[] = self::quote( $column ) . " = '" . $this->connection->escape( $new ) . "'";
+					$updates[]       = self::quote( $column ) . ' = ?';
+					$update_params[] = $new;
 					++$changes;
 				}
 			}
 
 			if ( array() !== $updates && '' !== $primary && isset( $row[ $primary ] ) ) {
-				$this->connection->query(
+				$update_params[] = (string) $row[ $primary ];
+				$this->connection->execute(
 					'UPDATE ' . self::quote( $table ) . ' SET ' . implode( ', ', $updates )
-					. ' WHERE ' . self::quote( $primary ) . ' = ' . $this->quoted( (string) $row[ $primary ] )
+					. ' WHERE ' . self::quote( $primary ) . ' = ?',
+					$update_params
 				);
 			}
 
@@ -316,20 +324,6 @@ final class UrlRewrite {
 			'cursor'   => $next,
 			'offset'   => $finished ? 0 : $offset + $processed_count,
 		);
-	}
-
-	/**
-	 * Quote a value for a WHERE clause.
-	 *
-	 * @param string $value Value.
-	 * @return string
-	 */
-	private function quoted( string $value ): string {
-		if ( ctype_digit( $value ) ) {
-			return $value;
-		}
-
-		return "'" . $this->connection->escape( $value ) . "'";
 	}
 
 	/**

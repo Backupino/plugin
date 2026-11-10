@@ -25,12 +25,30 @@ interface Connection {
 	public function query( string $sql ): bool;
 
 	/**
+	 * Execute a prepared statement with parameters.
+	 *
+	 * @param string $sql    SQL with ? placeholders.
+	 * @param array  $params Parameter values.
+	 * @return bool
+	 */
+	public function execute( string $sql, array $params = array() ): bool;
+
+	/**
 	 * Fetch rows as associative arrays.
 	 *
 	 * @param string $sql SQL.
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function rows( string $sql ): array;
+
+	/**
+	 * Fetch rows using a prepared statement with parameters.
+	 *
+	 * @param string $sql    SQL with ? placeholders.
+	 * @param array  $params Parameter values.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function fetch_all( string $sql, array $params = array() ): array;
 
 	/**
 	 * Escape a value.

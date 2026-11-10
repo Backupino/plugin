@@ -248,12 +248,12 @@ final class PublicDownload {
 			? BACKUPINO_URL . 'assets/js/public-download.js'
 			: plugins_url( 'assets/js/public-download.js', dirname( dirname( __DIR__ ) ) . '/backupino.php' );
 
-		wp_register_style( 'backupino-public-download', $css_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3' );
+		wp_register_style( 'backupino-public-download', $css_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.4' );
 		$inline_css = ':root { ' . $css_vars . ' } ' . $custom_styles;
 		wp_add_inline_style( 'backupino-public-download', $inline_css );
 		wp_enqueue_style( 'backupino-public-download' );
 
-		wp_register_script( 'backupino-public-download', $js_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3', true );
+		wp_register_script( 'backupino-public-download', $js_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.4', true );
 		wp_enqueue_script( 'backupino-public-download' );
 
 		nocache_headers();
@@ -271,7 +271,7 @@ final class PublicDownload {
 			<div class="card">
 				<div class="logo-badge">
 					<span>✓</span>
-					<span><?php esc_html_e( 'Backupino Verified Package', 'backupino' ); ?></span>
+					<span><?php esc_html_e( 'Verified Backup Package', 'backupino' ); ?></span>
 				</div>
 				<h1><?php esc_html_e( 'Download Backup Package', 'backupino' ); ?></h1>
 				<p class="subtitle"><?php echo esc_html( $site_name ); ?></p>
@@ -312,10 +312,6 @@ final class PublicDownload {
 						<li><?php esc_html_e( 'Upload both the .zip archive and installer.php into an empty directory on your destination server.', 'backupino' ); ?></li>
 						<li><?php esc_html_e( 'Open installer.php in your web browser and follow the on-screen steps.', 'backupino' ); ?></li>
 					</ol>
-				</div>
-
-				<div class="card-footer">
-					<span><?php esc_html_e( 'Powered by Backupino', 'backupino' ); ?></span>
 				</div>
 			</div>
 

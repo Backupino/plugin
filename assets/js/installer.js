@@ -309,6 +309,11 @@
 								var adminUrl = final.admin || (siteUrl ? siteUrl.replace(/\/+$/, "") + "/wp-login.php" : "/wp-login.php");
 								window.__adminUrl = adminUrl;
 								window.__siteUrl = siteUrl;
+								if (siteUrl && typeof fetch === "function") {
+									try {
+										fetch(siteUrl, { mode: "no-cors", credentials: "omit" }).catch(function () {});
+									} catch (e) {}
+								}
 								var doneUrlEl = document.getElementById("done-url");
 								if (doneUrlEl) { doneUrlEl.textContent = siteUrl; }
 							});

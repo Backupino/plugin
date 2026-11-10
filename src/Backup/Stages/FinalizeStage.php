@@ -206,7 +206,7 @@ final class FinalizeStage implements Stage {
 		$notify_settings = (array) $context->settings()->get( 'notify', array() );
 
 		$payload = array(
-			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3',
+			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.4',
 			'name'         => $name,
 			'token'        => Str::random( 16 ),
 			'archive'      => $name . '.zip',
@@ -220,12 +220,7 @@ final class FinalizeStage implements Stage {
 			'created'      => $context->clock()->now_mysql(),
 			'password'     => (string) $context->settings()->get( 'installer.password', '' ),
 			'notify'       => array(
-				'telegram_enabled'     => ! empty( $notify_settings['telegram_enabled'] ),
-				'telegram_token'       => (string) ( $notify_settings['telegram_token'] ?? '' ),
-				'telegram_chat_id'     => (string) ( $notify_settings['telegram_chat_id'] ?? '' ),
-				'bale_enabled'         => ! empty( $notify_settings['bale_enabled'] ),
-				'bale_token'           => (string) ( $notify_settings['bale_token'] ?? '' ),
-				'bale_chat_id'         => (string) ( $notify_settings['bale_chat_id'] ?? '' ),
+				'enabled'              => ( ! empty( $notify_settings['telegram_enabled'] ) && ! empty( $notify_settings['telegram_token'] ) && ! empty( $notify_settings['telegram_chat_id'] ) ) || ( ! empty( $notify_settings['bale_enabled'] ) && ! empty( $notify_settings['bale_token'] ) && ! empty( $notify_settings['bale_chat_id'] ) ),
 				'msg_restore_template' => (string) ( $notify_settings['msg_restore_template'] ?? '' ),
 			),
 		);

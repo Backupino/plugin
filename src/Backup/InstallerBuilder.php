@@ -33,7 +33,6 @@ final class InstallerBuilder {
 		'State.php',
 		'Env.php',
 		'Connection.php',
-		'MysqliConnection.php',
 		'PdoConnection.php',
 		'ConnectionManager.php',
 		'Extractor.php',
@@ -178,7 +177,7 @@ final class InstallerBuilder {
 		$notify_settings = (array) $settings->get( 'notify', array() );
 
 		$defaults = array(
-			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.3',
+			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.4',
 			'name'         => $name,
 			'token'        => \Backupino\Support\Str::random( 16 ),
 			'archive'      => $archive_name,
@@ -192,12 +191,7 @@ final class InstallerBuilder {
 			'created'      => gmdate( 'Y-m-d H:i:s' ),
 			'password'     => (string) $settings->get( 'installer.password', '' ),
 			'notify'       => array(
-				'telegram_enabled'     => ! empty( $notify_settings['telegram_enabled'] ),
-				'telegram_token'       => (string) ( $notify_settings['telegram_token'] ?? '' ),
-				'telegram_chat_id'     => (string) ( $notify_settings['telegram_chat_id'] ?? '' ),
-				'bale_enabled'         => ! empty( $notify_settings['bale_enabled'] ),
-				'bale_token'           => (string) ( $notify_settings['bale_token'] ?? '' ),
-				'bale_chat_id'         => (string) ( $notify_settings['bale_chat_id'] ?? '' ),
+				'enabled'              => ( ! empty( $notify_settings['telegram_enabled'] ) && ! empty( $notify_settings['telegram_token'] ) && ! empty( $notify_settings['telegram_chat_id'] ) ) || ( ! empty( $notify_settings['bale_enabled'] ) && ! empty( $notify_settings['bale_token'] ) && ! empty( $notify_settings['bale_chat_id'] ) ),
 				'msg_restore_template' => (string) ( $notify_settings['msg_restore_template'] ?? '' ),
 			),
 		);
