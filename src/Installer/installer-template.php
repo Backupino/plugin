@@ -598,21 +598,56 @@ switch ( $backupino_action ) {
 			$target_meta_table = str_replace( '`', '``', $target_prefix ) . 'usermeta';
 
 			$target_roles_key = $target_prefix . 'user_roles';
+
+			// (a) If table prefix changed (e.g. wp_ to blog_), migrate all prefix-specific user roles in options table
+			if ( $source_prefix !== $target_prefix && '' !== $source_prefix && '' !== $target_prefix ) {
+				$source_len = strlen( $source_prefix );
+				$like_roles = str_replace( array( '\\', '_', '%' ), array( '\\\\', '\\_', '\\%' ), $source_prefix ) . '%user_roles';
+				try {
+					$connection->execute(
+						"UPDATE `{$target_opt_table}` SET option_name = CONCAT(?, SUBSTRING(option_name, ?)) WHERE option_name LIKE ?",
+						array( $target_prefix, $source_len + 1, $like_roles )
+					);
+				} catch ( \Throwable $e ) {
+					// Ignore if option not present.
+				}
+			}
+
+			// (b) Normalize casing or heal existing user_roles row (Windows lower_case_table_names or prefix changes)
 			try {
 				$opt_rows = $connection->fetch_all( "SELECT option_name FROM `{$target_opt_table}` WHERE option_name LIKE '%user_roles'" );
 				foreach ( $opt_rows as $orow ) {
 					$oname = (string) ( $orow['option_name'] ?? '' );
-					if ( 0 === strcasecmp( $oname, $target_roles_key ) && $oname !== $target_roles_key ) {
-						$connection->execute(
-							"UPDATE `{$target_opt_table}` SET option_name = ? WHERE option_name = ?",
-							array( $target_roles_key, $oname )
-						);
+					if ( '' !== $oname && $oname !== $target_roles_key ) {
+						// Case-insensitive match (e.g. WpSite_user_roles -> wpsite_user_roles) or sole user_roles option
+						if ( 0 === strcasecmp( $oname, $target_roles_key ) || 1 === count( $opt_rows ) ) {
+							$connection->execute(
+								"UPDATE `{$target_opt_table}` SET option_name = ? WHERE option_name = ?",
+								array( $target_roles_key, $oname )
+							);
+							break;
+						}
 					}
 				}
 			} catch ( \Throwable $e ) {
 				// Ignore if option not present.
 			}
 
+			// (c) If table prefix changed, migrate all prefix-specific keys in usermeta (capabilities, user_level, etc.)
+			if ( $source_prefix !== $target_prefix && '' !== $source_prefix && '' !== $target_prefix ) {
+				$source_len = strlen( $source_prefix );
+				$like_param = str_replace( array( '\\', '_', '%' ), array( '\\\\', '\\_', '\\%' ), $source_prefix ) . '%';
+				try {
+					$connection->execute(
+						"UPDATE `{$target_meta_table}` SET meta_key = CONCAT(?, SUBSTRING(meta_key, ?)) WHERE meta_key LIKE ?",
+						array( $target_prefix, $source_len + 1, $like_param )
+					);
+				} catch ( \Throwable $e ) {
+					// Ignore if table missing.
+				}
+			}
+
+			// (d) Normalize casing for capabilities & user_level in usermeta
 			try {
 				$meta_rows = $connection->fetch_all( "SELECT DISTINCT meta_key FROM `{$target_meta_table}` WHERE meta_key LIKE '%capabilities' OR meta_key LIKE '%user_level'" );
 				foreach ( $meta_rows as $mrow ) {
@@ -632,19 +667,6 @@ switch ( $backupino_action ) {
 				}
 			} catch ( \Throwable $e ) {
 				// Ignore if usermeta missing.
-			}
-
-			if ( $source_prefix !== $target_prefix && '' !== $source_prefix && '' !== $target_prefix ) {
-				$source_len = strlen( $source_prefix );
-				$like_param = str_replace( array( '\\', '_', '%' ), array( '\\\\', '\\_', '\\%' ), $source_prefix ) . '%';
-				try {
-					$connection->execute(
-						"UPDATE `{$target_meta_table}` SET meta_key = CONCAT(?, SUBSTRING(meta_key, ?)) WHERE meta_key LIKE ?",
-						array( $target_prefix, $source_len + 1, $like_param )
-					);
-				} catch ( \Throwable $e ) {
-					// Ignore if table missing.
-				}
 			}
 
 			// 4. Update core options & locales using prepared statements
@@ -983,5 +1005,5 @@ switch ( $backupino_action ) {
 function sanitize_env( string $value ): string {
 	$value = trim( $value );
 
-	return '' === $value ? 'localhost' : preg_replace( '/[^A-Za-z0-9\.\-_:]/', '', $value );
+	return '' === $value ? 'localhost' : preg_replace( '/[^A-Za-z0-9\.\-_:\/\[\]]/', '', $value );
 }

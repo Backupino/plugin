@@ -34,22 +34,41 @@ final class PdoConnection implements Connection {
 	private $error = '';
 
 	/**
-	 * Constructor.
+	 * Build PDO MySQL DSN string from configuration array.
 	 *
-	 * @param array<string, mixed> $config Connection configuration.
-	 * @return void
+	 * Handles WordPress DB_HOST variations including host:port, host:/path/to/socket,
+	 * IPv6 [::1]:port, and explicit socket/port options.
 	 *
-	 * @throws \RuntimeException When the connection fails.
+	 * @param array<string, mixed> $config Database configuration.
+	 * @return string DSN string.
 	 */
-	public function __construct( array $config ) {
-		if ( ! extension_loaded( 'pdo_mysql' ) ) {
-			throw new \RuntimeException( 'pdo_mysql is not available' );
+	public static function build_dsn( array $config ): string {
+		$raw_host = (string) ( $config['host'] ?? 'localhost' );
+		$port     = isset( $config['port'] ) ? (int) $config['port'] : 0;
+		$db       = (string) ( $config['name'] ?? '' );
+		$socket   = (string) ( $config['socket'] ?? '' );
+
+		$host = $raw_host;
+		if ( '' === $socket && false !== strpos( $host, ':/' ) ) {
+			$parts  = explode( ':/', $host, 2 );
+			$host   = $parts[0];
+			$socket = '/' . $parts[1];
+		} elseif ( preg_match( '/^\[([a-fA-F0-9:]+)\]:(\d+)$/', $host, $m ) ) {
+			$host = $m[1];
+			if ( 0 === $port ) {
+				$port = (int) $m[2];
+			}
+		} elseif ( false !== strpos( $host, ':' ) ) {
+			$parts = explode( ':', $host, 2 );
+			$host  = $parts[0];
+			if ( 0 === $port && is_numeric( $parts[1] ) ) {
+				$port = (int) $parts[1];
+			}
 		}
 
-		$host   = (string) ( $config['host'] ?? 'localhost' );
-		$port   = isset( $config['port'] ) ? (int) $config['port'] : 0;
-		$db     = (string) ( $config['name'] ?? '' );
-		$socket = (string) ( $config['socket'] ?? '' );
+		if ( '' === $host ) {
+			$host = 'localhost';
+		}
 
 		$dsn = 'mysql:charset=utf8mb4';
 
@@ -62,6 +81,24 @@ final class PdoConnection implements Connection {
 		if ( '' !== $db ) {
 			$dsn .= ';dbname=' . $db;
 		}
+
+		return $dsn;
+	}
+
+	/**
+	 * Constructor.
+	 *
+	 * @param array<string, mixed> $config Connection configuration.
+	 * @return void
+	 *
+	 * @throws \RuntimeException When the connection fails.
+	 */
+	public function __construct( array $config ) {
+		if ( ! extension_loaded( 'pdo_mysql' ) ) {
+			throw new \RuntimeException( 'pdo_mysql is not available' );
+		}
+
+		$dsn = self::build_dsn( $config );
 
 		try {
 			$this->pdo = new \PDO(
