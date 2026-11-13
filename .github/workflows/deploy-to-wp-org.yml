@@ -1,0 +1,47 @@
+name: Deploy to WordPress.org
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (do not commit to SVN)'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: deploy-wporg
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to WordPress.org Plugin Repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: wp-cli
+          coverage: none
+
+      - name: Generate POT translation catalog
+        run: |
+          mkdir -p languages
+          wp i18n make-pot . languages/backupino.pot --slug=backupino --domain=backupino
+
+      - name: WordPress Plugin Deploy to SVN
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        with:
+          generate-translations: false
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: backupino
+          ASSETS_DIR: .wordpress-org
+          DRY_RUN: ${{ github.event.inputs.dry_run || false }}
