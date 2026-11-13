@@ -30,6 +30,13 @@ jobs:
           tools: wp-cli
           coverage: none
 
+      - name: Extract version from readme.txt
+        id: version
+        run: |
+          VERSION=$(grep -i -m1 'Stable tag:' readme.txt | awk -F: '{print $2}' | tr -d ' \r\n')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Detected version: ${VERSION}"
+
       - name: Generate POT translation catalog
         run: |
           mkdir -p languages
@@ -37,11 +44,10 @@ jobs:
 
       - name: WordPress Plugin Deploy to SVN
         uses: 10up/action-wordpress-plugin-deploy@stable
-        with:
-          generate-translations: false
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SLUG: backupino
+          VERSION: ${{ steps.version.outputs.version }}
           ASSETS_DIR: .wordpress-org
           DRY_RUN: ${{ github.event.inputs.dry_run || false }}
