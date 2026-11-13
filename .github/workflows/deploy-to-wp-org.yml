@@ -15,6 +15,9 @@ concurrency:
   group: deploy-wporg
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     name: Deploy to WordPress.org Plugin Repository
@@ -37,17 +40,27 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Detected version: ${VERSION}"
 
-      - name: Generate POT translation catalog
+      - name: Update POT and compile MO translations
         run: |
           mkdir -p languages
           wp i18n make-pot . languages/backupino.pot --slug=backupino --domain=backupino
+          wp i18n make-mo languages
 
       - name: WordPress Plugin Deploy to SVN
+        id: deploy
         uses: 10up/action-wordpress-plugin-deploy@stable
+        with:
+          generate-zip: true
+          dry-run: ${{ inputs.dry_run == true }}
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SLUG: backupino
           VERSION: ${{ steps.version.outputs.version }}
           ASSETS_DIR: .wordpress-org
-          DRY_RUN: ${{ github.event.inputs.dry_run || false }}
+
+      - name: Upload release zip asset
+        if: github.event_name == 'release' && inputs.dry_run != true
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.deploy.outputs.zip-path }}

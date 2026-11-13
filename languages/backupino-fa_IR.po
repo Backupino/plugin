@@ -1,0 +1,1149 @@
+# Persian translation for Backupino
+# Copyright (C) 2026 Backupino
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Backupino 1.0.5\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/backupino\n"
+"Last-Translator: Backupino Team <support@backupino.com>\n"
+"Language-Team: Persian <support@backupino.com>\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2026-11-13 15:30+0330\n"
+"X-Generator: Backupino i18n build tool\n"
+"X-Domain: backupino\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/Backup/Stages/ScanStage.php:86
+msgid "%1$s files found (%2$s)."
+msgstr "%1$s فایل شناسایی شد (%2$s)."
+
+#: src/Backup/Stages/DatabaseStage.php:99
+msgid "%1$s rows from %2$s tables (%3$s)."
+msgstr "%1$s سطر از %2$s جدول (%3$s)."
+
+#: src/Notify/Notifier.php:241
+msgid "%s messenger is not enabled or not fully configured."
+msgstr "پیام‌رسان %s فعال نیست یا پیکربندی آن کامل نشده است."
+
+#: templates/settings.php:601
+msgid "100% privacy-compliant: zero tracking, zero telemetry, strictly optional notifications."
+msgstr "100٪ منطبق با حریم خصوصی: بدون ردیابی، بدون تله‌متری و اطلاع‌رسانی کاملاً اختیاری."
+
+#: templates/dashboard.php:288
+msgid "Actions"
+msgstr "عملیات"
+
+#: templates/settings.php:199
+msgid "Active"
+msgstr "فعال"
+
+#: templates/settings.php:496
+msgid "Admin Login URL"
+msgstr "آدرس ورود به پیشخوان"
+
+#: templates/settings.php:20
+#: templates/settings.php:274
+msgid "Archive & Exclusions"
+msgstr "بایگانی و استثناها"
+
+#: src/Installer/Env.php:77
+msgid "Archive checksum"
+msgstr "چک‌سام آرشیو"
+
+#: src/Installer/Env.php:70
+msgid "Archive file"
+msgstr "فایل آرشیو"
+
+#: src/Installer/Env.php:50
+msgid "Archive support"
+msgstr "پشتیبانی از آرشیو"
+
+#: src/Backup/Stages/FilesStage.php:40
+msgid "Archiving files"
+msgstr "بایگانی فایل‌ها"
+
+#: templates/settings.php:529
+msgid "Automatic recurring backups trigger via WordPress cron. In Persian locale, monthly schedules automatically align with the start of the Jalali month."
+msgstr "پشتیبان‌گیری خودکار دوره‌ای از طریق کرون وردپرس انجام می‌شود. در زبان فارسی، زمان‌بندی‌های ماهانه به‌طور خودکار با ابتدای ماه شمسی همگام می‌گردند."
+
+#: templates/settings.php:460
+#: templates/settings.php:492
+msgid "Available tags:"
+msgstr "متغیرهای قابل استفاده:"
+
+#: templates/settings.php:463
+msgid "Backup Contents"
+msgstr "محتوای پشتیبان"
+
+#: templates/settings.php:465
+msgid "Backup Date"
+msgstr "تاریخ ایجاد"
+
+#: templates/dashboard.php:392
+msgid "Backup Details & Log"
+msgstr "جزئیات و لاگ نسخه پشتیبان"
+
+#: src/Admin/Admin.php:116
+msgid "Backup Job"
+msgstr "عملیات پشتیبان‌گیری"
+
+#: templates/settings.php:446
+msgid "Backup Message Template"
+msgstr "الگوی پیام پشتیبان‌گیری"
+
+#: templates/settings.php:464
+msgid "Backup Size"
+msgstr "حجم فایل"
+
+#: templates/settings.php:209
+msgid "Backup Storage Destination"
+msgstr "مقصد ذخیره‌سازی پشتیبان"
+
+#: templates/settings.php:320
+msgid "Backup archives and standalone installers are stored locally in a secure, protected directory on your server."
+msgstr "آرشیوهای پشتیبان و اینستالرهای مستقل در یک دایرکتوری امن و محافظت‌شده روی سرور شما نگهداری می‌شوند."
+
+#: src/Admin/Admin.php:118
+msgid "Backup cancelled."
+msgstr "عملیات پشتیبان‌گیری لغو شد."
+
+#: templates/dashboard.php:201
+msgid "Backup in Progress"
+msgstr "در حال ایجاد نسخه پشتیبان"
+
+#: src/Admin/Admin.php:48
+#: templates/dashboard.php:34
+#: templates/settings.php:64
+msgid "Backupino"
+msgstr "بکاپینو"
+
+#: src/Admin/Admin.php:47
+msgid "Backupino - WordPress Backup & Migration"
+msgstr "بکاپینو - پشتیبان‌گیری و انتقال وردپرس"
+
+#: templates/dashboard.php:40
+#: templates/settings.php:70
+msgid "Backupino Navigation"
+msgstr "ناوبری بکاپینو"
+
+#: templates/settings.php:357
+msgid "Backupino can announce every finished backup, with the permanent download link, in Telegram or Bale. You can enable either or both messengers simultaneously."
+msgstr "بکاپینو می‌تواند اتمام هر نسخه پشتیبان را به همراه لینک مستقیم در تلگرام یا بله اطلاع‌رسانی کند. می‌توانید یک یا هر دو پیام‌رسان را به‌طور همزمان فعال کنید."
+
+#: src/Plugin.php:190
+msgid "Backupino cannot run on this server:"
+msgstr "بکاپینو امکان اجرا روی این سرور را ندارد:"
+
+#: src/Core/Compatibility.php:49
+msgid "Backupino requires PHP %1$s or newer. This server runs PHP %2$s."
+msgstr "بکاپینو به PHP %1$s یا جدیدتر نیاز دارد. نسخه فعلی این سرور %2$s است."
+
+#: src/Admin/Admin.php:185
+msgid "Backupino — Site Migration Completed!"
+msgstr "بکاپینو — بازگردانی و انتقال وب‌سایت تکمیل شد!"
+
+#: src/Core/Activator.php:45
+#: src/Cron/Scheduler.php:62
+msgid "Backupino: every minute"
+msgstr "بکاپینو: هر دقیقه"
+
+#: src/Admin/Admin.php:58
+#: src/Admin/Admin.php:59
+#: templates/dashboard.php:43
+#: templates/settings.php:73
+msgid "Backups"
+msgstr "پشتیبان‌ها"
+
+#: src/Notify/ChannelFactory.php:37
+msgid "Bale"
+msgstr "بله"
+
+#: templates/settings.php:416
+msgid "Bale Bot Token"
+msgstr "توکن بازوی بله"
+
+#: templates/settings.php:425
+msgid "Bale Chat ID"
+msgstr "شناسه گفتگوی بله"
+
+#: templates/settings.php:406
+msgid "Bale Notification"
+msgstr "اطلاع‌رسانی بله"
+
+#: templates/settings.php:426
+msgid "Bale numeric chat or channel ID."
+msgstr "شناسه عددی چت یا کانال بله."
+
+#: templates/settings.php:304
+msgid "Batch size for slicing file packing per tick. Default 1000 files ensures fast backup on modern systems."
+msgstr "تعداد فایل‌های فشرده‌سازی در هر گام. پیش‌فرض 1000 فایل سرعت بالا و پایداری را تضمین می‌کند."
+
+#: templates/dashboard.php:178
+msgid "Before updating plugins"
+msgstr "قبل از به‌روزرسانی افزونه‌ها"
+
+#: templates/settings.php:28
+#: templates/settings.php:354
+msgid "Bot Notifications"
+msgstr "اطلاع‌رسانی ربات"
+
+#: templates/settings.php:417
+msgid "Bot token obtained from Bale @BotFather."
+msgstr "توکن ربات دریافت شده از BotFather@ بله."
+
+#: templates/settings.php:376
+msgid "Bot token obtained from Telegram @BotFather."
+msgstr "توکن ربات دریافت شده از BotFather@ تلگرام."
+
+#: templates/dashboard.php:207
+msgid "Cancel"
+msgstr "انصراف"
+
+#: templates/dashboard.php:205
+msgid "Cancel backup job"
+msgstr "لغو فرآیند پشتیبان‌گیری"
+
+#: src/Admin/Admin.php:117
+msgid "Cancel the current backup job?"
+msgstr "آیا از لغو عملیات جاری پشتیبان‌گیری مطمئن هستید؟"
+
+#: src/Jobs/JobStatus.php:62
+msgid "Cancelled"
+msgstr "لغو شده"
+
+#: src/Jobs/JobRunner.php:308
+msgid "Cancelled by the user."
+msgstr "توسط کاربر لغو شد."
+
+#: templates/dashboard.php:216
+msgid "Cataloging"
+msgstr "فهرست‌بندی"
+
+#: templates/dashboard.php:318
+msgid "Click to view log and details"
+msgstr "مشاهده لاگ و جزئیات پشتیبان"
+
+#: templates/dashboard.php:394
+#: templates/dashboard.php:442
+msgid "Close"
+msgstr "بستن"
+
+#: templates/settings.php:156
+msgid "Compatible"
+msgstr "سازگار"
+
+#: src/Jobs/JobStatus.php:58
+msgid "Completed"
+msgstr "تکمیل شده"
+
+#: templates/settings.php:569
+msgid "Configure preset credentials for the standalone migration installer generated with each backup."
+msgstr "تنظیم اطلاعات پیش‌فرض ورود برای اینستالر مهاجرت مستقل که همراه با هر پشتیبان تولید می‌شود."
+
+#: templates/settings.php:277
+msgid "Configure which files, folders, or sizes should be skipped during backup creation to save disk space and maximize speed."
+msgstr "تنظیم پوشه‌ها، فایل‌ها یا حجم‌هایی که هنگام پشتیبان‌گیری نادیده گرفته می‌شوند تا حجم آرشیو کاهش و سرعت افزایش یابد."
+
+#: templates/dashboard.php:82
+msgid "Copy link"
+msgstr "کپی لینک"
+
+#: src/Backup/Stages/DatabaseStage.php:40
+msgid "Copying the database"
+msgstr "پشتیبان‌گیری از پایگاه داده"
+
+#: src/Backup/ZipArchiveWriter.php:109
+msgid "Could not add file to archive: %s"
+msgstr "افزودن فایل به آرشیو ممکن نبود: %s"
+
+#: src/Admin/RestController.php:237
+msgid "Could not create backup job in database."
+msgstr "امکان ایجاد عملیات پشتیبان‌گیری در پایگاه داده وجود ندارد."
+
+#: src/Backup/ZipArchiveWriter.php:73
+msgid "Could not open the archive (error %d)."
+msgstr "امکان باز کردن آرشیو وجود نداشت (خطای %d)."
+
+#: src/Storage/LocalStorage.php:97
+msgid "Could not read the package file."
+msgstr "خواندن فایل بسته ممکن نبود."
+
+#: src/Storage/LocalStorage.php:104
+msgid "Could not write the package file."
+msgstr "نوشتن فایل بسته ممکن نبود."
+
+#: templates/dashboard.php:148
+msgid "Create a backup"
+msgstr "ایجاد پشتیبان"
+
+#: templates/dashboard.php:184
+msgid "Create backup"
+msgstr "ایجاد پشتیبان"
+
+#: templates/dashboard.php:283
+msgid "Created"
+msgstr "تاریخ ایجاد"
+
+#: src/Download/PublicDownload.php:289
+msgid "Created Date"
+msgstr "تاریخ ایجاد"
+
+#: templates/settings.php:611
+msgid "Current Version:"
+msgstr "نسخه فعلی:"
+
+#: templates/dashboard.php:220
+msgid "Database"
+msgstr "پایگاه داده"
+
+#: templates/settings.php:189
+msgid "Database Driver"
+msgstr "درایور پایگاه داده"
+
+#: src/Backup/Stages/DatabaseStage.php:61
+msgid "Database dump disabled."
+msgstr "خروجی پایگاه داده غیرفعال است."
+
+#: templates/dashboard.php:407
+msgid "Date"
+msgstr "تاریخ"
+
+#: templates/settings.php:583
+msgid "Default new URL (optional)"
+msgstr "آدرس اینترنتی جدید پیش‌فرض (اختیاری)"
+
+#: templates/dashboard.php:373
+msgid "Delete"
+msgstr "حذف"
+
+#: templates/dashboard.php:372
+msgid "Delete backup package"
+msgstr "حذف بسته پشتیبان"
+
+#: src/Admin/Admin.php:112
+msgid "Delete this package permanently?"
+msgstr "آیا این بسته برای همیشه حذف شود؟"
+
+#: templates/dashboard.php:98
+msgid "Destination"
+msgstr "مقصد ذخیره‌سازی"
+
+#: templates/dashboard.php:72
+msgid "Direct link that always serves the newest completed backup. Requires administrator login before download."
+msgstr "لینک مستقیم و همیشگی برای دانلود آخرین نسخه سالم؛ پیش از دانلود نیازمند ورود مدیر سایت است."
+
+#: templates/dashboard.php:350
+msgid "Download Archive"
+msgstr "دانلود بسته"
+
+#: templates/dashboard.php:349
+#: templates/dashboard.php:423
+msgid "Download Archive (.zip)"
+msgstr "دانلود آرشیو فشرده (.zip)"
+
+#: src/Download/PublicDownload.php:297
+msgid "Download Archive + Installer (Both)"
+msgstr "دانلود همزمان بسته پشتیبان و فایل نصبی"
+
+#: templates/dashboard.php:365
+msgid "Download Archive and Installer simultaneously"
+msgstr "دانلود همزمان بسته پشتیبان و فایل نصبی"
+
+#: src/Download/PublicDownload.php:301
+msgid "Download Backup Archive (.zip)"
+msgstr "دانلود بسته پشتیبان (.zip)"
+
+#: src/Download/PublicDownload.php:267
+#: src/Download/PublicDownload.php:276
+msgid "Download Backup Package"
+msgstr "دانلود بسته پشتیبان"
+
+#: templates/dashboard.php:366
+msgid "Download Both"
+msgstr "دانلود هر دو فایل"
+
+#: templates/dashboard.php:357
+msgid "Download Installer"
+msgstr "دانلود نصاب"
+
+#: templates/dashboard.php:426
+msgid "Download Installer (.php)"
+msgstr "دانلود فایل نصبی (.php)"
+
+#: src/Download/PublicDownload.php:305
+#: templates/dashboard.php:356
+msgid "Download Installer (installer.php)"
+msgstr "دانلود فایل نصاب (installer.php)"
+
+#: templates/settings.php:466
+msgid "Download Link"
+msgstr "لینک دانلود مستقیم"
+
+#: templates/dashboard.php:169
+msgid "Dumps all WordPress database tables into pure standard SQL without relying on mysqldump."
+msgstr "خروجی استاندارد و کامل تمام جداول پایگاه‌داده بدون وابستگی به mysqldump."
+
+#: templates/dashboard.php:136
+msgid "Each backup includes installer.php alongside the archive zip. You can copy both files to an empty domain or localhost and run installer.php in your browser to restore the entire website in 3 steps without pre-installing WordPress."
+msgstr "هر پشتیبان شامل فایل اینستالر مستقل (installer.php) در کنار فایل فشرده است. می‌توانید این دو فایل را به هاست خام یا لوکال منتقل کرده و با اجرای installer.php در مرورگر، کل سایت را بدون نیاز به نصب اولیه وردپرس در 3 مرحله بازیابی کنید."
+
+#: templates/settings.php:410
+msgid "Enable Bale"
+msgstr "فعال‌سازی بله"
+
+#: templates/settings.php:369
+msgid "Enable Telegram"
+msgstr "فعال‌سازی تلگرام"
+
+#: templates/settings.php:181
+msgid "Enabled"
+msgstr "فعال"
+
+#: templates/settings.php:535
+msgid "Enables recurring background backup jobs using WordPress built-in WP-Cron scheduler."
+msgstr "فعال‌سازی پشتیبان‌گیری خودکار در پس‌زمینه با استفاده از کران وردپرس."
+
+#: templates/settings.php:201
+msgid "Encrypted"
+msgstr "رمزنگاری‌شده"
+
+#: templates/settings.php:111
+msgid "Environment"
+msgstr "محیط سرور"
+
+#: templates/dashboard.php:152
+msgid "Everything is packed into one archive plus a standalone installer that rebuilds the site on any empty server."
+msgstr "همه‌چیز در یک آرشیو به همراه اینستالر مستقل بسته‌بندی می‌شود که سایت را روی هر سرور خالی بازسازی می‌کند."
+
+#: templates/settings.php:287
+msgid "Examples: wp-content/uploads/2022/, *.mp4, node_modules/. Cache and backup folders are always skipped automatically."
+msgstr "نمونه‌ها: wp-content/uploads/2022/، *.mp4، node_modules/. پوشه‌های کش و پشتیبان همواره به‌صورت خودکار مستثنی هستند."
+
+#: templates/settings.php:282
+msgid "Excluded paths and patterns (one per line)"
+msgstr "مسیرها و الگوهای مستثنی (هر خط یک مورد)"
+
+#: src/Storage/LocalStorage.php:75
+msgid "Executable files cannot be stored in backup storage."
+msgstr "فایل‌های اجرایی مجاز به ذخیره در فضای پشتیبان نیستند."
+
+#: templates/dashboard.php:433
+msgid "Execution Log"
+msgstr "لاگ اجرایی عملیات"
+
+#: templates/settings.php:171
+msgid "Execution Timeout"
+msgstr "سقف زمان اجرا"
+
+#: src/Jobs/JobStatus.php:60
+msgid "Failed"
+msgstr "ناموفق"
+
+#: src/Download/PublicDownload.php:285
+msgid "File Size"
+msgstr "حجم فایل"
+
+#: src/Backup/Stages/FilesStage.php:77
+msgid "File archiving disabled."
+msgstr "بایگانی فایل‌ها غیرفعال است."
+
+#: src/Backup/ZipArchiveWriter.php:99
+msgid "File is not readable: %s"
+msgstr "فایل قابل خواندن نیست: %s"
+
+#: templates/dashboard.php:224
+msgid "Files"
+msgstr "فایل‌ها"
+
+#: templates/settings.php:295
+msgid "Files exceeding this size threshold will be skipped to keep backups fast and reliable. Enter 0 for no limit."
+msgstr "فایل‌های بزرگ‌تر از این حجم نادیده گرفته می‌شوند تا فرآیند سبک بماند. مقدار 0 یعنی بدون محدودیت."
+
+#: templates/settings.php:303
+msgid "Files packed per request"
+msgstr "تعداد فایل‌های بسته‌بندی در هر درخواست"
+
+#: src/Backup/Stages/FinalizeStage.php:43
+msgid "Finalizing the package"
+msgstr "اتمام و ثبت نهایی بسته"
+
+#: templates/settings.php:283
+msgid "Folders or file patterns that will be excluded from the backup archive (e.g. wp-content/cache/, *.mp4)."
+msgstr "پوشه‌ها یا الگوهای فایلی که از آرشیو پشتیبان مستثنی می‌شوند (مانند wp-content/cache/ یا mp4.*)."
+
+#: src/Installer/Env.php:90
+msgid "Free disk space"
+msgstr "فضای خالی دیسک"
+
+#: templates/settings.php:541
+msgid "Frequency"
+msgstr "دوره تکرار"
+
+#: templates/settings.php:469
+#: templates/settings.php:500
+msgid "HTML formatting tags such as <b>bold</b> and <a href=\"...\">links</a> are supported."
+msgstr "تگ‌های قالب‌بندی متنی مانند <b>درشت</b> و <a href=\"...\">لینک‌ها</a> پشتیبانی می‌شوند."
+
+#: src/Download/PublicDownload.php:310
+msgid "How to restore or migrate:"
+msgstr "راهنمای بازگردانی یا انتقال:"
+
+#: templates/settings.php:199
+msgid "Inactive"
+msgstr "غیرفعال"
+
+#: templates/dashboard.php:168
+msgid "Include database"
+msgstr "شامل پایگاه داده"
+
+#: templates/dashboard.php:163
+msgid "Include files"
+msgstr "شامل فایل‌ها"
+
+#: templates/dashboard.php:164
+msgid "Includes WordPress core files, active themes, plugins, and uploads media library."
+msgstr "شامل فایل‌های هسته وردپرس، قالب‌های فعال، افزونه‌ها و رسانه‌های آپلودشده."
+
+#: templates/dashboard.php:245
+msgid "Initializing backup job…"
+msgstr "در حال آماده‌سازی عملیات پشتیبان‌گیری…"
+
+#: templates/dashboard.php:228
+msgid "Installer"
+msgstr "اینستالر"
+
+#: src/Download/PublicDownload.php:140
+msgid "Installer file not found."
+msgstr "فایل نصاب یافت نشد."
+
+#: templates/settings.php:575
+msgid "Installer password (optional)"
+msgstr "رمز عبور اینستالر (اختیاری)"
+
+#: src/Admin/DownloadHandler.php:56
+msgid "Invalid file name."
+msgstr "نام فایل نامعتبر است."
+
+#: templates/settings.php:212
+msgid "Isolated, protected path used to safely store archive files away from public access:"
+msgstr "مسیر حفاظت‌شده و ایزوله برای نگهداری ایمن فایل‌های آرشیو به دور از دسترسی عمومی:"
+
+#: templates/dashboard.php:156
+msgid "JavaScript is required to build backups."
+msgstr "برای ایجاد پشتیبان، فعال بودن جاوااسکریپت الزامی است."
+
+#: templates/settings.php:553
+msgid "Keep at most (backups)"
+msgstr "حداکثر تعداد نگهداری (نسخه‌ها)"
+
+#: templates/dashboard.php:175
+msgid "Label (optional)"
+msgstr "برچسب (اختیاری)"
+
+#: src/Admin/Admin.php:114
+msgid "Link copied to the clipboard."
+msgstr "لینک در کلیپ‌بورد کپی شد."
+
+#: templates/dashboard.php:257
+msgid "Live Activity Feed"
+msgstr "گزارش زنده فعالیت‌ها"
+
+#: templates/settings.php:145
+msgid "Live diagnostic health report of active server extensions, filesystem permissions, and system stability."
+msgstr "گزارش تشخیصی زنده از افزونه‌های فعال سرور، دسترسی‌های فایل و پایداری سیستم."
+
+#: templates/dashboard.php:436
+msgid "Loading logs…"
+msgstr "در حال بارگذاری لاگ‌ها…"
+
+#: templates/settings.php:554
+msgid "Maximum number of recent backups to keep on disk. Older packages are automatically pruned to save space."
+msgstr "حداکثر تعداد آخرین نسخه‌ها برای نگهداری روی هاست؛ نسخه‌های قدیمی‌تر خودکار حذف می‌شوند."
+
+#: templates/dashboard.php:106
+#: templates/settings.php:120
+#: templates/settings.php:162
+msgid "Memory Limit"
+msgstr "محدودیت حافظه"
+
+#: templates/dashboard.php:411
+msgid "Message"
+msgstr "پیام"
+
+#: templates/settings.php:449
+msgid "Message template sent to messengers when a backup finishes."
+msgstr "الگوی پیامی که پس از پایان پشتیبان‌گیری به پیام‌رسان‌ها ارسال می‌شود."
+
+#: templates/settings.php:481
+msgid "Message template sent to messengers when the site is restored using the installer."
+msgstr "الگوی پیامی که پس از بازگردانی سایت توسط فایل نصبی به پیام‌رسان‌ها ارسال می‌شود."
+
+#: templates/settings.php:546
+msgid "Monthly (first day of the month)"
+msgstr "ماهانه (روز اول هر ماه)"
+
+#: templates/settings.php:542
+msgid "Monthly execution triggers on the 1st of each Persian/Gregorian month based on site language."
+msgstr "اجرای ماهانه بر اساس زبان سایت در اول هر ماه خورشیدی یا میلادی انجام می‌شود."
+
+#: src/Installer/Env.php:56
+msgid "MySQL driver"
+msgstr "درایور MySQL"
+
+#: src/Core/Compatibility.php:66
+msgid "Neither the Zip extension nor PclZip is available, so archives cannot be created."
+msgstr "نه اکستنشن Zip و نه PclZip در دسترس نیستند؛ بنابراین امکان ایجاد آرشیو وجود ندارد."
+
+#: templates/settings.php:495
+msgid "New Site URL"
+msgstr "آدرس جدید سایت"
+
+#: templates/dashboard.php:295
+msgid "No backups yet."
+msgstr "هنوز پشتیبانی وجود ندارد."
+
+#: src/Notify/Notifier.php:251
+msgid "No messenger is configured."
+msgstr "هیچ پیام‌رسانی تنظیم نشده است."
+
+#: templates/settings.php:251
+msgid "No recent log entries found."
+msgstr "هیچ لاگی ثبت نشده است."
+
+#: src/Installer/Env.php:92
+msgid "Not restricted / host managed"
+msgstr "نامحدود / مدیریت‌شده توسط هاست"
+
+#: templates/settings.php:165
+#: templates/settings.php:174
+msgid "OK"
+msgstr "تایید"
+
+#: src/Cron/Scheduler.php:69
+msgid "Once monthly (first day of the month)"
+msgstr "ماهانه (روز اول هر ماه)"
+
+#: src/Download/PublicDownload.php:313
+msgid "Open installer.php in your web browser and follow the on-screen steps."
+msgstr "فایل installer.php را در مرورگر وب خود باز کرده و مراحل روی صفحه را دنبال کنید."
+
+#: templates/settings.php:198
+msgid "OpenSSL"
+msgstr "OpenSSL"
+
+#: src/Core/Compatibility.php:100
+msgid "OpenSSL extension is missing: secure HTTPS communications will be unavailable."
+msgstr "اکستنشن OpenSSL وجود ندارد: ارتباط امن HTTPS در دسترس نخواهد بود."
+
+#: templates/dashboard.php:176
+msgid "Optional note to identify why this backup was created (e.g. before updating WooCommerce)."
+msgstr "عنوان دلخواه برای یادآوری دلیل ایجاد این پشتیبان (مثلاً قبل از به‌روزرسانی ووکامرس)."
+
+#: templates/dashboard.php:102
+#: templates/settings.php:116
+#: templates/settings.php:153
+msgid "PHP Version"
+msgstr "نسخه PHP"
+
+#: src/Installer/Env.php:40
+msgid "PHP extension: %s"
+msgstr "اکستنشن PHP: %s"
+
+#: src/Core/Compatibility.php:84
+msgid "PHP memory limit is %s. Backups will run in small chunks, but 128M or more is recommended."
+msgstr "محدودیت حافظه PHP برابر با %s است. پشتیبان‌گیری در تکه‌های کوچک اجرا می‌شود، اما حداقل ۱۲۸ مگابایت توصیه می‌گردد."
+
+#: src/Installer/Env.php:33
+msgid "PHP version"
+msgstr "نسخه PHP"
+
+#: templates/dashboard.php:418
+msgid "Package"
+msgstr "بسته"
+
+#: src/Backup/Stages/FinalizeStage.php:130
+msgid "Package %1$s is ready (%2$s)."
+msgstr "بسته %1$s آماده است (%2$s)."
+
+#: src/Download/PublicDownload.php:281
+msgid "Package Name"
+msgstr "نام بسته"
+
+#: templates/dashboard.php:286
+msgid "Package name"
+msgstr "نام بسته"
+
+#: src/Storage/LocalStorage.php:119
+msgid "Package not found."
+msgstr "بسته یافت نشد."
+
+#: templates/dashboard.php:232
+msgid "Packaging"
+msgstr "بسته‌بندی"
+
+#: src/Backup/Stages/FilesStage.php:155
+msgid "Packed %1$s of %2$s files (%3$s skipped, %4$s)."
+msgstr "بسته‌بندی %1$s از %2$s فایل (%3$s صرف‌نظر، %4$s)."
+
+#: templates/settings.php:576
+msgid "Password protecting installer.php when accessed via browser during migration or restoration."
+msgstr "رمز عبور محافظت از installer.php در زمان بازیابی یا مهاجرت از طریق مرورگر."
+
+#: templates/settings.php:181
+msgid "PclZip fallback"
+msgstr "جایگزین PclZip"
+
+#: templates/dashboard.php:71
+msgid "Permanent download link"
+msgstr "لینک دائمی دانلود"
+
+#: templates/settings.php:612
+msgid "Plugin updates are delivered securely through the official WordPress repository."
+msgstr "به‌روزرسانی‌های افزونه با امنیت کامل از طریق مخزن رسمی وردپرس ارائه می‌شوند."
+
+#: templates/settings.php:584
+msgid "Preset target URL for search & replace when migrating to a known new domain."
+msgstr "آدرس اینترنتی مقصد برای جستجو و جایگزینی خودکار در زمان مهاجرت به دامنه جدید."
+
+#: templates/settings.php:325
+msgid "Primary Destination Driver"
+msgstr "درایور مقصد اصلی"
+
+#: templates/settings.php:326
+msgid "Primary storage destination for completed packages. Local protected storage is used."
+msgstr "مقصد اصلی ذخیره‌سازی بسته‌ها. ذخیره‌سازی محلی محافظت‌شده استفاده می‌شود."
+
+#: templates/dashboard.php:285
+#: templates/dashboard.php:403
+msgid "Progress"
+msgstr "پیشرفت"
+
+#: templates/settings.php:126
+msgid "Protected"
+msgstr "محافظت‌شده"
+
+#: templates/settings.php:340
+msgid "Protected Directory Path"
+msgstr "مسیر دایرکتوری محافظت‌شده"
+
+#: src/Jobs/JobStatus.php:54
+msgid "Queued"
+msgstr "در صف"
+
+#: templates/dashboard.php:258
+msgid "RUNNING"
+msgstr "در حال اجرا"
+
+#: templates/settings.php:183
+msgid "Ready"
+msgstr "آماده"
+
+#: templates/dashboard.php:261
+msgid "Ready to start backup..."
+msgstr "آماده برای شروع پشتیبان‌گیری..."
+
+#: templates/settings.php:600
+msgid "Receive critical security notices, product updates, and roadmap announcements (opt-in)."
+msgstr "دریافت اطلاعیه‌های مهم امنیتی، به‌روزرسانی‌های محصول و اخبار نقشه راه (اختیاری)."
+
+#: templates/dashboard.php:277
+msgid "Recent backups"
+msgstr "پشتیبان‌های اخیر"
+
+#: templates/settings.php:32
+#: templates/settings.php:526
+msgid "Recurring Schedule"
+msgstr "زمان‌بندی دوره‌ای"
+
+#: templates/settings.php:233
+msgid "Refresh"
+msgstr "تازه‌سازی"
+
+#: templates/settings.php:497
+msgid "Restoration Date"
+msgstr "تاریخ بازگردانی"
+
+#: templates/settings.php:478
+msgid "Restoration Message Template"
+msgstr "الگوی پیام بازگردانی سایت"
+
+#: templates/settings.php:218
+msgid "Run Storage Write Test"
+msgstr "آزمایش نوشتن در فضای ذخیره‌سازی"
+
+#: templates/settings.php:534
+msgid "Run automatic backups"
+msgstr "اجرای خودکار پشتیبان‌گیری"
+
+#: src/Jobs/JobStatus.php:56
+msgid "Running"
+msgstr "در حال اجرا"
+
+#: templates/settings.php:623
+msgid "Save settings"
+msgstr "ذخیره تنظیمات"
+
+#: src/Backup/Stages/ScanStage.php:39
+msgid "Scanning files"
+msgstr "اسکن و بررسی فایل‌ها"
+
+#: src/Cron/Scheduler.php:115
+msgid "Scheduled backup"
+msgstr "پشتیبان زمان‌بندی‌شده"
+
+#: src/Backup/Stages/FinalizeStage.php:78
+msgid "Sealing the archive…"
+msgstr "در حال بسته‌بندی نهایی آرشیو…"
+
+#: src/Admin/Admin.php:67
+#: src/Admin/Admin.php:68
+#: src/Admin/Admin.php:160
+#: templates/dashboard.php:47
+#: templates/settings.php:77
+msgid "Settings"
+msgstr "تنظیمات"
+
+#: templates/settings.php:90
+msgid "Settings Navigation"
+msgstr "فهرست تنظیمات"
+
+#: src/Admin/Admin.php:113
+msgid "Settings saved."
+msgstr "تنظیمات ذخیره شد."
+
+#: templates/settings.php:462
+#: templates/settings.php:494
+msgid "Site Name"
+msgstr "نام سایت"
+
+#: templates/dashboard.php:287
+#: templates/dashboard.php:419
+msgid "Size"
+msgstr "حجم"
+
+#: templates/settings.php:294
+msgid "Skip files larger than (MB, 0 = no limit)"
+msgstr "صرف‌نظر از فایل‌های بزرگ‌تر از (مگابایت، 0 = بدون محدودیت)"
+
+#: src/Installer/Extractor.php:136
+msgid "Skipped unsafe entry: %s"
+msgstr "از ورودی ناامن صرف‌نظر شد: %s"
+
+#: templates/settings.php:36
+#: templates/settings.php:566
+msgid "Standalone Installer"
+msgstr "نصاب مستقل"
+
+#: templates/dashboard.php:132
+msgid "Standalone Restore"
+msgstr "بازیابی مستقل"
+
+#: src/Admin/Admin.php:109
+msgid "Starting…"
+msgstr "در حال شروع…"
+
+#: templates/dashboard.php:284
+#: templates/dashboard.php:399
+msgid "Status"
+msgstr "وضعیت"
+
+#: templates/dashboard.php:93
+msgid "Storage & Environment"
+msgstr "فضای ذخیره‌سازی و سرور"
+
+#: templates/settings.php:24
+#: templates/settings.php:317
+msgid "Storage Destination"
+msgstr "مقصد ذخیره‌سازی"
+
+#: templates/settings.php:124
+msgid "Storage Status"
+msgstr "وضعیت فضای ذخیره‌سازی"
+
+#: templates/dashboard.php:116
+msgid "Storage folder:"
+msgstr "پوشه ذخیره‌سازی:"
+
+#: src/Admin/RestController.php:455
+msgid "Storage is writable."
+msgstr "فضای ذخیره‌سازی قابل نوشتن است."
+
+#: templates/settings.php:192
+msgid "Streaming"
+msgstr "جریان زنده"
+
+#: templates/settings.php:229
+msgid "System & Activity Log Stream"
+msgstr "جریان لاگ‌های سیستم و فعالیت‌ها"
+
+#: templates/settings.php:243
+msgid "System Activity Log (Last 100 entries)"
+msgstr "لاگ فعالیت سیستم (100 ورودی اخیر)"
+
+#: templates/settings.php:40
+msgid "System Status"
+msgstr "وضعیت سیستم"
+
+#: templates/settings.php:141
+msgid "System Status & Diagnostics"
+msgstr "وضعیت سیستم و گزارش سلامت"
+
+#: src/Notify/ChannelFactory.php:36
+msgid "Telegram"
+msgstr "تلگرام"
+
+#: templates/settings.php:375
+msgid "Telegram Bot Token"
+msgstr "توکن ربات تلگرام"
+
+#: templates/settings.php:384
+msgid "Telegram Chat ID"
+msgstr "شناسه چت تلگرام"
+
+#: templates/settings.php:365
+msgid "Telegram Notification"
+msgstr "اطلاع‌رسانی تلگرام"
+
+#: templates/settings.php:385
+msgid "Telegram numeric chat or channel ID."
+msgstr "شناسه عددی چت یا کانال تلگرام."
+
+#: templates/settings.php:436
+msgid "Test Bale"
+msgstr "آزمایش بله"
+
+#: templates/settings.php:395
+msgid "Test Telegram"
+msgstr "آزمایش تلگرام"
+
+#: src/Admin/Admin.php:115
+msgid "Test message sent."
+msgstr "پیام آزمایشی ارسال شد."
+
+#: templates/dashboard.php:122
+msgid "Test storage"
+msgstr "آزمایش ذخیره‌سازی"
+
+#: src/Core/Compatibility.php:59
+msgid "The PHP extension \"%s\" is required but not loaded."
+msgstr "اکستنشن PHP به نام \"%s\" الزامی است اما بارگذاری نشده است."
+
+#: src/Backup/Stages/DatabaseStage.php:77
+msgid "The SQL dump file could not be opened."
+msgstr "فایل خروجی SQL باز نشد."
+
+#: src/Installer/Extractor.php:74
+msgid "The Zip extension is not available on this server."
+msgstr "اکستنشن Zip روی این سرور در دسترس نیست."
+
+#: src/Backup/ZipArchiveWriter.php:60
+msgid "The Zip extension is not available."
+msgstr "اکستنشن Zip در دسترس نیست."
+
+#: src/Installer/Extractor.php:88
+msgid "The archive cannot be opened. Is it complete?"
+msgstr "امکان باز کردن آرشیو وجود ندارد. آیا فایل کامل است؟"
+
+#: src/Backup/ZipArchiveWriter.php:182
+msgid "The archive could not be finalized (%s)."
+msgstr "آرشیو نهایی‌سازی نشد (%s)."
+
+#: src/Backup/ZipArchiveWriter.php:182
+msgid "The archive could not be finalized."
+msgstr "آرشیو نهایی‌سازی نشد."
+
+#: src/Backup/Stages/FinalizeStage.php:85
+msgid "The archive could not be hashed."
+msgstr "محاسبه هش آرشیو با خطا مواجه شد."
+
+#: src/Installer/Extractor.php:80
+msgid "The archive file is missing."
+msgstr "فایل آرشیو یافت نشد."
+
+#: src/Backup/ZipArchiveWriter.php:89
+#: src/Backup/ZipArchiveWriter.php:132
+msgid "The archive is not open."
+msgstr "آرشیو باز نیست."
+
+#: templates/dashboard.php:268
+msgid "The backup process is running in the background. Please keep this browser window open until the operation finishes completely."
+msgstr "فرآیند پشتیبان‌گیری در پس‌زمینه در حال پردازش است. لطفاً تا پایان کامل عملیات، این پنجره مرورگر را باز نگه دارید."
+
+#: src/Notify/BotApi.php:191
+msgid "The bot token or chat id is missing."
+msgstr "توکن ربات یا شناسه چت تنظیم نشده است."
+
+#: src/Installer/ConnectionManager.php:74
+msgid "The database could not be created: %s"
+msgstr "امکان ایجاد دیتابیس وجود نداشت: %s"
+
+#: src/Admin/Admin.php:111
+msgid "The job failed."
+msgstr "عملیات با شکست مواجه شد."
+
+#: src/Notify/BotApi.php:251
+msgid "The messenger answered with HTTP %d."
+msgstr "پیام‌رسان با کد وضعیت HTTP %d پاسخ داد."
+
+#: src/Notify/BotApi.php:259
+msgid "The messenger rejected the message."
+msgstr "پیام‌رسان پیام را رد کرد."
+
+#: src/Backup/Stages/FinalizeStage.php:99
+msgid "The package metadata could not be generated."
+msgstr "فراداده‌های بسته ایجاد نشد."
+
+#: src/Support/Fs.php:281
+msgid "The requested file does not exist."
+msgstr "فایل درخواستی وجود ندارد."
+
+#: src/Download/PublicDownload.php:101
+msgid "There is no backup ready to download yet."
+msgstr "هنوز نسخه پشتیبانی آماده دانلود نیست."
+
+#: src/Notify/BotApi.php:197
+msgid "There is nothing to send."
+msgstr "پیامی برای ارسال وجود ندارد."
+
+#: src/Download/PublicDownload.php:93
+msgid "This download link is not valid."
+msgstr "این لینک دانلود معتبر نیست."
+
+#: templates/dashboard.php:76
+msgid "This link always points at the newest backup. It never expires, but the visitor must be signed in as an administrator before the download starts."
+msgstr "این لینک همیشه به جدیدترین نسخه پشتیبان اشاره دارد. تاریخ انقضا ندارد، اما پیش از آغاز دانلود باید به عنوان مدیر وارد شده باشید."
+
+#: templates/settings.php:344
+msgid "This location contains an .htaccess file blocking direct HTTP requests and indexing for maximum security."
+msgstr "این مسیر حاوی یک فایل htaccess. برای مسدودسازی دسترسی مستقیم HTTP و فهرست‌بندی جهت امنیت کامل است."
+
+#: src/Admin/DownloadHandler.php:77
+#: src/Admin/DownloadHandler.php:81
+msgid "This package no longer exists on the server."
+msgstr "این بسته دیگر روی سرور موجود نیست."
+
+#: src/Storage/LocalStorage.php:55
+msgid "This server"
+msgstr "همین سرور"
+
+#: templates/dashboard.php:110
+msgid "Time Limit"
+msgstr "محدودیت زمان اجرا"
+
+#: src/Download/PublicDownload.php:65
+msgid "Too Many Requests"
+msgstr "درخواست‌های بیش از حد مجاز"
+
+#: src/Download/PublicDownload.php:64
+msgid "Too many failed download attempts. Please try again in 10 minutes."
+msgstr "تلاش‌های ناموفق بیش از حد مجاز برای دانلود. لطفاً ۱۰ دقیقه دیگر مجدداً تلاش کنید."
+
+#: src/Jobs/JobRunner.php:172
+msgid "Unknown pipeline stage."
+msgstr "مرحله پایپ‌لاین نامشخص است."
+
+#: templates/settings.php:44
+#: templates/settings.php:596
+msgid "Updates & Privacy"
+msgstr "به‌روزرسانی‌ها و حریم خصوصی"
+
+#: src/Download/PublicDownload.php:312
+msgid "Upload both the .zip archive and installer.php into an empty directory on your destination server."
+msgstr "هر دو فایل (آرشیو zip و installer.php) را درون یک پوشه خالی در سرور مقصد آپلود کنید."
+
+#: src/Backup/Stages/FinalizeStage.php:260
+msgid "Upload failed: %s"
+msgstr "آپلود ناموفق بود: %s"
+
+#: src/Download/PublicDownload.php:274
+msgid "Verified Backup Package"
+msgstr "بسته پشتیبان تاییدشده"
+
+#: templates/settings.php:604
+msgid "We respect your privacy. No telemetry or personal data is collected or sent without your explicit consent."
+msgstr "ما به حریم خصوصی شما احترام می‌گذاریم. هیچ داده آماری یا شخصی بدون رضایت صریح شما جمع‌آوری یا ارسال نمی‌شود."
+
+#: src/Admin/Admin.php:110
+msgid "Working…"
+msgstr "در حال پردازش…"
+
+#: templates/settings.php:126
+msgid "Writable"
+msgstr "قابل نوشتن"
+
+#: src/Installer/Env.php:62
+msgid "Writable directory"
+msgstr "دایرکتوری با دسترسی نوشتن"
+
+#: src/Admin/DownloadHandler.php:50
+msgid "You are not allowed to download backups."
+msgstr "شما دسترسی لازم برای دانلود پشتیبان‌ها را ندارید."
+
+#: src/Admin/Admin.php:131
+#: src/Admin/Admin.php:144
+msgid "You are not allowed to manage backups."
+msgstr "شما دسترسی لازم برای مدیریت پشتیبان‌ها را ندارید."
+
+#: src/Admin/Admin.php:187
+msgid "Your website has been successfully restored and migrated to this location. Installer files and temporary data have been cleaned up."
+msgstr "وب‌سایت شما با موفقیت در این موقعیت جدید بازگردانی شد. فایل‌های نصبی و داده‌های موقت پاکسازی شدند."
+
+#: templates/settings.php:180
+msgid "ZipArchive"
+msgstr "ZipArchive"
+
+#: src/Installer/Env.php:52
+msgid "ZipArchive available"
+msgstr "ZipArchive در دسترس است"
+
+#: src/Installer/Env.php:52
+msgid "ZipArchive missing"
+msgstr "ZipArchive یافت نشد"
+
+#: src/Notify/Notifier.php:185
+msgid "database only"
+msgstr "فقط پایگاه داده"
+
+#: src/Notify/Notifier.php:183
+msgid "files and database"
+msgstr "فایل‌ها و پایگاه داده"
+
+#: src/Notify/Notifier.php:187
+msgid "files only"
+msgstr "فقط فایل‌ها"
+
+#: src/Installer/Env.php:42
+msgid "loaded"
+msgstr "فعال"
+
+#: src/Core/Compatibility.php:94
+msgid "max_execution_time is %d seconds. Long steps will be split automatically."
+msgstr "مقدار max_execution_time برابر با %d ثانیه است. مراحل طولانی به‌طور خودکار خرد می‌شوند."
+
+#: src/Core/Compatibility.php:104
+msgid "mbstring is missing: multibyte site titles may be truncated on URL replacement."
+msgstr "اکستنشن mbstring وجود ندارد: عناوین چندبایتی سایت ممکن است هنگام بازنویسی آدرس‌ها ناقص شوند."
+
+#: src/Installer/Env.php:42
+msgid "missing"
+msgstr "یافت نشد"
+
+#: src/Installer/Env.php:92
+msgid "needed"
+msgstr "مورد نیاز"
+
+#: src/Installer/Env.php:72
+msgid "not found: %s"
+msgstr "یافت نشد: %s"
+
+#: src/Installer/Env.php:58
+msgid "pdo_mysql missing"
+msgstr "اکستنشن pdo_mysql یافت نشد"
+
+#: src/Installer/Env.php:79
+msgid "verified against the package manifest"
+msgstr "تایید شده بر اساس مانیفست بسته"
+

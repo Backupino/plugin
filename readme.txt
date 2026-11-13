@@ -4,7 +4,7 @@ Tags: backup, restore, migration, clone, jalali
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,6 +100,12 @@ No. Notifications are completely optional and disabled by default. If you do not
 
 == Upgrade Notice ==
 
+= 1.0.5 =
+Bundled full Persian (fa_IR) localization, static PNG/SVG directory icons, and clean .distignore distribution packaging.
+
+= 1.0.4 =
+Security, compliance, and platform hardening release addressing WordPress.org directory requirements.
+
 = 1.0.3 =
 Security, compliance, and bug-fix release addressing official WordPress.org review requirements, externalizing assets, redacting database credentials, and fixing installer form submission.
 
@@ -113,6 +119,12 @@ Security and stability maintenance release. Adds wp-content execution protection
 Initial production release of Backupino. Includes resumable backups, standalone installer, permanent login-gated download link, Telegram/Bale notifications, monthly scheduling with Jalali support, and 100% offline-first architecture.
 
 == Changelog ==
+
+= 1.0.5 =
+* Localization: Bundled 100% complete Persian (fa_IR) translations (.po and .mo) for instant out-of-the-box native experience.
+* Assets: Added crisp static PNG fallbacks (icon-128x128.png and icon-256x256.png) and removed SVG animations per WordPress.org guidelines.
+* Packaging: Added .distignore and updated .gitattributes to ensure clean, non-leaking distribution packages in WordPress.org SVN.
+* Automation: Hardened GitHub Actions release deployment workflow with SVN asset synchronization and concurrency locking.
 
 = 1.0.4 =
 * Compliance: Removed unconsented public attribution text and credit links from public download landing page to comply with WordPress.org guidelines.

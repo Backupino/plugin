@@ -42,10 +42,7 @@
   <rect x="3" y="3" width="250" height="250" rx="53" fill="none" stroke="#60a5fa" stroke-opacity="0.22" stroke-width="2"/>
 
   <!-- Breathing Core Halo -->
-  <circle cx="128" cy="128" r="96" fill="url(#coreGlow)">
-    <animate attributeName="r" values="88;102;88" dur="3.2s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.75;1;0.75" dur="3.2s" repeatCount="indefinite"/>
-  </circle>
+  <circle cx="128" cy="128" r="96" fill="url(#coreGlow)" opacity="0.85"/>
 
   <!-- Outer Resumable Checkpoint Track -->
   <circle cx="128" cy="128" r="94" fill="none" stroke="#3b82f6" stroke-opacity="0.28" stroke-width="4" stroke-dasharray="6 10" stroke-linecap="round"/>
@@ -53,20 +50,16 @@
   <!-- Counter-Rotating Inner Data-Chunk Ring -->
   <g>
     <circle cx="128" cy="128" r="74" fill="none" stroke="#38bdf8" stroke-opacity="0.22" stroke-width="2.5" stroke-dasharray="16 26" stroke-linecap="round"/>
-    <animateTransform attributeName="transform" type="rotate" from="360 128 128" to="0 128 128" dur="9s" repeatCount="indefinite"/>
   </g>
 
-  <!-- Primary Rotating Backup & Restore Orbit -->
+  <!-- Primary Backup & Restore Orbit -->
   <g>
     <!-- Concentric 231-deg Orbital Sweep on r=94 -->
     <path d="M 205 181.92 A 94 94 0 1 1 121.44 34.23" fill="none" stroke="url(#orbitGrad)" stroke-width="9" stroke-linecap="round"/>
     <!-- Tangential Arrowhead -->
     <path d="M 141 34 L 118 21 L 124 34 L 118 47 Z" fill="#e0f2fe"/>
-    <!-- Pulsing Checkpoint Data Node -->
-    <circle cx="217.4" cy="98.95" r="4.5" fill="#38bdf8">
-      <animate attributeName="opacity" values="0.35;1;0.35" dur="1.6s" repeatCount="indefinite"/>
-    </circle>
-    <animateTransform attributeName="transform" type="rotate" from="0 128 128" to="360 128 128" dur="3.2s" repeatCount="indefinite"/>
+    <!-- Checkpoint Data Node -->
+    <circle cx="217.4" cy="98.95" r="4.5" fill="#38bdf8" opacity="0.9"/>
   </g>
 
   <!-- Central Backupino "B" Emblem with True Cutout Counters -->
@@ -94,8 +87,6 @@
       Z"/>
 
     <!-- Fast-Recovery Stem Chevron -->
-    <polygon points="88,115 108,128 88,141" fill="url(#boltGrad)">
-      <animate attributeName="opacity" values="0.7;1;0.7" dur="1.6s" repeatCount="indefinite"/>
-    </polygon>
+    <polygon points="88,115 108,128 88,141" fill="url(#boltGrad)" opacity="0.9"/>
   </g>
 </svg>

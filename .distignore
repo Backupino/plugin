@@ -1,0 +1,17 @@
+.git
+.github
+.gitignore
+.gitattributes
+.distignore
+.wordpress-org
+.editorconfig
+README.md
+README.fa.md
+composer.json
+composer.lock
+phpcs.xml
+phpcs.xml.dist
+phpunit.xml
+phpunit.xml.dist
+tests
+node_modules
