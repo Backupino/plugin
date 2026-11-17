@@ -175,7 +175,7 @@ final class FinalizeStage implements Stage {
 
 		$meta = array(
 			'generator'    => 'Backupino',
-			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.0',
+			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.1.0',
 			'created'      => $context->clock()->now_mysql(),
 			'site_url'     => home_url(),
 			'home_url'     => home_url(),
@@ -206,7 +206,7 @@ final class FinalizeStage implements Stage {
 		$notify_settings = (array) $context->settings()->get( 'notify', array() );
 
 		$payload = array(
-			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.4',
+			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.1.0',
 			'name'         => $name,
 			'token'        => Str::random( 16 ),
 			'archive'      => $name . '.zip',

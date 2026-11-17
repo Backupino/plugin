@@ -4,7 +4,7 @@ Tags: backup, restore, migration, clone, jalali
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,11 +100,14 @@ No. Notifications are completely optional and disabled by default. If you do not
 
 == Upgrade Notice ==
 
+= 1.1.0 =
+Feature and enhancement release. Adds optional WordPress administrator account creation during standalone restore, restores animated plugin icon, hands off translations to GlotPress, and updates translation catalog.
+
 = 1.0.5 =
 Bundled full Persian (fa_IR) localization, static PNG/SVG directory icons, and clean .distignore distribution packaging.
 
 = 1.0.4 =
-Security, compliance, and platform hardening release addressing WordPress.org directory requirements.
+Security and compliance update. Eliminates unconsented public attributions, replaces error_reporting and raw cURL with WordPress-standard mechanisms, replaces mysqli with PDO prepared statements, quarantines web server configs, and heals table prefix casing.
 
 = 1.0.3 =
 Security, compliance, and bug-fix release addressing official WordPress.org review requirements, externalizing assets, redacting database credentials, and fixing installer form submission.
@@ -119,6 +122,12 @@ Security and stability maintenance release. Adds wp-content execution protection
 Initial production release of Backupino. Includes resumable backups, standalone installer, permanent login-gated download link, Telegram/Bale notifications, monthly scheduling with Jalali support, and 100% offline-first architecture.
 
 == Changelog ==
+
+= 1.1.0 =
+* Feature: Added optional new WordPress Administrator account creation during restoration in the standalone installer with secure password hashing and capability assignment.
+* UI: Restored SMIL animated SVG plugin icon for enhanced branding while maintaining crisp high-resolution display.
+* i18n: Removed bundled local Persian .po/.mo translation files in favor of official WordPress.org GlotPress language packs (translate.wordpress.org).
+* i18n: Updated backupino.pot catalog with all newly introduced installer strings.
 
 = 1.0.5 =
 * Localization: Bundled 100% complete Persian (fa_IR) translations (.po and .mo) for instant out-of-the-box native experience.

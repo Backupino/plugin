@@ -36,6 +36,13 @@
 			cleanup_btn: "Delete installer files & Login",
 			open_admin: "Open wp-login.php →",
 			empty_db_lbl: "Empty existing database tables before import (Recommended)",
+			create_admin_opt: "Create a new WordPress Administrator account (Optional)",
+			admin_user_lbl: "Administrator Username",
+			admin_email_lbl: "Administrator Email",
+			admin_pass_lbl: "Administrator Password",
+			admin_created_title: "✓ New Administrator Account Created:",
+			show_btn: "Show",
+			hide_btn: "Hide",
 			ext_files: "Extracting files",
 			imp_db: "Importing database",
 			rew_urls: "Rewriting URLs",
@@ -73,6 +80,13 @@
 			cleanup_btn: "حذف فایل‌های نصبی و ورود به مدیریت",
 			open_admin: "ورود مستقیم به wp-login.php ←",
 			empty_db_lbl: "پاک‌سازی و حذف جداول موجود در دیتابیس قبل از درون‌ریزی (پیشنهادی)",
+			create_admin_opt: "ایجاد حساب کاربری مدیر کل جدید در وردپرس (اختیاری)",
+			admin_user_lbl: "نام کاربری مدیر",
+			admin_email_lbl: "ایمیل مدیر",
+			admin_pass_lbl: "رمز عبور مدیر",
+			admin_created_title: "✓ حساب کاربری مدیر کل جدید با موفقیت ایجاد شد:",
+			show_btn: "نمایش",
+			hide_btn: "مخفی",
 			ext_files: "در حال استخراج فایل‌ها",
 			imp_db: "در حال درون‌ریزی دیتابیس",
 			rew_urls: "در حال به‌روزرسانی آدرس‌ها و جداول",
@@ -277,7 +291,11 @@
 				db_pass: getVal("db_pass"),
 				prefix: getVal("prefix"),
 				new_url: getVal("new_url"),
-				empty_db: getChecked("empty_db")
+				empty_db: getChecked("empty_db"),
+				create_admin: getChecked("create_admin"),
+				admin_user: getVal("admin_user"),
+				admin_email: getVal("admin_email"),
+				admin_pass: getVal("admin_pass")
 			};
 
 			api("connect", payload).then(function (res) {
@@ -316,6 +334,14 @@
 								}
 								var doneUrlEl = document.getElementById("done-url");
 								if (doneUrlEl) { doneUrlEl.textContent = siteUrl; }
+								if (final.admin_created) {
+									var adminBox = document.getElementById("admin-created-box");
+									var adminName = document.getElementById("admin-created-name");
+									if (adminBox && adminName) {
+										adminName.textContent = final.admin_created;
+										adminBox.classList.remove("hidden");
+									}
+								}
 							});
 						});
 					});
@@ -341,6 +367,31 @@
 				fail(String(err), "error4");
 				btn.disabled = false;
 			});
+		});
+	}
+	var createAdminCb = document.getElementById("create_admin");
+	var adminFields = document.getElementById("admin-fields");
+	if (createAdminCb && adminFields) {
+		createAdminCb.addEventListener("change", function () {
+			if (createAdminCb.checked) {
+				adminFields.classList.remove("hidden");
+			} else {
+				adminFields.classList.add("hidden");
+			}
+		});
+	}
+
+	var togglePassBtn = document.getElementById("toggle_admin_pass");
+	var adminPassInput = document.getElementById("admin_pass");
+	if (togglePassBtn && adminPassInput) {
+		togglePassBtn.addEventListener("click", function () {
+			if (adminPassInput.type === "password") {
+				adminPassInput.type = "text";
+				togglePassBtn.textContent = (I18N[currentLang] && I18N[currentLang].hide_btn) ? I18N[currentLang].hide_btn : "Hide";
+			} else {
+				adminPassInput.type = "password";
+				togglePassBtn.textContent = (I18N[currentLang] && I18N[currentLang].show_btn) ? I18N[currentLang].show_btn : "Show";
+			}
 		});
 	}
 })();

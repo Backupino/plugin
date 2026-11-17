@@ -177,7 +177,7 @@ final class InstallerBuilder {
 		$notify_settings = (array) $settings->get( 'notify', array() );
 
 		$defaults = array(
-			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.4',
+			'version'      => defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.1.0',
 			'name'         => $name,
 			'token'        => \Backupino\Support\Str::random( 16 ),
 			'archive'      => $archive_name,

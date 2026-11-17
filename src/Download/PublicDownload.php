@@ -248,12 +248,12 @@ final class PublicDownload {
 			? BACKUPINO_URL . 'assets/js/public-download.js'
 			: plugins_url( 'assets/js/public-download.js', dirname( dirname( __DIR__ ) ) . '/backupino.php' );
 
-		wp_register_style( 'backupino-public-download', $css_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.4' );
+		wp_register_style( 'backupino-public-download', $css_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.1.0' );
 		$inline_css = ':root { ' . $css_vars . ' } ' . $custom_styles;
 		wp_add_inline_style( 'backupino-public-download', $inline_css );
 		wp_enqueue_style( 'backupino-public-download' );
 
-		wp_register_script( 'backupino-public-download', $js_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.0.4', true );
+		wp_register_script( 'backupino-public-download', $js_url, array(), defined( 'BACKUPINO_VERSION' ) ? BACKUPINO_VERSION : '1.1.0', true );
 		wp_enqueue_script( 'backupino-public-download' );
 
 		nocache_headers();

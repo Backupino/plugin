@@ -40,11 +40,10 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Detected version: ${VERSION}"
 
-      - name: Update POT and compile MO translations
+      - name: Verify translation catalog
         run: |
-          mkdir -p languages
-          wp i18n make-pot . languages/backupino.pot --slug=backupino --domain=backupino
-          wp i18n make-mo languages
+          test -f languages/backupino.pot
+          rm -f languages/*.po languages/*.mo
 
       - name: WordPress Plugin Deploy to SVN
         id: deploy

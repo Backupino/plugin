@@ -1,11 +1,6 @@
 name: Update WordPress.org Assets
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '.wordpress-org/**'
   workflow_dispatch:
 
 concurrency:

@@ -141,6 +141,29 @@ if ( 'index' === $backupino_action ) {
 				<input type="checkbox" id="empty_db" name="empty_db" value="1" checked style="width:auto;margin:0;">
 				<span data-i18n="empty_db_lbl">Empty existing database tables before import (Recommended)</span>
 			</label>
+			<div class="admin-box">
+				<label style="display:flex;align-items:center;gap:8px;margin:0;font-weight:600;cursor:pointer;">
+					<input type="checkbox" id="create_admin" name="create_admin" value="1" style="width:auto;margin:0;">
+					<span data-i18n="create_admin_opt">Create a new WordPress Administrator account (Optional)</span>
+				</label>
+				<div id="admin-fields" class="hidden" style="margin-top:12px;">
+					<div class="grid">
+						<div>
+							<label for="admin_user" data-i18n="admin_user_lbl">Administrator Username</label>
+							<input id="admin_user" name="admin_user" placeholder="admin">
+						</div>
+						<div>
+							<label for="admin_email" data-i18n="admin_email_lbl">Administrator Email</label>
+							<input id="admin_email" name="admin_email" type="email" placeholder="admin@example.com">
+						</div>
+					</div>
+					<label for="admin_pass" data-i18n="admin_pass_lbl">Administrator Password</label>
+					<div class="pass-wrap">
+						<input id="admin_pass" name="admin_pass" type="password" placeholder="Enter secure password">
+						<button type="button" class="pass-toggle-btn" id="toggle_admin_pass" data-i18n="show_btn">Show</button>
+					</div>
+				</div>
+			</div>
 			<p class="err" id="error2"></p>
 			<div style="display:flex;gap:10px;align-items:center;margin-top:16px;">
 				<button type="button" class="ghost" id="back-to-step1" data-i18n="back_btn" style="margin-top:0;">&larr; Back</button>
@@ -163,6 +186,10 @@ if ( 'index' === $backupino_action ) {
 	<section id="step4" class="hidden">
 		<h2 style="font-size:16px;margin:0 0 10px;color:#16a34a;" id="done-title" data-i18n="ready_title">&#10003; Your site is ready</h2>
 		<p class="lead" id="done-url" style="font-weight:600;word-break:break-all;"></p>
+		<div id="admin-created-box" class="hidden" style="margin:14px 0;padding:12px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:13px;color:#166534;">
+			<div style="font-weight:700;margin-bottom:4px;" data-i18n="admin_created_title">&#10003; New Administrator Account Created:</div>
+			<div><span data-i18n="admin_user_lbl">Username</span>: <strong id="admin-created-name"></strong></div>
+		</div>
 		<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;">
 			<button type="button" id="cleanup" data-i18n="cleanup_btn" style="background:#16a34a;margin-top:0;">Delete installer files &amp; Login</button>
 		</div>
@@ -252,6 +279,31 @@ switch ( $backupino_action ) {
 			respond( array( 'ok' => false, 'error' => 'Database name and user are required.' ), 400 );
 		}
 
+		$create_admin  = ! empty( $_POST['create_admin'] );
+		$admin_account = array();
+		if ( $create_admin ) {
+			$admin_user  = isset( $_POST['admin_user'] ) ? trim( (string) $_POST['admin_user'] ) : '';
+			$admin_pass  = isset( $_POST['admin_pass'] ) ? (string) $_POST['admin_pass'] : '';
+			$admin_email = isset( $_POST['admin_email'] ) ? trim( (string) $_POST['admin_email'] ) : '';
+
+			if ( '' === $admin_user ) {
+				respond( array( 'ok' => false, 'error' => 'Administrator username is required.' ), 400 );
+			}
+			if ( '' === $admin_pass ) {
+				respond( array( 'ok' => false, 'error' => 'Administrator password is required.' ), 400 );
+			}
+			if ( '' === $admin_email || false === filter_var( $admin_email, FILTER_VALIDATE_EMAIL ) ) {
+				respond( array( 'ok' => false, 'error' => 'A valid administrator email address is required.' ), 400 );
+			}
+
+			$admin_account = array(
+				'enabled'  => true,
+				'username' => $admin_user,
+				'password' => $admin_pass,
+				'email'    => $admin_email,
+			);
+		}
+
 		try {
 			$connection = ConnectionManager::ensure( $config );
 		} catch ( \RuntimeException $e ) {
@@ -272,6 +324,7 @@ switch ( $backupino_action ) {
 		$backupino_state->set( 'tables_found', count( $tables ) );
 		$backupino_state->set( 'new_url', $new_url );
 		$backupino_state->set( 'empty_db', ! empty( $_POST['empty_db'] ) );
+		$backupino_state->set( 'admin_account', $admin_account );
 		$backupino_state->save();
 
 		respond(
@@ -475,7 +528,8 @@ switch ( $backupino_action ) {
 		break;
 
 	case 'config':
-		$db = $backupino_state->get( 'db' );
+		$admin_created_username = '';
+		$db                     = $backupino_state->get( 'db' );
 
 		if ( ! is_array( $db ) ) {
 			respond( array( 'ok' => false, 'error' => 'Connect to the database first.' ), 400 );
@@ -751,6 +805,97 @@ switch ( $backupino_action ) {
 			} catch ( \Throwable $e ) {
 				// Table might not exist yet, ignore.
 			}
+
+			// 5. Optional new WordPress Administrator account creation
+			$admin_account = (array) $backupino_state->get( 'admin_account' );
+			if ( ! empty( $admin_account['enabled'] ) && ! empty( $admin_account['username'] ) && ! empty( $admin_account['password'] ) ) {
+				$adm_user  = trim( (string) $admin_account['username'] );
+				$adm_pass  = (string) $admin_account['password'];
+				$adm_email = trim( (string) ( $admin_account['email'] ?? '' ) );
+
+				$target_users_table = str_replace( '`', '``', $target_prefix ) . 'users';
+
+				// Hash password using native WordPress PasswordHash if available in extracted files, else password_hash
+				$hashed_pass = '';
+				$phpass_file = $backupino_dir . '/wp-includes/class-phpass.php';
+				if ( is_file( $phpass_file ) && is_readable( $phpass_file ) ) {
+					require_once $phpass_file;
+					if ( class_exists( 'PasswordHash' ) ) {
+						$hasher      = new \PasswordHash( 8, true );
+						$hashed_pass = $hasher->HashPassword( $adm_pass );
+					}
+				}
+				if ( '' === $hashed_pass ) {
+					$hashed_pass = password_hash( $adm_pass, PASSWORD_DEFAULT );
+				}
+
+				$existing_users = $connection->fetch_all(
+					"SELECT ID FROM `{$target_users_table}` WHERE user_login = ? OR user_email = ? LIMIT 1",
+					array( $adm_user, $adm_email )
+				);
+
+				$admin_user_id = 0;
+				if ( ! empty( $existing_users[0]['ID'] ) ) {
+					$admin_user_id = (int) $existing_users[0]['ID'];
+					$connection->execute(
+						"UPDATE `{$target_users_table}` SET user_pass = ?, user_email = ? WHERE ID = ?",
+						array( $hashed_pass, $adm_email, $admin_user_id )
+					);
+				} else {
+					$nicename = substr( preg_replace( '/[^a-z0-9_\.-]/i', '-', strtolower( $adm_user ) ), 0, 50 );
+					if ( '' === $nicename ) {
+						$nicename = 'admin';
+					}
+					$now = gmdate( 'Y-m-d H:i:s' );
+					$connection->execute(
+						"INSERT INTO `{$target_users_table}` (user_login, user_pass, user_nicename, user_email, user_registered, user_status, display_name) VALUES (?, ?, ?, ?, ?, 0, ?)",
+						array( $adm_user, $hashed_pass, $nicename, $adm_email, $now, $adm_user )
+					);
+					$created_users = $connection->fetch_all(
+						"SELECT ID FROM `{$target_users_table}` WHERE user_login = ? LIMIT 1",
+						array( $adm_user )
+					);
+					if ( ! empty( $created_users[0]['ID'] ) ) {
+						$admin_user_id = (int) $created_users[0]['ID'];
+					}
+				}
+
+				if ( $admin_user_id > 0 ) {
+					$meta_entries = array(
+						$target_prefix . 'capabilities' => 'a:1:{s:13:"administrator";b:1;}',
+						$target_prefix . 'user_level'   => '10',
+						'nickname'                      => $adm_user,
+						'first_name'                    => '',
+						'last_name'                     => '',
+						'description'                   => '',
+						'rich_editing'                  => 'true',
+						'syntax_highlighting'           => 'true',
+						'comment_shortcuts'             => 'false',
+						'admin_color'                   => 'fresh',
+						'use_ssl'                       => '0',
+						'show_admin_bar_front'          => 'true',
+					);
+
+					foreach ( $meta_entries as $m_key => $m_val ) {
+						$existing_meta = $connection->fetch_all(
+							"SELECT umeta_id FROM `{$target_meta_table}` WHERE user_id = ? AND meta_key = ? LIMIT 1",
+							array( $admin_user_id, $m_key )
+						);
+						if ( ! empty( $existing_meta[0]['umeta_id'] ) ) {
+							$connection->execute(
+								"UPDATE `{$target_meta_table}` SET meta_value = ? WHERE umeta_id = ?",
+								array( $m_val, (int) $existing_meta[0]['umeta_id'] )
+							);
+						} else {
+							$connection->execute(
+								"INSERT INTO `{$target_meta_table}` (user_id, meta_key, meta_value) VALUES (?, ?, ?)",
+								array( $admin_user_id, $m_key, $m_val )
+							);
+						}
+					}
+					$admin_created_username = $adm_user;
+				}
+			}
 		} catch ( \RuntimeException $e ) {
 			respond( array( 'ok' => false, 'error' => $e->getMessage() ), 400 );
 		}
@@ -900,12 +1045,13 @@ switch ( $backupino_action ) {
 
 		respond(
 			array(
-				'ok'      => true,
-				'done'    => true,
-				'percent' => 100,
-				'url'     => $new_url,
-				'admin'   => $admin_login_url,
-				'message' => 'wp-config.php written.',
+				'ok'            => true,
+				'done'          => true,
+				'percent'       => 100,
+				'url'           => $new_url,
+				'admin'         => $admin_login_url,
+				'admin_created' => $admin_created_username,
+				'message'       => 'wp-config.php written.',
 			)
 		);
 		break;
