@@ -152,10 +152,11 @@ final class Compatibility {
 		$root    = rtrim( str_replace( '\\', '/', $paths->root() ), '/' );
 		$fs_path = $paths->packages();
 
-		$home_url  = function_exists( 'home_url' ) ? (string) home_url() : '';
-		$site_url  = function_exists( 'site_url' ) ? (string) site_url() : '';
-		$home_host = strtolower( (string) parse_url( $home_url, PHP_URL_HOST ) );
-		$site_host = strtolower( (string) parse_url( $site_url, PHP_URL_HOST ) );
+		$home_url      = function_exists( 'home_url' ) ? (string) home_url() : '';
+		$site_url      = function_exists( 'site_url' ) ? (string) site_url() : '';
+		$home_host     = strtolower( (string) parse_url( $home_url, PHP_URL_HOST ) );
+		$site_host     = strtolower( (string) parse_url( $site_url, PHP_URL_HOST ) );
+		$expected_host = '' !== $home_host ? $home_host : $site_host;
 
 		$uploads_baseurl = '';
 		$uploads_basedir = '';
@@ -165,11 +166,24 @@ final class Compatibility {
 			$uploads_basedir = isset( $uploads['basedir'] ) ? rtrim( str_replace( '\\', '/', (string) $uploads['basedir'] ), '/' ) : '';
 		}
 
-		// 1. Check for external CDN or different domain host on uploads URL.
-		if ( '' !== $uploads_baseurl ) {
-			$upload_host   = strtolower( (string) parse_url( $uploads_baseurl, PHP_URL_HOST ) );
-			$expected_host = '' !== $home_host ? $home_host : $site_host;
+		$candidate_path = '';
 
+		// 1. Primary resolution: If base is inside wp_upload_dir basedir, map through baseurl.
+		$is_inside_uploads = '' !== $uploads_basedir && ( $base === $uploads_basedir || 0 === strpos( $base, $uploads_basedir . '/' ) );
+		if ( $is_inside_uploads ) {
+			// Require valid, non-empty baseurl.
+			if ( '' === trim( $uploads_baseurl ) ) {
+				return array(
+					'status'   => 'manual',
+					'rule'     => '',
+					'web_path' => '',
+					'fs_path'  => $fs_path,
+					'reason'   => 'invalid_baseurl',
+				);
+			}
+
+			// External CDN or domain mismatch check.
+			$upload_host = strtolower( (string) parse_url( $uploads_baseurl, PHP_URL_HOST ) );
 			if ( '' !== $upload_host && '' !== $expected_host && $upload_host !== $expected_host ) {
 				return array(
 					'status'   => 'manual',
@@ -179,13 +193,22 @@ final class Compatibility {
 					'reason'   => 'cdn',
 				);
 			}
-		}
 
-		// 2. Resolve relative web path.
-		$candidate_path = '';
+			$upload_path = (string) parse_url( $uploads_baseurl, PHP_URL_PATH );
+			if ( '' === trim( $upload_path ) ) {
+				return array(
+					'status'   => 'manual',
+					'rule'     => '',
+					'web_path' => '',
+					'fs_path'  => $fs_path,
+					'reason'   => 'invalid_path',
+				);
+			}
 
-		// If base directory is directly inside ABSPATH / root:
-		if ( '' !== $root && 0 === strpos( $base, $root . '/' ) ) {
+			$rel_to_upload  = substr( $base, strlen( $uploads_basedir ) );
+			$candidate_path = rtrim( $upload_path, '/' ) . '/' . ltrim( $rel_to_upload, '/' );
+		} elseif ( '' !== $root && ( $base === $root || 0 === strpos( $base, $root . '/' ) ) ) {
+			// 2. Fallback resolution: If base is directly inside ABSPATH / root.
 			$rel_to_root = substr( $base, strlen( $root ) );
 			$site_ref    = '' !== $site_url ? $site_url : $home_url;
 			$site_path   = (string) parse_url( $site_ref, PHP_URL_PATH );
@@ -196,11 +219,6 @@ final class Compatibility {
 			} else {
 				$candidate_path = '/' . ltrim( $rel_to_root, '/' );
 			}
-		} elseif ( '' !== $uploads_basedir && 0 === strpos( $base, $uploads_basedir . '/' ) && '' !== $uploads_baseurl ) {
-			// Base is inside uploads directory: map through baseurl path.
-			$upload_path    = (string) parse_url( $uploads_baseurl, PHP_URL_PATH );
-			$rel_to_upload  = substr( $base, strlen( $uploads_basedir ) );
-			$candidate_path = rtrim( $upload_path, '/' ) . '/' . ltrim( $rel_to_upload, '/' );
 		}
 
 		// If candidate path cannot be determined or resolved relative to webroot, require manual configuration.
@@ -215,17 +233,33 @@ final class Compatibility {
 		}
 
 		// 3. Strict security sanitization: prevent directive injection, newlines, null bytes, and traversal.
-		if ( false !== strpos( $candidate_path, '..' ) ||
-		     false !== strpos( $candidate_path, "\n" ) ||
+		if ( false !== strpos( $candidate_path, "\n" ) ||
 		     false !== strpos( $candidate_path, "\r" ) ||
-		     false !== strpos( $candidate_path, "\0" ) ) {
+		     false !== strpos( $candidate_path, "\0" ) ||
+		     false !== strpos( $candidate_path, ';' ) ||
+		     false !== strpos( $candidate_path, '{' ) ||
+		     false !== strpos( $candidate_path, '}' ) ) {
 			return array(
 				'status'   => 'manual',
 				'rule'     => '',
 				'web_path' => '',
 				'fs_path'  => $fs_path,
-				'reason'   => 'traversal',
+				'reason'   => 'unsafe_chars',
 			);
+		}
+
+		// Reject any path segment containing '.' or '..' traversal.
+		$segments = explode( '/', trim( $candidate_path, '/' ) );
+		foreach ( $segments as $seg ) {
+			if ( '.' === $seg || '..' === $seg ) {
+				return array(
+					'status'   => 'manual',
+					'rule'     => '',
+					'web_path' => '',
+					'fs_path'  => $fs_path,
+					'reason'   => 'traversal',
+				);
+			}
 		}
 
 		// Only permit safe URI segment characters: alphanumeric, forward-slash, underscore, dot, hyphen.
