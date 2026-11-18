@@ -160,7 +160,17 @@ final class Compatibility {
 			return null;
 		}
 
-		$port = isset( $parts['port'] ) ? (int) $parts['port'] : ( 'https' === $scheme ? 443 : 80 );
+		if ( isset( $parts['port'] ) ) {
+			if ( ! is_int( $parts['port'] ) && ! ctype_digit( (string) $parts['port'] ) ) {
+				return null;
+			}
+			$port = (int) $parts['port'];
+			if ( $port < 1 || $port > 65535 ) {
+				return null;
+			}
+		} else {
+			$port = 'https' === $scheme ? 443 : 80;
+		}
 
 		return array(
 			'scheme' => $scheme,
