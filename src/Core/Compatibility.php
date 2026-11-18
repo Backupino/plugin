@@ -127,8 +127,8 @@ final class Compatibility {
 			if ( isset( $GLOBALS['is_nginx'] ) && true === $GLOBALS['is_nginx'] ) {
 				return true;
 			}
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Read-only server banner check.
-			$server_software = isset( $_SERVER['SERVER_SOFTWARE'] ) ? (string) $_SERVER['SERVER_SOFTWARE'] : '';
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Read-only server banner check.
+			$server_software = isset( $_SERVER['SERVER_SOFTWARE'] ) ? (string) wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) : '';
 		}
 
 		return false !== stripos( $server_software, 'nginx' );
@@ -148,7 +148,7 @@ final class Compatibility {
 			return null;
 		}
 
-		$parts = parse_url( $trimmed );
+		$parts = function_exists( 'wp_parse_url' ) ? wp_parse_url( $trimmed ) : parse_url( $trimmed );
 		if ( false === $parts || ! is_array( $parts ) ) {
 			return null;
 		}
@@ -232,7 +232,7 @@ final class Compatibility {
 				);
 			}
 
-			$parsed_baseurl = parse_url( $trimmed_baseurl );
+			$parsed_baseurl = function_exists( 'wp_parse_url' ) ? wp_parse_url( $trimmed_baseurl ) : parse_url( $trimmed_baseurl );
 			if ( false === $parsed_baseurl || ! is_array( $parsed_baseurl ) ) {
 				return array(
 					'status'   => 'manual',
@@ -337,7 +337,7 @@ final class Compatibility {
 			$site_ref    = function_exists( 'site_url' ) && '' !== (string) site_url()
 				? (string) site_url()
 				: ( function_exists( 'home_url' ) ? (string) home_url() : '' );
-			$site_path   = (string) parse_url( $site_ref, PHP_URL_PATH );
+			$site_path   = (string) ( function_exists( 'wp_parse_url' ) ? wp_parse_url( $site_ref, PHP_URL_PATH ) : parse_url( $site_ref, PHP_URL_PATH ) );
 			$site_path   = '/' . trim( $site_path, '/' );
 
 			if ( '/' !== $site_path && '' !== $site_path && 0 !== strpos( $rel_to_root, $site_path . '/' ) ) {

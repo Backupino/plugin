@@ -218,6 +218,7 @@ final class State {
 		?array $candidates = null
 	): string {
 		if ( null === $doc_root && isset( $_SERVER['DOCUMENT_ROOT'] ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Server document root fallback during standalone restore.
 			$doc_root = (string) $_SERVER['DOCUMENT_ROOT'];
 		}
 
@@ -365,6 +366,7 @@ final class State {
 		}
 
 		if ( null === $doc_root && isset( $_SERVER['DOCUMENT_ROOT'] ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Server document root fallback during standalone restore.
 			$doc_root = (string) $_SERVER['DOCUMENT_ROOT'];
 		}
 
