@@ -232,7 +232,7 @@ final class Compatibility {
 			);
 		}
 
-		// 3. Strict security sanitization: prevent directive injection, newlines, null bytes, and traversal.
+		// 3. Strict security validation: reject control characters, newlines, NUL bytes, directive injection, and traversal.
 		if ( false !== strpos( $candidate_path, "\n" ) ||
 		     false !== strpos( $candidate_path, "\r" ) ||
 		     false !== strpos( $candidate_path, "\0" ) ||
@@ -248,10 +248,10 @@ final class Compatibility {
 			);
 		}
 
-		// Reject any path segment containing '.' or '..' traversal.
+		// Reject any path segment containing '.' or '..' traversal, or empty segments.
 		$segments = explode( '/', trim( $candidate_path, '/' ) );
 		foreach ( $segments as $seg ) {
-			if ( '.' === $seg || '..' === $seg ) {
+			if ( '' === $seg || '.' === $seg || '..' === $seg ) {
 				return array(
 					'status'   => 'manual',
 					'rule'     => '',
@@ -262,9 +262,20 @@ final class Compatibility {
 			}
 		}
 
-		// Only permit safe URI segment characters: alphanumeric, forward-slash, underscore, dot, hyphen.
-		$sanitized = preg_replace( '#[^A-Za-z0-9/_.\-]#', '', $candidate_path );
-		$trimmed   = trim( (string) $sanitized, '/' );
+		// Strictly validate characters: Never mutate or strip characters silently.
+		// If the candidate path contains any characters outside [A-Za-z0-9/_.-] (such as %20, spaces, etc.),
+		// refuse to generate a misleading rule and fail closed to manual status.
+		if ( 1 !== preg_match( '#^[A-Za-z0-9/_.\-]+$#', $candidate_path ) ) {
+			return array(
+				'status'   => 'manual',
+				'rule'     => '',
+				'web_path' => '',
+				'fs_path'  => $fs_path,
+				'reason'   => 'disallowed_chars',
+			);
+		}
+
+		$trimmed = trim( $candidate_path, '/' );
 
 		// Prevent matching the entire document root or invalid short paths.
 		if ( '' === $trimmed || strlen( $trimmed ) < 2 ) {
