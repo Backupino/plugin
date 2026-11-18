@@ -223,9 +223,15 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 							<div class="notice notice-warning inline" style="margin: 12px 0 0;">
 								<p>
 									<strong><?php esc_html_e( 'Nginx detected — manual server configuration required:', 'backupino' ); ?></strong>
-									<?php esc_html_e( 'Nginx ignores .htaccess and web.config. Add the rule below inside your Nginx server { } block and reload Nginx; until applied, direct HTTP downloads of package URLs are not guaranteed to be blocked.', 'backupino' ); ?>
+									<?php esc_html_e( 'Nginx ignores .htaccess and web.config. Backupino cannot automatically alter or reload Nginx configuration. Direct HTTP downloads of package URLs are not guaranteed to be blocked until your server administrator adds the rule below inside your Nginx server { } block and reloads Nginx.', 'backupino' ); ?>
 								</p>
-								<pre class="code" style="margin: 6px 0 10px; padding: 10px; background: #fff; border: 1px solid #dcdcde; overflow-x: auto; direction: ltr; text-align: left;"><?php echo esc_html( (string) $backupino_snapshot['nginx_rule'] ); ?></pre>
+								<?php if ( ! empty( $backupino_snapshot['nginx_rule'] ) ) : ?>
+									<pre class="code" style="margin: 6px 0 10px; padding: 10px; background: #fff; border: 1px solid #dcdcde; overflow-x: auto; direction: ltr; text-align: left;"><?php echo esc_html( (string) $backupino_snapshot['nginx_rule'] ); ?></pre>
+								<?php else : ?>
+									<p class="description" style="margin: 6px 0;">
+										<?php esc_html_e( 'The exact Nginx location block cannot be determined automatically (e.g. external CDN or custom mapping). Please visit Backupino -> Settings -> Storage Destination to view manual configuration guidance.', 'backupino' ); ?>
+									</p>
+								<?php endif; ?>
 							</div>
 						<?php endif; ?>
 					</div>
@@ -354,23 +360,69 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 								</p>
 							</div>
 
-							<div class="notice <?php echo ! empty( $backupino_snapshot['is_nginx'] ) ? 'notice-warning' : 'notice-info'; ?> inline" style="margin: 16px 0 0;">
-								<p>
-									<strong>
-										<?php
-										if ( ! empty( $backupino_snapshot['is_nginx'] ) ) {
-											esc_html_e( 'Nginx Server Detected — Action Required to Block Direct Access:', 'backupino' );
-										} else {
-											esc_html_e( 'Using Nginx (or an Nginx Reverse Proxy)?', 'backupino' );
-										}
-										?>
-									</strong>
-									<?php esc_html_e( 'Because Nginx does not read .htaccess or web.config files, add the following rule inside your Nginx server { } block and reload Nginx. Until this server rule is active, direct HTTP access to backup package URLs is not guaranteed to be blocked.', 'backupino' ); ?>
+							<?php if ( ! empty( $backupino_snapshot['is_nginx'] ) ) : ?>
+								<div class="notice notice-warning inline" style="margin: 16px 0 0;">
+									<p>
+										<strong><?php esc_html_e( 'Nginx Server Detected — Action Required to Block Direct Access:', 'backupino' ); ?></strong>
+										<?php esc_html_e( 'Nginx does not enforce .htaccess or web.config rules, and index.html only conceals directory listings. Action is required by your server administrator to prevent direct HTTP downloads of backup files.', 'backupino' ); ?>
+									</p>
+								</div>
+							<?php endif; ?>
+
+							<!-- Permanent Informational Card for Web Server Protection & Nginx Guidance -->
+							<div class="backupino-card" style="margin-top: 18px; padding: 18px; border: 1px solid var(--backupino-border); border-radius: 10px; background: #fff;">
+								<h3 style="margin: 0 0 10px; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+									<span class="dashicons dashicons-shield"></span>
+									<span><?php esc_html_e( 'Web Server Direct Access Protection & Nginx Guidance', 'backupino' ); ?></span>
+								</h3>
+								<p class="description" style="margin: 0 0 10px;">
+									<?php esc_html_e( 'Backupino automatically creates .htaccess (for Apache/LiteSpeed) and web.config (for Microsoft IIS) files inside the storage directory to block direct HTTP requests. An index.html file is also placed to hide directory browsing, but it cannot prevent direct downloads if an attacker knows or guesses the file name.', 'backupino' ); ?>
 								</p>
-								<pre class="code" style="margin: 6px 0 10px; padding: 10px; background: #fff; border: 1px solid #dcdcde; overflow-x: auto; direction: ltr; text-align: left;"><?php echo esc_html( (string) $backupino_snapshot['nginx_rule'] ); ?></pre>
-								<p class="description" style="margin: 0 0 8px;">
-									<?php esc_html_e( 'After adding the rule, test with `nginx -t` and reload Nginx. Authorized downloads through Backupino admin or the permanent download link continue to work normally through PHP.', 'backupino' ); ?>
+								<p class="description" style="margin: 0 0 12px;">
+									<strong><?php esc_html_e( 'Nginx & Reverse Proxy Limitations:', 'backupino' ); ?></strong>
+									<?php esc_html_e( 'Nginx completely ignores .htaccess and web.config files. Because reverse proxies or front-end caches may sit in front of Apache or PHP-FPM, automated web server detection is best-effort and cannot be guaranteed in every architecture. Backupino cannot automatically modify or reload Nginx configuration files.', 'backupino' ); ?>
 								</p>
+								<div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 8px;">
+									<h4 style="margin: 0 0 8px; font-size: 14px; font-weight: 600;">
+										<?php esc_html_e( 'Server Administrator Nginx Configuration', 'backupino' ); ?>
+									</h4>
+									<p style="margin: 0 0 8px; font-size: 13px;">
+										<?php esc_html_e( 'Direct HTTP access to backup package URLs is NOT guaranteed to be blocked on Nginx until your server administrator adds the deny rule below inside your Nginx server { } block and reloads Nginx. Merely viewing this rule in the admin panel does not activate it.', 'backupino' ); ?>
+									</p>
+									<?php
+									$backupino_nginx_info = $backupino_snapshot['nginx_storage_info'] ?? \Backupino\Core\Compatibility::nginx_storage_info( $paths );
+									if ( 'exact' === $backupino_nginx_info['status'] && ! empty( $backupino_nginx_info['rule'] ) ) :
+									?>
+										<p style="margin: 0 0 6px; font-size: 13px; font-weight: 600;">
+											<?php esc_html_e( 'Add this directive inside your Nginx server { } block:', 'backupino' ); ?>
+										</p>
+										<pre class="code" style="margin: 0 0 8px; padding: 10px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; overflow-x: auto; direction: ltr; text-align: left; font-size: 13px;"><?php echo esc_html( (string) $backupino_nginx_info['rule'] ); ?></pre>
+									<?php else : ?>
+										<div style="padding: 10px; background: #fff; border-left: 4px solid #f59e0b; border: 1px solid #cbd5e1; border-radius: 6px; margin: 0 0 8px;">
+											<p style="margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #b45309;">
+												<?php esc_html_e( 'Manual Nginx Rule Configuration Required', 'backupino' ); ?>
+											</p>
+											<p class="description" style="margin: 0 0 6px;">
+												<?php
+												if ( 'cdn' === ( $backupino_nginx_info['reason'] ?? '' ) ) {
+													esc_html_e( 'Your WordPress uploads directory uses an external CDN or separate domain. The exact public Nginx location cannot be determined automatically. Your server administrator must manually create an Nginx location block matching your origin server URL mapping.', 'backupino' );
+												} else {
+													esc_html_e( 'The backup storage directory is located outside standard web root or uses a custom path mapping. Your server administrator must manually configure an Nginx rule denying direct access based on your web server configuration.', 'backupino' );
+												}
+												?>
+											</p>
+											<p class="description" style="margin: 0;">
+												<?php
+												/* translators: %s: Filesystem path of the storage directory. */
+												printf( esc_html__( 'Target filesystem path: %s', 'backupino' ), '<code>' . esc_html( $paths->packages() ) . '</code>' );
+												?>
+											</p>
+										</div>
+									<?php endif; ?>
+									<p class="description" style="margin: 0;">
+										<?php esc_html_e( 'After adding the rule, test with `nginx -t` and reload Nginx. Authorized downloads through Backupino admin or the permanent download link continue to work normally through PHP.', 'backupino' ); ?>
+									</p>
+								</div>
 							</div>
 						</div>
 

@@ -57,10 +57,21 @@ foreach ( $jobs as $backupino_j ) {
 				<?php endforeach; ?>
 			</ul>
 			<?php if ( \Backupino\Core\Compatibility::is_nginx() ) : ?>
+				<?php $backupino_nginx = \Backupino\Core\Compatibility::nginx_storage_info( $paths ); ?>
 				<p style="margin: 8px 0 6px;">
-					<strong><?php esc_html_e( 'Required Nginx server configuration (add inside your server { } block and reload Nginx):', 'backupino' ); ?></strong>
+					<strong><?php esc_html_e( 'Nginx Server Configuration Note:', 'backupino' ); ?></strong>
+					<?php esc_html_e( 'Backupino cannot automatically alter or reload Nginx configuration. Direct HTTP access is not blocked until your server administrator applies the server rule.', 'backupino' ); ?>
 				</p>
-				<pre class="code" style="margin: 0 0 10px; padding: 10px; background: #fff; border: 1px solid #dcdcde; overflow-x: auto; direction: ltr; text-align: left;"><?php echo esc_html( \Backupino\Core\Compatibility::nginx_storage_rule( $paths ) ); ?></pre>
+				<?php if ( 'exact' === $backupino_nginx['status'] && '' !== $backupino_nginx['rule'] ) : ?>
+					<p style="margin: 0 0 6px;">
+						<strong><?php esc_html_e( 'Required Nginx server configuration (add inside your server { } block and reload Nginx):', 'backupino' ); ?></strong>
+					</p>
+					<pre class="code" style="margin: 0 0 10px; padding: 10px; background: #fff; border: 1px solid #dcdcde; overflow-x: auto; direction: ltr; text-align: left;"><?php echo esc_html( $backupino_nginx['rule'] ); ?></pre>
+				<?php else : ?>
+					<p class="description" style="margin: 0 0 10px;">
+						<?php esc_html_e( 'The storage path cannot be resolved to an automatic Nginx location (for example, due to an external CDN, custom domain, or path outside webroot). Please see Backupino -> Settings -> Storage Destination to manually determine the rule for your server.', 'backupino' ); ?>
+					</p>
+				<?php endif; ?>
 			<?php endif; ?>
 		</div>
 	<?php endif; ?>

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-17T18:23:27+00:00\n"
+"POT-Creation-Date: 2026-11-18T13:11:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: Backupino i18n build tool\n"
 "X-Domain: backupino\n"
@@ -30,7 +30,7 @@ msgstr ""
 msgid "%s messenger is not enabled or not fully configured."
 msgstr ""
 
-#: free/templates/settings.php:601
+#: free/templates/settings.php:681
 msgid "100% privacy-compliant: zero tracking, zero telemetry, strictly optional notifications."
 msgstr ""
 
@@ -46,7 +46,7 @@ msgstr ""
 msgid "API token provided by Telegram @BotFather or Bale Bot platform."
 msgstr ""
 
-#: free/templates/dashboard.php:288
+#: free/templates/dashboard.php:305
 msgid "Actions"
 msgstr ""
 
@@ -54,7 +54,11 @@ msgstr ""
 msgid "Active"
 msgstr ""
 
-#: free/templates/settings.php:496
+#: free/templates/settings.php:397
+msgid "Add this directive inside your Nginx server { } block:"
+msgstr ""
+
+#: free/templates/settings.php:576
 msgid "Admin Login URL"
 msgstr ""
 
@@ -78,12 +82,16 @@ msgstr ""
 msgid "Administrator username is required."
 msgstr ""
 
+#: free/templates/settings.php:423
+msgid "After adding the rule, test with `nginx -t` and reload Nginx. Authorized downloads through Backupino admin or the permanent download link continue to work normally through PHP."
+msgstr ""
+
 #: free/backupino.php:1
 msgid "Archive"
 msgstr ""
 
 #: free/templates/settings.php:20
-#: free/templates/settings.php:274
+#: free/templates/settings.php:289
 msgid "Archive & Exclusions"
 msgstr ""
 
@@ -103,12 +111,12 @@ msgstr ""
 msgid "Archiving files"
 msgstr ""
 
-#: free/templates/settings.php:529
+#: free/templates/settings.php:609
 msgid "Automatic recurring backups trigger via WordPress cron. In Persian locale, monthly schedules automatically align with the start of the Jalali month."
 msgstr ""
 
-#: free/templates/settings.php:460
-#: free/templates/settings.php:492
+#: free/templates/settings.php:540
+#: free/templates/settings.php:572
 msgid "Available tags:"
 msgstr ""
 
@@ -116,15 +124,15 @@ msgstr ""
 msgid "Back to backups"
 msgstr ""
 
-#: free/templates/settings.php:463
+#: free/templates/settings.php:543
 msgid "Backup Contents"
 msgstr ""
 
-#: free/templates/settings.php:465
+#: free/templates/settings.php:545
 msgid "Backup Date"
 msgstr ""
 
-#: free/templates/dashboard.php:392
+#: free/templates/dashboard.php:409
 msgid "Backup Details & Log"
 msgstr ""
 
@@ -132,11 +140,11 @@ msgstr ""
 msgid "Backup Job"
 msgstr ""
 
-#: free/templates/settings.php:446
+#: free/templates/settings.php:526
 msgid "Backup Message Template"
 msgstr ""
 
-#: free/templates/settings.php:464
+#: free/templates/settings.php:544
 msgid "Backup Size"
 msgstr ""
 
@@ -144,15 +152,19 @@ msgstr ""
 msgid "Backup Storage Destination"
 msgstr ""
 
-#: free/templates/settings.php:320
+#: free/backupino.php:1
 msgid "Backup archives and standalone installers are stored locally in a secure, protected directory on your server."
+msgstr ""
+
+#: free/templates/settings.php:335
+msgid "Backup archives are stored locally on your server and served to administrators through Backupino authenticated download endpoints."
 msgstr ""
 
 #: free/src/Admin/Admin.php:118
 msgid "Backup cancelled."
 msgstr ""
 
-#: free/templates/dashboard.php:201
+#: free/templates/dashboard.php:218
 msgid "Backup in Progress"
 msgstr ""
 
@@ -179,12 +191,20 @@ msgstr ""
 msgid "Backupino Verified Package"
 msgstr ""
 
+#: free/templates/settings.php:379
+msgid "Backupino automatically creates .htaccess (for Apache/LiteSpeed) and web.config (for Microsoft IIS) files inside the storage directory to block direct HTTP requests. An index.html file is also placed to hide directory browsing, but it cannot prevent direct downloads if an attacker knows or guesses the file name."
+msgstr ""
+
 #: free/backupino.php:1
 msgid "Backupino can announce every finished backup, with the permanent download link, in Telegram or Bale. The bot belongs to you: create one with @BotFather, then paste its token and your chat id here."
 msgstr ""
 
-#: free/templates/settings.php:357
+#: free/templates/settings.php:437
 msgid "Backupino can announce every finished backup, with the permanent download link, in Telegram or Bale. You can enable either or both messengers simultaneously."
+msgstr ""
+
+#: free/templates/dashboard.php:63
+msgid "Backupino cannot automatically alter or reload Nginx configuration. Direct HTTP access is not blocked until your server administrator applies the server rule."
 msgstr ""
 
 #: free/src/Plugin.php:190
@@ -193,6 +213,10 @@ msgstr ""
 
 #: free/backupino.php:1
 msgid "Backupino is up to date. You are running the latest version (%s)."
+msgstr ""
+
+#: free/templates/settings.php:359
+msgid "Backupino places .htaccess (Apache/LiteSpeed), web.config (IIS), and index.html (hides directory listing only) in this directory. Nginx ignores .htaccess and web.config; direct HTTP access is NOT guaranteed to be blocked on Nginx until you add a server-level deny rule."
 msgstr ""
 
 #: free/src/Core/Compatibility.php:49
@@ -231,23 +255,23 @@ msgstr ""
 msgid "Bale"
 msgstr ""
 
-#: free/templates/settings.php:416
+#: free/templates/settings.php:496
 msgid "Bale Bot Token"
 msgstr ""
 
-#: free/templates/settings.php:425
+#: free/templates/settings.php:505
 msgid "Bale Chat ID"
 msgstr ""
 
-#: free/templates/settings.php:406
+#: free/templates/settings.php:486
 msgid "Bale Notification"
 msgstr ""
 
-#: free/templates/settings.php:426
+#: free/templates/settings.php:506
 msgid "Bale numeric chat or channel ID."
 msgstr ""
 
-#: free/templates/settings.php:304
+#: free/templates/settings.php:319
 msgid "Batch size for slicing file packing per tick. Default 1000 files ensures fast backup on modern systems."
 msgstr ""
 
@@ -255,12 +279,12 @@ msgstr ""
 msgid "Batch size for slicing file packing per tick. Default 250 files is balanced for shared hosting."
 msgstr ""
 
-#: free/templates/dashboard.php:178
+#: free/templates/dashboard.php:195
 msgid "Before updating plugins"
 msgstr ""
 
 #: free/templates/settings.php:28
-#: free/templates/settings.php:354
+#: free/templates/settings.php:434
 msgid "Bot Notifications"
 msgstr ""
 
@@ -268,19 +292,19 @@ msgstr ""
 msgid "Bot token"
 msgstr ""
 
-#: free/templates/settings.php:417
+#: free/templates/settings.php:497
 msgid "Bot token obtained from Bale @BotFather."
 msgstr ""
 
-#: free/templates/settings.php:376
+#: free/templates/settings.php:456
 msgid "Bot token obtained from Telegram @BotFather."
 msgstr ""
 
-#: free/templates/dashboard.php:207
+#: free/templates/dashboard.php:224
 msgid "Cancel"
 msgstr ""
 
-#: free/templates/dashboard.php:205
+#: free/templates/dashboard.php:222
 msgid "Cancel backup job"
 msgstr ""
 
@@ -296,7 +320,7 @@ msgstr ""
 msgid "Cancelled by the user."
 msgstr ""
 
-#: free/templates/dashboard.php:216
+#: free/templates/dashboard.php:233
 msgid "Cataloging"
 msgstr ""
 
@@ -316,12 +340,12 @@ msgstr ""
 msgid "Checking for updates…"
 msgstr ""
 
-#: free/templates/dashboard.php:318
+#: free/templates/dashboard.php:335
 msgid "Click to view log and details"
 msgstr ""
 
-#: free/templates/dashboard.php:394
-#: free/templates/dashboard.php:442
+#: free/templates/dashboard.php:411
+#: free/templates/dashboard.php:459
 msgid "Close"
 msgstr ""
 
@@ -333,11 +357,11 @@ msgstr ""
 msgid "Completed"
 msgstr ""
 
-#: free/templates/settings.php:569
+#: free/templates/settings.php:649
 msgid "Configure preset credentials for the standalone migration installer generated with each backup."
 msgstr ""
 
-#: free/templates/settings.php:277
+#: free/templates/settings.php:292
 msgid "Configure which files, folders, or sizes should be skipped during backup creation to save disk space and maximize speed."
 msgstr ""
 
@@ -345,7 +369,7 @@ msgstr ""
 msgid "Contents: %s"
 msgstr ""
 
-#: free/templates/dashboard.php:82
+#: free/templates/dashboard.php:99
 msgid "Copy link"
 msgstr ""
 
@@ -377,7 +401,7 @@ msgstr ""
 msgid "Could not write the package file."
 msgstr ""
 
-#: free/templates/dashboard.php:148
+#: free/templates/dashboard.php:165
 msgid "Create a backup"
 msgstr ""
 
@@ -385,11 +409,11 @@ msgstr ""
 msgid "Create a new WordPress Administrator account (Optional)"
 msgstr ""
 
-#: free/templates/dashboard.php:184
+#: free/templates/dashboard.php:201
 msgid "Create backup"
 msgstr ""
 
-#: free/templates/dashboard.php:283
+#: free/templates/dashboard.php:300
 msgid "Created"
 msgstr ""
 
@@ -397,11 +421,11 @@ msgstr ""
 msgid "Created Date"
 msgstr ""
 
-#: free/templates/settings.php:611
+#: free/templates/settings.php:691
 msgid "Current Version:"
 msgstr ""
 
-#: free/templates/dashboard.php:220
+#: free/templates/dashboard.php:237
 msgid "Database"
 msgstr ""
 
@@ -413,7 +437,7 @@ msgstr ""
 msgid "Database dump disabled."
 msgstr ""
 
-#: free/templates/dashboard.php:407
+#: free/templates/dashboard.php:424
 msgid "Date"
 msgstr ""
 
@@ -421,11 +445,11 @@ msgstr ""
 msgid "Date: %s"
 msgstr ""
 
-#: free/templates/settings.php:583
+#: free/templates/settings.php:663
 msgid "Default new URL (optional)"
 msgstr ""
 
-#: free/templates/dashboard.php:373
+#: free/templates/dashboard.php:390
 msgid "Delete"
 msgstr ""
 
@@ -433,7 +457,7 @@ msgstr ""
 msgid "Delete backup"
 msgstr ""
 
-#: free/templates/dashboard.php:372
+#: free/templates/dashboard.php:389
 msgid "Delete backup package"
 msgstr ""
 
@@ -445,7 +469,7 @@ msgstr ""
 msgid "Description of the plugin"
 msgstr ""
 
-#: free/templates/dashboard.php:98
+#: free/templates/dashboard.php:115
 msgid "Destination"
 msgstr ""
 
@@ -453,7 +477,11 @@ msgstr ""
 msgid "Diagnostic information about active server extensions and write permissions."
 msgstr ""
 
-#: free/templates/dashboard.php:72
+#: free/templates/settings.php:390
+msgid "Direct HTTP access to backup package URLs is NOT guaranteed to be blocked on Nginx until your server administrator adds the deny rule below inside your Nginx server { } block and reloads Nginx. Merely viewing this rule in the admin panel does not activate it."
+msgstr ""
+
+#: free/templates/dashboard.php:89
 msgid "Direct link that always serves the newest completed backup. Requires administrator login before download."
 msgstr ""
 
@@ -469,12 +497,12 @@ msgstr ""
 msgid "Download (sign in as an administrator):"
 msgstr ""
 
-#: free/templates/dashboard.php:350
+#: free/templates/dashboard.php:367
 msgid "Download Archive"
 msgstr ""
 
-#: free/templates/dashboard.php:349
-#: free/templates/dashboard.php:423
+#: free/templates/dashboard.php:366
+#: free/templates/dashboard.php:440
 msgid "Download Archive (.zip)"
 msgstr ""
 
@@ -482,7 +510,7 @@ msgstr ""
 msgid "Download Archive + Installer (Both)"
 msgstr ""
 
-#: free/templates/dashboard.php:365
+#: free/templates/dashboard.php:382
 msgid "Download Archive and Installer simultaneously"
 msgstr ""
 
@@ -495,24 +523,24 @@ msgstr ""
 msgid "Download Backup Package"
 msgstr ""
 
-#: free/templates/dashboard.php:366
+#: free/templates/dashboard.php:383
 msgid "Download Both"
 msgstr ""
 
-#: free/templates/dashboard.php:357
+#: free/templates/dashboard.php:374
 msgid "Download Installer"
 msgstr ""
 
-#: free/templates/dashboard.php:426
+#: free/templates/dashboard.php:443
 msgid "Download Installer (.php)"
 msgstr ""
 
 #: free/src/Download/PublicDownload.php:305
-#: free/templates/dashboard.php:356
+#: free/templates/dashboard.php:373
 msgid "Download Installer (installer.php)"
 msgstr ""
 
-#: free/templates/settings.php:466
+#: free/templates/settings.php:546
 msgid "Download Link"
 msgstr ""
 
@@ -520,19 +548,19 @@ msgstr ""
 msgid "Download ZIP"
 msgstr ""
 
-#: free/templates/dashboard.php:169
+#: free/templates/dashboard.php:186
 msgid "Dumps all WordPress database tables into pure standard SQL without relying on mysqldump."
 msgstr ""
 
-#: free/templates/dashboard.php:136
+#: free/templates/dashboard.php:153
 msgid "Each backup includes installer.php alongside the archive zip. You can copy both files to an empty domain or localhost and run installer.php in your browser to restore the entire website in 3 steps without pre-installing WordPress."
 msgstr ""
 
-#: free/templates/settings.php:410
+#: free/templates/settings.php:490
 msgid "Enable Bale"
 msgstr ""
 
-#: free/templates/settings.php:369
+#: free/templates/settings.php:449
 msgid "Enable Telegram"
 msgstr ""
 
@@ -540,7 +568,7 @@ msgstr ""
 msgid "Enabled"
 msgstr ""
 
-#: free/templates/settings.php:535
+#: free/templates/settings.php:615
 msgid "Enables recurring background backup jobs using WordPress built-in WP-Cron scheduler."
 msgstr ""
 
@@ -552,11 +580,11 @@ msgstr ""
 msgid "Environment"
 msgstr ""
 
-#: free/templates/dashboard.php:152
+#: free/templates/dashboard.php:169
 msgid "Everything is packed into one archive plus a standalone installer that rebuilds the site on any empty server."
 msgstr ""
 
-#: free/templates/settings.php:287
+#: free/templates/settings.php:302
 msgid "Examples: wp-content/uploads/2022/, *.mp4, node_modules/. Cache and backup folders are always skipped automatically."
 msgstr ""
 
@@ -564,7 +592,7 @@ msgstr ""
 msgid "Examples: wp-content/uploads/2022/, *.mp4, node_modules/. Cache and backup folders are always skipped."
 msgstr ""
 
-#: free/templates/settings.php:282
+#: free/templates/settings.php:297
 msgid "Excluded paths and patterns (one per line)"
 msgstr ""
 
@@ -572,7 +600,7 @@ msgstr ""
 msgid "Executable files cannot be stored in backup storage."
 msgstr ""
 
-#: free/templates/dashboard.php:433
+#: free/templates/dashboard.php:450
 msgid "Execution Log"
 msgstr ""
 
@@ -596,15 +624,15 @@ msgstr ""
 msgid "File is not readable: %s"
 msgstr ""
 
-#: free/templates/dashboard.php:224
+#: free/templates/dashboard.php:241
 msgid "Files"
 msgstr ""
 
-#: free/templates/settings.php:295
+#: free/templates/settings.php:310
 msgid "Files exceeding this size threshold will be skipped to keep backups fast and reliable. Enter 0 for no limit."
 msgstr ""
 
-#: free/templates/settings.php:303
+#: free/templates/settings.php:318
 msgid "Files packed per request"
 msgstr ""
 
@@ -612,7 +640,7 @@ msgstr ""
 msgid "Finalizing the package"
 msgstr ""
 
-#: free/templates/settings.php:283
+#: free/templates/settings.php:298
 msgid "Folders or file patterns that will be excluded from the backup archive (e.g. wp-content/cache/, *.mp4)."
 msgstr ""
 
@@ -624,12 +652,12 @@ msgstr ""
 msgid "Free disk space"
 msgstr ""
 
-#: free/templates/settings.php:541
+#: free/templates/settings.php:621
 msgid "Frequency"
 msgstr ""
 
-#: free/templates/settings.php:469
-#: free/templates/settings.php:500
+#: free/templates/settings.php:549
+#: free/templates/settings.php:580
 msgid "HTML formatting tags such as <b>bold</b> and <a href=\"...\">links</a> are supported."
 msgstr ""
 
@@ -649,23 +677,23 @@ msgstr ""
 msgid "Inactive"
 msgstr ""
 
-#: free/templates/dashboard.php:168
+#: free/templates/dashboard.php:185
 msgid "Include database"
 msgstr ""
 
-#: free/templates/dashboard.php:163
+#: free/templates/dashboard.php:180
 msgid "Include files"
 msgstr ""
 
-#: free/templates/dashboard.php:164
+#: free/templates/dashboard.php:181
 msgid "Includes WordPress core files, active themes, plugins, and uploads media library."
 msgstr ""
 
-#: free/templates/dashboard.php:245
+#: free/templates/dashboard.php:262
 msgid "Initializing backup job…"
 msgstr ""
 
-#: free/templates/dashboard.php:228
+#: free/templates/dashboard.php:245
 msgid "Installer"
 msgstr ""
 
@@ -673,7 +701,7 @@ msgstr ""
 msgid "Installer file not found."
 msgstr ""
 
-#: free/templates/settings.php:575
+#: free/templates/settings.php:655
 msgid "Installer password (optional)"
 msgstr ""
 
@@ -681,19 +709,19 @@ msgstr ""
 msgid "Invalid file name."
 msgstr ""
 
-#: free/templates/settings.php:212
+#: free/backupino.php:1
 msgid "Isolated, protected path used to safely store archive files away from public access:"
 msgstr ""
 
-#: free/templates/dashboard.php:156
+#: free/templates/dashboard.php:173
 msgid "JavaScript is required to build backups."
 msgstr ""
 
-#: free/templates/settings.php:553
+#: free/templates/settings.php:633
 msgid "Keep at most (backups)"
 msgstr ""
 
-#: free/templates/dashboard.php:175
+#: free/templates/dashboard.php:192
 msgid "Label (optional)"
 msgstr ""
 
@@ -701,7 +729,7 @@ msgstr ""
 msgid "Link copied to the clipboard."
 msgstr ""
 
-#: free/templates/dashboard.php:257
+#: free/templates/dashboard.php:274
 msgid "Live Activity Feed"
 msgstr ""
 
@@ -709,7 +737,7 @@ msgstr ""
 msgid "Live diagnostic health report of active server extensions, filesystem permissions, and system stability."
 msgstr ""
 
-#: free/templates/dashboard.php:436
+#: free/templates/dashboard.php:453
 msgid "Loading logs…"
 msgstr ""
 
@@ -717,29 +745,37 @@ msgstr ""
 msgid "Loading…"
 msgstr ""
 
+#: free/templates/settings.php:212
+msgid "Local directory used to store backup archives. Guarded with .htaccess (Apache/LiteSpeed), web.config (IIS), and index.html (directory listing). On Nginx, direct HTTP access is NOT guaranteed to be blocked until a server-level deny rule is configured."
+msgstr ""
+
 #: free/backupino.php:1
 msgid "Local folder: %s"
 msgstr ""
 
-#: free/templates/settings.php:554
+#: free/templates/settings.php:403
+msgid "Manual Nginx Rule Configuration Required"
+msgstr ""
+
+#: free/templates/settings.php:634
 msgid "Maximum number of recent backups to keep on disk. Older packages are automatically pruned to save space."
 msgstr ""
 
-#: free/templates/dashboard.php:106
+#: free/templates/dashboard.php:123
 #: free/templates/settings.php:120
 #: free/templates/settings.php:162
 msgid "Memory Limit"
 msgstr ""
 
-#: free/templates/dashboard.php:411
+#: free/templates/dashboard.php:428
 msgid "Message"
 msgstr ""
 
-#: free/templates/settings.php:449
+#: free/templates/settings.php:529
 msgid "Message template sent to messengers when a backup finishes."
 msgstr ""
 
-#: free/templates/settings.php:481
+#: free/templates/settings.php:561
 msgid "Message template sent to messengers when the site is restored using the installer."
 msgstr ""
 
@@ -751,11 +787,11 @@ msgstr ""
 msgid "Messenger Platform"
 msgstr ""
 
-#: free/templates/settings.php:546
+#: free/templates/settings.php:626
 msgid "Monthly (first day of the month)"
 msgstr ""
 
-#: free/templates/settings.php:542
+#: free/templates/settings.php:622
 msgid "Monthly execution triggers on the 1st of each Persian/Gregorian month based on site language."
 msgstr ""
 
@@ -771,11 +807,43 @@ msgstr ""
 msgid "New Administrator Account Created:"
 msgstr ""
 
-#: free/templates/settings.php:495
+#: free/templates/settings.php:575
 msgid "New Site URL"
 msgstr ""
 
-#: free/templates/dashboard.php:295
+#: free/templates/settings.php:382
+msgid "Nginx & Reverse Proxy Limitations:"
+msgstr ""
+
+#: free/templates/dashboard.php:62
+msgid "Nginx Server Configuration Note:"
+msgstr ""
+
+#: free/templates/settings.php:366
+msgid "Nginx Server Detected — Action Required to Block Direct Access:"
+msgstr ""
+
+#: free/templates/settings.php:383
+msgid "Nginx completely ignores .htaccess and web.config files. Because reverse proxies or front-end caches may sit in front of Apache or PHP-FPM, automated web server detection is best-effort and cannot be guaranteed in every architecture. Backupino cannot automatically modify or reload Nginx configuration files."
+msgstr ""
+
+#: free/templates/settings.php:225
+msgid "Nginx detected — manual server configuration required:"
+msgstr ""
+
+#: free/templates/settings.php:367
+msgid "Nginx does not enforce .htaccess or web.config rules, and index.html only conceals directory listings. Action is required by your server administrator to prevent direct HTTP downloads of backup files."
+msgstr ""
+
+#: free/templates/settings.php:226
+msgid "Nginx ignores .htaccess and web.config. Backupino cannot automatically alter or reload Nginx configuration. Direct HTTP downloads of package URLs are not guaranteed to be blocked until your server administrator adds the rule below inside your Nginx server { } block and reloads Nginx."
+msgstr ""
+
+#: free/src/Core/Compatibility.php:108
+msgid "Nginx web server detected: Nginx ignores .htaccess and web.config files, and index.html only hides directory listing. Direct HTTP access to backup files is NOT guaranteed to be blocked until your server administrator adds the server-level Nginx deny rule in Backupino -> Settings -> Storage Destination and reloads Nginx. Backupino cannot automatically alter or reload Nginx configuration."
+msgstr ""
+
+#: free/templates/dashboard.php:312
 msgid "No backups yet."
 msgstr ""
 
@@ -783,7 +851,7 @@ msgstr ""
 msgid "No messenger is configured."
 msgstr ""
 
-#: free/templates/settings.php:251
+#: free/templates/settings.php:266
 msgid "No recent log entries found."
 msgstr ""
 
@@ -832,11 +900,11 @@ msgstr ""
 msgid "OpenSSL is missing: S3 uploads that require HTTPS signatures and encrypted packages will be unavailable."
 msgstr ""
 
-#: free/templates/dashboard.php:176
+#: free/templates/dashboard.php:193
 msgid "Optional note to identify why this backup was created (e.g. before updating WooCommerce)."
 msgstr ""
 
-#: free/templates/dashboard.php:102
+#: free/templates/dashboard.php:119
 #: free/templates/settings.php:116
 #: free/templates/settings.php:153
 msgid "PHP Version"
@@ -854,7 +922,7 @@ msgstr ""
 msgid "PHP version"
 msgstr ""
 
-#: free/templates/dashboard.php:418
+#: free/templates/dashboard.php:435
 msgid "Package"
 msgstr ""
 
@@ -866,7 +934,7 @@ msgstr ""
 msgid "Package Name"
 msgstr ""
 
-#: free/templates/dashboard.php:286
+#: free/templates/dashboard.php:303
 msgid "Package name"
 msgstr ""
 
@@ -878,7 +946,7 @@ msgstr ""
 msgid "Packages are stored on: %s"
 msgstr ""
 
-#: free/templates/dashboard.php:232
+#: free/templates/dashboard.php:249
 msgid "Packaging"
 msgstr ""
 
@@ -886,7 +954,7 @@ msgstr ""
 msgid "Packed %1$s of %2$s files (%3$s skipped, %4$s)."
 msgstr ""
 
-#: free/templates/settings.php:576
+#: free/templates/settings.php:656
 msgid "Password protecting installer.php when accessed via browser during migration or restoration."
 msgstr ""
 
@@ -894,7 +962,7 @@ msgstr ""
 msgid "PclZip fallback"
 msgstr ""
 
-#: free/templates/dashboard.php:71
+#: free/templates/dashboard.php:88
 msgid "Permanent download link"
 msgstr ""
 
@@ -902,28 +970,28 @@ msgstr ""
 msgid "Plugin Name of the plugin"
 msgstr ""
 
-#: free/templates/settings.php:612
+#: free/templates/settings.php:692
 msgid "Plugin updates are delivered securely through the official WordPress repository."
 msgstr ""
 
-#: free/templates/settings.php:584
+#: free/templates/settings.php:664
 msgid "Preset target URL for search & replace when migrating to a known new domain."
 msgstr ""
 
-#: free/templates/settings.php:325
+#: free/templates/settings.php:340
 msgid "Primary Destination Driver"
+msgstr ""
+
+#: free/templates/settings.php:341
+msgid "Primary storage destination for completed packages."
 msgstr ""
 
 #: free/backupino.php:1
 msgid "Primary storage destination for completed packages. In the Free edition, local protected storage is used."
 msgstr ""
 
-#: free/templates/settings.php:326
-msgid "Primary storage destination for completed packages. Local protected storage is used."
-msgstr ""
-
-#: free/templates/dashboard.php:285
-#: free/templates/dashboard.php:403
+#: free/templates/dashboard.php:302
+#: free/templates/dashboard.php:420
 msgid "Progress"
 msgstr ""
 
@@ -931,7 +999,7 @@ msgstr ""
 msgid "Protected"
 msgstr ""
 
-#: free/templates/settings.php:340
+#: free/backupino.php:1
 msgid "Protected Directory Path"
 msgstr ""
 
@@ -943,7 +1011,7 @@ msgstr ""
 msgid "Quick Navigation"
 msgstr ""
 
-#: free/templates/dashboard.php:258
+#: free/templates/dashboard.php:275
 msgid "RUNNING"
 msgstr ""
 
@@ -951,32 +1019,36 @@ msgstr ""
 msgid "Ready"
 msgstr ""
 
-#: free/templates/dashboard.php:261
+#: free/templates/dashboard.php:278
 msgid "Ready to start backup..."
 msgstr ""
 
-#: free/templates/settings.php:600
+#: free/templates/settings.php:680
 msgid "Receive critical security notices, product updates, and roadmap announcements (opt-in)."
 msgstr ""
 
-#: free/templates/dashboard.php:277
+#: free/templates/dashboard.php:294
 msgid "Recent backups"
 msgstr ""
 
 #: free/templates/settings.php:32
-#: free/templates/settings.php:526
+#: free/templates/settings.php:606
 msgid "Recurring Schedule"
 msgstr ""
 
-#: free/templates/settings.php:233
+#: free/templates/settings.php:248
 msgid "Refresh"
 msgstr ""
 
-#: free/templates/settings.php:497
+#: free/templates/dashboard.php:67
+msgid "Required Nginx server configuration (add inside your server { } block and reload Nginx):"
+msgstr ""
+
+#: free/templates/settings.php:577
 msgid "Restoration Date"
 msgstr ""
 
-#: free/templates/settings.php:478
+#: free/templates/settings.php:558
 msgid "Restoration Message Template"
 msgstr ""
 
@@ -984,7 +1056,7 @@ msgstr ""
 msgid "Run Storage Write Test"
 msgstr ""
 
-#: free/templates/settings.php:534
+#: free/templates/settings.php:614
 msgid "Run automatic backups"
 msgstr ""
 
@@ -992,7 +1064,7 @@ msgstr ""
 msgid "Running"
 msgstr ""
 
-#: free/templates/settings.php:623
+#: free/templates/settings.php:703
 msgid "Save settings"
 msgstr ""
 
@@ -1020,6 +1092,10 @@ msgstr ""
 msgid "Send test message"
 msgstr ""
 
+#: free/templates/settings.php:387
+msgid "Server Administrator Nginx Configuration"
+msgstr ""
+
 #: free/src/Admin/Admin.php:67
 #: free/src/Admin/Admin.php:68
 #: free/src/Admin/Admin.php:160
@@ -1040,13 +1116,13 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
-#: free/templates/settings.php:462
-#: free/templates/settings.php:494
+#: free/templates/settings.php:542
+#: free/templates/settings.php:574
 msgid "Site Name"
 msgstr ""
 
-#: free/templates/dashboard.php:287
-#: free/templates/dashboard.php:419
+#: free/templates/dashboard.php:304
+#: free/templates/dashboard.php:436
 msgid "Size"
 msgstr ""
 
@@ -1054,7 +1130,7 @@ msgstr ""
 msgid "Size: %s"
 msgstr ""
 
-#: free/templates/settings.php:294
+#: free/templates/settings.php:309
 msgid "Skip files larger than (MB, 0 = no limit)"
 msgstr ""
 
@@ -1063,11 +1139,11 @@ msgid "Skipped unsafe entry: %s"
 msgstr ""
 
 #: free/templates/settings.php:36
-#: free/templates/settings.php:566
+#: free/templates/settings.php:646
 msgid "Standalone Installer"
 msgstr ""
 
-#: free/templates/dashboard.php:132
+#: free/templates/dashboard.php:149
 msgid "Standalone Restore"
 msgstr ""
 
@@ -1075,8 +1151,8 @@ msgstr ""
 msgid "Starting…"
 msgstr ""
 
-#: free/templates/dashboard.php:284
-#: free/templates/dashboard.php:399
+#: free/templates/dashboard.php:301
+#: free/templates/dashboard.php:416
 msgid "Status"
 msgstr ""
 
@@ -1084,20 +1160,24 @@ msgstr ""
 msgid "Storage"
 msgstr ""
 
-#: free/templates/dashboard.php:93
+#: free/templates/dashboard.php:110
 msgid "Storage & Environment"
 msgstr ""
 
 #: free/templates/settings.php:24
-#: free/templates/settings.php:317
+#: free/templates/settings.php:332
 msgid "Storage Destination"
+msgstr ""
+
+#: free/templates/settings.php:355
+msgid "Storage Directory Path"
 msgstr ""
 
 #: free/templates/settings.php:124
 msgid "Storage Status"
 msgstr ""
 
-#: free/templates/dashboard.php:116
+#: free/templates/dashboard.php:133
 msgid "Storage folder:"
 msgstr ""
 
@@ -1109,11 +1189,11 @@ msgstr ""
 msgid "Streaming"
 msgstr ""
 
-#: free/templates/settings.php:229
+#: free/templates/settings.php:244
 msgid "System & Activity Log Stream"
 msgstr ""
 
-#: free/templates/settings.php:243
+#: free/templates/settings.php:258
 msgid "System Activity Log (Last 100 entries)"
 msgstr ""
 
@@ -1129,31 +1209,35 @@ msgstr ""
 msgid "System status"
 msgstr ""
 
+#: free/templates/settings.php:417
+msgid "Target filesystem path: %s"
+msgstr ""
+
 #: free/src/Notify/ChannelFactory.php:36
 msgid "Telegram"
 msgstr ""
 
-#: free/templates/settings.php:375
+#: free/templates/settings.php:455
 msgid "Telegram Bot Token"
 msgstr ""
 
-#: free/templates/settings.php:384
+#: free/templates/settings.php:464
 msgid "Telegram Chat ID"
 msgstr ""
 
-#: free/templates/settings.php:365
+#: free/templates/settings.php:445
 msgid "Telegram Notification"
 msgstr ""
 
-#: free/templates/settings.php:385
+#: free/templates/settings.php:465
 msgid "Telegram numeric chat or channel ID."
 msgstr ""
 
-#: free/templates/settings.php:436
+#: free/templates/settings.php:516
 msgid "Test Bale"
 msgstr ""
 
-#: free/templates/settings.php:395
+#: free/templates/settings.php:475
 msgid "Test Telegram"
 msgstr ""
 
@@ -1161,7 +1245,7 @@ msgstr ""
 msgid "Test message sent."
 msgstr ""
 
-#: free/templates/dashboard.php:122
+#: free/templates/dashboard.php:139
 msgid "Test storage"
 msgstr ""
 
@@ -1206,8 +1290,12 @@ msgstr ""
 msgid "The archive is not open."
 msgstr ""
 
-#: free/templates/dashboard.php:268
+#: free/templates/dashboard.php:285
 msgid "The backup process is running in the background. Please keep this browser window open until the operation finishes completely."
+msgstr ""
+
+#: free/templates/settings.php:410
+msgid "The backup storage directory is located outside standard web root or uses a custom path mapping. Your server administrator must manually configure an Nginx rule denying direct access based on your web server configuration."
 msgstr ""
 
 #: free/src/Notify/BotApi.php:191
@@ -1216,6 +1304,10 @@ msgstr ""
 
 #: free/src/Installer/ConnectionManager.php:74
 msgid "The database could not be created: %s"
+msgstr ""
+
+#: free/templates/settings.php:232
+msgid "The exact Nginx location block cannot be determined automatically (e.g. external CDN or custom mapping). Please visit Backupino -> Settings -> Storage Destination to view manual configuration guidance."
 msgstr ""
 
 #: free/backupino.php:1
@@ -1242,6 +1334,10 @@ msgstr ""
 msgid "The requested file does not exist."
 msgstr ""
 
+#: free/templates/dashboard.php:72
+msgid "The storage path cannot be resolved to an automatic Nginx location (for example, due to an external CDN, custom domain, or path outside webroot). Please see Backupino -> Settings -> Storage Destination to manually determine the rule for your server."
+msgstr ""
+
 #: free/src/Download/PublicDownload.php:101
 msgid "There is no backup ready to download yet."
 msgstr ""
@@ -1254,11 +1350,11 @@ msgstr ""
 msgid "This download link is not valid."
 msgstr ""
 
-#: free/templates/dashboard.php:76
+#: free/templates/dashboard.php:93
 msgid "This link always points at the newest backup. It never expires, but the visitor must be signed in as an administrator before the download starts."
 msgstr ""
 
-#: free/templates/settings.php:344
+#: free/backupino.php:1
 msgid "This location contains an .htaccess file blocking direct HTTP requests and indexing for maximum security."
 msgstr ""
 
@@ -1271,7 +1367,7 @@ msgstr ""
 msgid "This server"
 msgstr ""
 
-#: free/templates/dashboard.php:110
+#: free/templates/dashboard.php:127
 msgid "Time Limit"
 msgstr ""
 
@@ -1296,7 +1392,7 @@ msgid "Updates & Community"
 msgstr ""
 
 #: free/templates/settings.php:44
-#: free/templates/settings.php:596
+#: free/templates/settings.php:676
 msgid "Updates & Privacy"
 msgstr ""
 
@@ -1316,8 +1412,12 @@ msgstr ""
 msgid "View Release Notes"
 msgstr ""
 
-#: free/templates/settings.php:604
+#: free/templates/settings.php:684
 msgid "We respect your privacy. No telemetry or personal data is collected or sent without your explicit consent."
+msgstr ""
+
+#: free/templates/settings.php:376
+msgid "Web Server Direct Access Protection & Nginx Guidance"
 msgstr ""
 
 #: free/src/Admin/Admin.php:110
@@ -1343,6 +1443,10 @@ msgstr ""
 
 #: free/backupino.php:1
 msgid "You do not have permission to check for updates."
+msgstr ""
+
+#: free/templates/settings.php:408
+msgid "Your WordPress uploads directory uses an external CDN or separate domain. The exact public Nginx location cannot be determined automatically. Your server administrator must manually create an Nginx location block matching your origin server URL mapping."
 msgstr ""
 
 #: free/src/Admin/Admin.php:187
