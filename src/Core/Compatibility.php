@@ -104,7 +104,62 @@ final class Compatibility {
 			$warnings[] = __( 'mbstring is missing: multibyte site titles may be truncated on URL replacement.', 'backupino' );
 		}
 
+		if ( self::is_nginx() ) {
+			$warnings[] = __( 'Nginx web server detected: Nginx ignores .htaccess and web.config files, and index.html only hides directory listing. Direct HTTP access to backup files is NOT guaranteed to be blocked until you add the server-level Nginx deny rule in Backupino -> Settings -> Storage Destination and reload Nginx.', 'backupino' );
+		}
+
 		return $warnings;
+	}
+
+	/**
+	 * Detect whether the current request is served behind Nginx.
+	 *
+	 * @param string|null $server_software Optional SERVER_SOFTWARE override for testing.
+	 * @return bool
+	 */
+	public static function is_nginx( ?string $server_software = null ): bool {
+		if ( null === $server_software ) {
+			if ( isset( $GLOBALS['is_nginx'] ) && true === $GLOBALS['is_nginx'] ) {
+				return true;
+			}
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Read-only server banner check.
+			$server_software = isset( $_SERVER['SERVER_SOFTWARE'] ) ? (string) $_SERVER['SERVER_SOFTWARE'] : '';
+		}
+
+		return false !== stripos( $server_software, 'nginx' );
+	}
+
+	/**
+	 * Build an Nginx server-block location rule denying direct HTTP access to the
+	 * Backupino storage directory. Uses `^~` so static-file regex rules cannot bypass it.
+	 *
+	 * @param Paths $paths Storage layout.
+	 * @return string
+	 */
+	public static function nginx_storage_rule( Paths $paths ): string {
+		$base     = rtrim( str_replace( '\\', '/', $paths->base() ), '/' );
+		$root     = rtrim( str_replace( '\\', '/', $paths->root() ), '/' );
+		$web_path = '';
+
+		if ( '' !== $root && 0 === strpos( $base, $root . '/' ) ) {
+			$web_path = substr( $base, strlen( $root ) );
+		} elseif ( function_exists( 'wp_upload_dir' ) ) {
+			$uploads = wp_upload_dir( null, false );
+			if ( ! empty( $uploads['baseurl'] ) ) {
+				$parsed_path = (string) parse_url( (string) $uploads['baseurl'], PHP_URL_PATH );
+				if ( '' !== $parsed_path ) {
+					$web_path = rtrim( $parsed_path, '/' ) . '/backupino';
+				}
+			}
+		}
+
+		if ( '' === $web_path ) {
+			$web_path = '/wp-content/uploads/backupino';
+		}
+
+		$web_path = '/' . trim( (string) preg_replace( '/[^A-Za-z0-9\/._\-]/', '', $web_path ), '/' ) . '/';
+
+		return "location ^~ {$web_path} {\n    deny all;\n    return 403;\n}";
 	}
 
 	/**
@@ -125,6 +180,8 @@ final class Compatibility {
 			'openssl'          => extension_loaded( 'openssl' ),
 			'curl'             => extension_loaded( 'curl' ),
 			'suhosin'          => extension_loaded( 'suhosin' ),
+			'is_nginx'         => self::is_nginx(),
+			'nginx_rule'       => self::nginx_storage_rule( $paths ),
 			'storage_writable' => Fs::is_writable_dir( $paths->base() ),
 			'storage_path'     => $paths->base(),
 			'blocking'         => self::blocking_issues(),

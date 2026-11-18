@@ -75,7 +75,13 @@ This plugin can optionally connect to external third-party services to deliver b
 No. Upload your backup archive along with `installer.php` into an empty web directory and open `installer.php` in your browser. The installer unpacks files, imports your database, and sets up WordPress cleanly.
 
 = Where are backup packages stored? =
-Packages are stored locally in `backupino/packages/` inside your site's configured WordPress uploads directory (`basedir` returned by `wp_upload_dir()`, which is typically under `wp-content/uploads/backupino/packages/` on default installations, though the full path may vary on sites with a custom uploads directory). If `wp_upload_dir()` does not return a `basedir`, Backupino falls back to `backupino/packages/` inside `WP_CONTENT_DIR`. The directory is guarded with `.htaccess`, `web.config`, and `index.html` files to discourage direct public file browsing and execution.
+Packages are stored locally in `backupino/packages/` inside your site's configured WordPress uploads directory (`basedir` returned by `wp_upload_dir()`, which is typically under `wp-content/uploads/backupino/packages/` on default installations, though the full path may vary on sites with a custom uploads directory). If `wp_upload_dir()` does not return a `basedir`, Backupino falls back to `backupino/packages/` inside `WP_CONTENT_DIR`.
+
+Backupino writes `.htaccess` (for Apache/LiteSpeed), `web.config` (for IIS), and `index.html` (which only prevents directory listing) inside its storage directories. **Important for Nginx:** Nginx ignores `.htaccess` and `web.config`, and `index.html` does not block direct requests to a known package URL. On Nginx (or Nginx reverse proxies serving static files), direct HTTP access to backup files is **not guaranteed to be blocked** until you add a server-level deny rule inside your Nginx `server { }` block (adjusting the path if your uploads directory is customized) and reload Nginx:
+
+`location ^~ /wp-content/uploads/backupino/ { deny all; return 403; }`
+
+Authorized downloads through Backupino's WordPress admin screen and permanent download link are streamed via PHP and continue working normally with this rule enabled.
 
 = Does the permanent download link ever expire? =
 No. The permanent link (`?backupino_download=latest`) never expires and always resolves to the most recent backup archive. For security, requests are protected by WordPress administrator authentication (`manage_options` capability) or by providing the secret download access key generated in settings (`?backupino_key=...`).

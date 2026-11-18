@@ -56,6 +56,12 @@ foreach ( $jobs as $backupino_j ) {
 					<li><?php echo esc_html( $backupino_issue ); ?></li>
 				<?php endforeach; ?>
 			</ul>
+			<?php if ( \Backupino\Core\Compatibility::is_nginx() ) : ?>
+				<p style="margin: 8px 0 6px;">
+					<strong><?php esc_html_e( 'Required Nginx server configuration (add inside your server { } block and reload Nginx):', 'backupino' ); ?></strong>
+				</p>
+				<pre class="code" style="margin: 0 0 10px; padding: 10px; background: #fff; border: 1px solid #dcdcde; overflow-x: auto; direction: ltr; text-align: left;"><?php echo esc_html( \Backupino\Core\Compatibility::nginx_storage_rule( $paths ) ); ?></pre>
+			<?php endif; ?>
 		</div>
 	<?php endif; ?>
 

@@ -209,7 +209,7 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 							<span><?php esc_html_e( 'Backup Storage Destination', 'backupino' ); ?></span>
 						</h3>
 						<p class="description">
-							<?php esc_html_e( 'Isolated, protected path used to safely store archive files away from public access:', 'backupino' ); ?>
+							<?php esc_html_e( 'Local directory used to store backup archives. Guarded with .htaccess (Apache/LiteSpeed), web.config (IIS), and index.html (directory listing). On Nginx, direct HTTP access is NOT guaranteed to be blocked until a server-level deny rule is configured.', 'backupino' ); ?>
 						</p>
 						<div class="backupino-path-box">
 							<code><?php echo esc_html( $paths->packages() ); ?></code>
@@ -219,6 +219,15 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 							</button>
 						</div>
 						<p class="backupino-result" id="backupino-storage-result" style="margin-top: 8px;"></p>
+						<?php if ( ! empty( $backupino_snapshot['is_nginx'] ) ) : ?>
+							<div class="notice notice-warning inline" style="margin: 12px 0 0;">
+								<p>
+									<strong><?php esc_html_e( 'Nginx detected — manual server configuration required:', 'backupino' ); ?></strong>
+									<?php esc_html_e( 'Nginx ignores .htaccess and web.config. Add the rule below inside your Nginx server { } block and reload Nginx; until applied, direct HTTP downloads of package URLs are not guaranteed to be blocked.', 'backupino' ); ?>
+								</p>
+								<pre class="code" style="margin: 6px 0 10px; padding: 10px; background: #fff; border: 1px solid #dcdcde; overflow-x: auto; direction: ltr; text-align: left;"><?php echo esc_html( (string) $backupino_snapshot['nginx_rule'] ); ?></pre>
+							</div>
+						<?php endif; ?>
 					</div>
 
 					<!-- Real-time Activity & Diagnostics Log Viewer -->
@@ -317,13 +326,13 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 								<span><?php esc_html_e( 'Storage Destination', 'backupino' ); ?></span>
 							</h2>
 							<p class="description">
-								<?php esc_html_e( 'Backup archives and standalone installers are stored locally in a secure, protected directory on your server.', 'backupino' ); ?>
+								<?php esc_html_e( 'Backup archives are stored locally on your server and served to administrators through Backupino authenticated download endpoints.', 'backupino' ); ?>
 							</p>
 
 							<div class="backupino-field-group">
 								<label class="backupino-label">
 									<span class="backupino-label-text"><?php esc_html_e( 'Primary Destination Driver', 'backupino' ); ?></span>
-									<span class="backupino-tooltip" data-tooltip="<?php esc_attr_e( 'Primary storage destination for completed packages. Local protected storage is used.', 'backupino' ); ?>" tabindex="0">?</span>
+									<span class="backupino-tooltip" data-tooltip="<?php esc_attr_e( 'Primary storage destination for completed packages.', 'backupino' ); ?>" tabindex="0">?</span>
 								</label>
 								<select name="storage.driver" id="backupino-driver">
 									<?php foreach ( $plugin->storages()->available() as $backupino_driver => $backupino_label ) : ?>
@@ -337,11 +346,30 @@ $backupino_snapshot = \Backupino\Core\Compatibility::snapshot( $paths );
 
 							<div class="backupino-field-group" style="margin-top: 16px;">
 								<label class="backupino-label">
-									<span class="backupino-label-text"><?php esc_html_e( 'Protected Directory Path', 'backupino' ); ?></span>
+									<span class="backupino-label-text"><?php esc_html_e( 'Storage Directory Path', 'backupino' ); ?></span>
 								</label>
 								<input type="text" readonly class="large-text code" value="<?php echo esc_attr( $paths->packages() ); ?>">
 								<p class="description">
-									<?php esc_html_e( 'This location contains an .htaccess file blocking direct HTTP requests and indexing for maximum security.', 'backupino' ); ?>
+									<?php esc_html_e( 'Backupino places .htaccess (Apache/LiteSpeed), web.config (IIS), and index.html (hides directory listing only) in this directory. Nginx ignores .htaccess and web.config; direct HTTP access is NOT guaranteed to be blocked on Nginx until you add a server-level deny rule.', 'backupino' ); ?>
+								</p>
+							</div>
+
+							<div class="notice <?php echo ! empty( $backupino_snapshot['is_nginx'] ) ? 'notice-warning' : 'notice-info'; ?> inline" style="margin: 16px 0 0;">
+								<p>
+									<strong>
+										<?php
+										if ( ! empty( $backupino_snapshot['is_nginx'] ) ) {
+											esc_html_e( 'Nginx Server Detected — Action Required to Block Direct Access:', 'backupino' );
+										} else {
+											esc_html_e( 'Using Nginx (or an Nginx Reverse Proxy)?', 'backupino' );
+										}
+										?>
+									</strong>
+									<?php esc_html_e( 'Because Nginx does not read .htaccess or web.config files, add the following rule inside your Nginx server { } block and reload Nginx. Until this server rule is active, direct HTTP access to backup package URLs is not guaranteed to be blocked.', 'backupino' ); ?>
+								</p>
+								<pre class="code" style="margin: 6px 0 10px; padding: 10px; background: #fff; border: 1px solid #dcdcde; overflow-x: auto; direction: ltr; text-align: left;"><?php echo esc_html( (string) $backupino_snapshot['nginx_rule'] ); ?></pre>
+								<p class="description" style="margin: 0 0 8px;">
+									<?php esc_html_e( 'After adding the rule, test with `nginx -t` and reload Nginx. Authorized downloads through Backupino admin or the permanent download link continue to work normally through PHP.', 'backupino' ); ?>
 								</p>
 							</div>
 						</div>
