@@ -19,31 +19,66 @@ if ( ! function_exists( 'backupino_remove_directory' ) ) {
 	/**
 	 * Recursively remove a directory and all its contents.
 	 *
+	 * Defensively handles symbolic links: if the target directory itself is a symlink,
+	 * only the symlink is removed without traversing, altering permissions, or deleting
+	 * the destination target. During traversal, symlinks (to files or directories) are
+	 * identified before directory checks and unlinked directly without following them.
+	 *
 	 * @param string $dir Target directory.
 	 * @return void
 	 */
 	function backupino_remove_directory( string $dir ): void {
-		if ( ! is_dir( $dir ) ) {
+		$target = rtrim( $dir, '/\\' );
+		if ( '' === $target ) {
 			return;
 		}
 
-		$items = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $dir, FilesystemIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
-
-		foreach ( $items as $item ) {
-			if ( $item->isDir() ) {
-				@chmod( $item->getPathname(), 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-				@rmdir( $item->getPathname() );       // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-			} else {
-				@chmod( $item->getPathname(), 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-				@unlink( $item->getPathname() );      // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		// 1. If the root target path is a symbolic link, remove only the link itself.
+		// Never traverse, chmod, or remove the destination directory.
+		if ( is_link( $target ) ) {
+			if ( ! @unlink( $target ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				@rmdir( $target );        // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 			}
+			return;
 		}
 
-		@chmod( $dir, 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		@rmdir( $dir );       // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		if ( ! is_dir( $target ) ) {
+			return;
+		}
+
+		// Ensure symlinks are never followed during traversal (SKIP_DOTS only, no FOLLOW_SYMLINKS).
+		$flags = FilesystemIterator::SKIP_DOTS;
+
+		try {
+			$dir_iterator = new RecursiveDirectoryIterator( $target, $flags );
+			$items        = new RecursiveIteratorIterator( $dir_iterator, RecursiveIteratorIterator::CHILD_FIRST );
+
+			foreach ( $items as $item ) {
+				$path = $item->getPathname();
+
+				// 2. Identify symlinks BEFORE checking if directory.
+				// If entry is a symlink (to a file or directory), unlink only the link itself.
+				if ( $item->isLink() || is_link( $path ) ) {
+					if ( ! @unlink( $path ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+						@rmdir( $path );        // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+					}
+					continue;
+				}
+
+				if ( $item->isDir() ) {
+					@chmod( $path, 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+					@rmdir( $path );       // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				} else {
+					@chmod( $path, 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+					@unlink( $path );      // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				}
+			}
+		} catch ( UnexpectedValueException $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+			// Fail-safe if directory cannot be opened.
+		}
+
+		@chmod( $target, 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		@rmdir( $target );       // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 	}
 }
 
@@ -91,7 +126,7 @@ if ( ! function_exists( 'backupino_uninstall_site' ) ) {
 
 		$backupino_content_dir = defined( 'WP_CONTENT_DIR' ) ? (string) WP_CONTENT_DIR : ( (string) ABSPATH . 'wp-content' );
 		$backupino_legacy_dir  = rtrim( $backupino_content_dir, '/' ) . '/backupino';
-		if ( is_dir( $backupino_legacy_dir ) ) {
+		if ( is_dir( $backupino_legacy_dir ) || is_link( $backupino_legacy_dir ) ) {
 			backupino_remove_directory( $backupino_legacy_dir );
 		}
 	}
