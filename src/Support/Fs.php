@@ -48,7 +48,7 @@ final class Fs {
 	}
 
 	/**
-	 * Drop `.htaccess`, `web.config`, and `index.php` guards into a directory.
+	 * Drop `.htaccess`, `web.config`, and `index.html` guards into a directory.
 	 *
 	 * @param string $dir Absolute directory path.
 	 * @return void

@@ -114,6 +114,14 @@ final class InstallerBuilder {
 
 		$template = (string) file_get_contents( $template_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 
+		// Ensure an independent server-only secret for state encryption and session signing
+		// that is never derived from or equal to the browser-facing CSRF token.
+		$existing_secret = isset( $payload['state_secret'] ) ? (string) $payload['state_secret'] : '';
+		$public_token    = isset( $payload['token'] ) ? (string) $payload['token'] : '';
+		if ( strlen( $existing_secret ) < 32 || ( '' !== $public_token && hash_equals( $public_token, $existing_secret ) ) ) {
+			$payload['state_secret'] = bin2hex( random_bytes( 32 ) );
+		}
+
 		$json = function_exists( 'wp_json_encode' ) ? wp_json_encode( $payload ) : json_encode( $payload );
 
 		$encoded = base64_encode( (string) $json );

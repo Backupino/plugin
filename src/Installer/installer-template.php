@@ -100,19 +100,20 @@ if ( is_file( $backupino_dir . '/php.ini' ) && ! file_exists( $backupino_dir . '
 $backupino_archive_name = isset( $backupino_payload['archive'] ) ? basename( (string) $backupino_payload['archive'] ) : '';
 $backupino_archive      = $backupino_dir . '/' . $backupino_archive_name;
 $backupino_token        = isset( $backupino_payload['token'] ) ? (string) $backupino_payload['token'] : '';
+$backupino_state_secret = isset( $backupino_payload['state_secret'] ) ? (string) $backupino_payload['state_secret'] : '';
 $backupino_action       = isset( $_REQUEST['action'] ) ? (string) preg_replace( '/[^a-z_]/', '', (string) $_REQUEST['action'] ) : 'index';
+$backupino_doc_root     = isset( $_SERVER['DOCUMENT_ROOT'] ) ? (string) $_SERVER['DOCUMENT_ROOT'] : null;
 
-$backupino_state_file  = '';
+$backupino_state_base  = '';
 $backupino_state_error = '';
-try {
-	$backupino_state_file = State::resolve_secure_path(
-		$backupino_dir,
-		$backupino_token,
-		$backupino_archive_name,
-		isset( $_SERVER['DOCUMENT_ROOT'] ) ? (string) $_SERVER['DOCUMENT_ROOT'] : null
-	);
-} catch ( \RuntimeException $e ) {
-	$backupino_state_error = $e->getMessage();
+if ( strlen( trim( $backupino_state_secret ) ) < 32 || ( '' !== $backupino_token && hash_equals( $backupino_token, $backupino_state_secret ) ) ) {
+	$backupino_state_error = 'Installer server-side security secret is missing or invalid.';
+} else {
+	try {
+		$backupino_state_base = State::find_secure_base_dir( $backupino_dir, $backupino_doc_root );
+	} catch ( \RuntimeException $e ) {
+		$backupino_state_error = $e->getMessage();
+	}
 }
 
 // Auto-detect current host and base URL
@@ -128,9 +129,9 @@ if ( 'index' === $backupino_action ) {
 	$backupino_checks   = Env::check( $backupino_payload, $backupino_dir, $backupino_archive );
 	$backupino_checks[] = array(
 		'label'  => 'Secure state storage',
-		'ok'     => '' === $backupino_state_error && '' !== $backupino_state_file,
+		'ok'     => '' === $backupino_state_error && '' !== $backupino_state_base,
 		'detail' => '' === $backupino_state_error
-			? 'Protected outside web document root'
+			? 'Private per-run storage outside web document root'
 			: $backupino_state_error,
 	);
 	$backupino_body   = '<div id="app">
@@ -245,7 +246,7 @@ if ( '' === $backupino_token || ! hash_equals( $backupino_token, $backupino_sent
 
 @set_time_limit( 180 );
 
-if ( '' !== $backupino_state_error || '' === $backupino_state_file ) {
+if ( '' !== $backupino_state_error || '' === $backupino_state_base ) {
 	respond(
 		array(
 			'ok'    => false,
@@ -257,23 +258,48 @@ if ( '' !== $backupino_state_error || '' === $backupino_state_file ) {
 	);
 }
 
-$backupino_state                  = new State( $backupino_state_file, $backupino_token );
-$GLOBALS['backupino_active_state'] = $backupino_state;
+$backupino_password   = isset( $backupino_payload['password'] ) ? (string) $backupino_payload['password'] : '';
+$backupino_run_handle = isset( $_POST['run_handle'] ) ? trim( (string) $_POST['run_handle'] ) : '';
+if ( '' === $backupino_run_handle && isset( $_COOKIE['backupino_run'] ) ) {
+	$backupino_run_handle = trim( (string) $_COOKIE['backupino_run'] );
+}
 
-// Optional password gate, configured when the package was built.
-$backupino_password = isset( $backupino_payload['password'] ) ? (string) $backupino_payload['password'] : '';
+$backupino_state      = null;
+$backupino_state_file = '';
 
-if ( '' !== $backupino_password && ! $backupino_state->get( 'authenticated' ) ) {
-	$backupino_supplied = isset( $_REQUEST['installer_password'] ) ? (string) $_REQUEST['installer_password'] : '';
-
-	if ( ! hash_equals( $backupino_password, $backupino_supplied ) ) {
-		respond( array( 'ok' => false, 'error' => 'Installer password required.' ), 401 );
+// Actions that require an already-created private run session fail closed on invalid/tampered state.
+if ( in_array( $backupino_action, array( 'extract', 'import', 'rewrite', 'config' ), true ) ) {
+	try {
+		$backupino_state = State::open_private_run(
+			$backupino_run_handle,
+			$backupino_dir,
+			$backupino_state_secret,
+			$backupino_archive_name,
+			$backupino_doc_root
+		);
+	} catch ( \RuntimeException $e ) {
+		respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), array(), '', $backupino_state_secret, $backupino_run_handle ) ), 400 );
 	}
 
-	$backupino_state->set( 'authenticated', true );
-	if ( ! $backupino_state->save() ) {
-		$backupino_state->destroy();
-		respond( array( 'ok' => false, 'error' => 'Failed to persist secure installer state.' ), 500 );
+	$backupino_state_file             = $backupino_state->file();
+	$GLOBALS['backupino_active_state'] = $backupino_state;
+
+	if ( '' !== $backupino_password && ! $backupino_state->get( 'authenticated' ) ) {
+		respond( array( 'ok' => false, 'error' => 'Installer password required.' ), 401 );
+	}
+} elseif ( in_array( $backupino_action, array( 'abort', 'cleanup' ), true ) && '' !== $backupino_run_handle ) {
+	try {
+		$backupino_state                  = State::open_private_run(
+			$backupino_run_handle,
+			$backupino_dir,
+			$backupino_state_secret,
+			$backupino_archive_name,
+			$backupino_doc_root
+		);
+		$backupino_state_file             = $backupino_state->file();
+		$GLOBALS['backupino_active_state'] = $backupino_state;
+	} catch ( \RuntimeException $e ) {
+		$backupino_state = null;
 	}
 }
 
@@ -283,9 +309,9 @@ switch ( $backupino_action ) {
 		$checks   = Env::check( $backupino_payload, $backupino_dir, $backupino_archive );
 		$checks[] = array(
 			'label'  => 'Secure state storage',
-			'ok'     => '' === $backupino_state_error && '' !== $backupino_state_file,
+			'ok'     => '' === $backupino_state_error && '' !== $backupino_state_base,
 			'detail' => '' === $backupino_state_error
-				? 'Protected outside web document root'
+				? 'Private per-run storage outside web document root'
 				: $backupino_state_error,
 		);
 
@@ -299,6 +325,13 @@ switch ( $backupino_action ) {
 		break;
 
 	case 'connect':
+		if ( '' !== $backupino_password ) {
+			$backupino_supplied = isset( $_REQUEST['installer_password'] ) ? (string) $_REQUEST['installer_password'] : '';
+			if ( ! hash_equals( $backupino_password, $backupino_supplied ) ) {
+				respond( array( 'ok' => false, 'error' => 'Installer password required.' ), 401 );
+			}
+		}
+
 		$prefix = isset( $_POST['prefix'] ) && '' !== trim( (string) $_POST['prefix'] ) ? trim( (string) $_POST['prefix'] ) : 'wp_';
 		if ( ! preg_match( '/^[a-zA-Z0-9_]+$/', $prefix ) ) {
 			respond( array( 'ok' => false, 'error' => 'Invalid table prefix.' ), 400 );
@@ -356,7 +389,7 @@ switch ( $backupino_action ) {
 		try {
 			$connection = ConnectionManager::ensure( $config );
 		} catch ( \RuntimeException $e ) {
-			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $config, $backupino_state_file ) ), 400 );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $config, '', $backupino_state_secret, $backupino_run_handle ) ), 400 );
 		}
 
 		$tables = array();
@@ -369,6 +402,40 @@ switch ( $backupino_action ) {
 			}
 		}
 
+		// Clean up any previous run handle from the same client before creating a fresh private run.
+		if ( '' !== $backupino_run_handle ) {
+			try {
+				$prev_state = State::open_private_run(
+					$backupino_run_handle,
+					$backupino_dir,
+					$backupino_state_secret,
+					$backupino_archive_name,
+					$backupino_doc_root
+				);
+				$prev_state->destroy();
+			} catch ( \RuntimeException $e ) {
+				// Ignore stale handle.
+			}
+		}
+
+		try {
+			$backupino_state = State::create_private_run(
+				$backupino_dir,
+				$backupino_state_secret,
+				$backupino_archive_name,
+				$backupino_doc_root
+			);
+		} catch ( \RuntimeException $e ) {
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $config, '', $backupino_state_secret ) ), 500 );
+		}
+
+		$backupino_state_file              = $backupino_state->file();
+		$backupino_run_handle              = $backupino_state->handle();
+		$GLOBALS['backupino_active_state'] = $backupino_state;
+
+		if ( '' !== $backupino_password ) {
+			$backupino_state->set( 'authenticated', true );
+		}
 		$backupino_state->set( 'db', $config );
 		$backupino_state->set( 'tables_found', count( $tables ) );
 		$backupino_state->set( 'new_url', $new_url );
@@ -379,10 +446,25 @@ switch ( $backupino_action ) {
 			respond( array( 'ok' => false, 'error' => 'Failed to persist secure installer state.' ), 500 );
 		}
 
+		if ( ! headers_sent() ) {
+			@setcookie(
+				'backupino_run',
+				$backupino_run_handle,
+				array(
+					'expires'  => 0,
+					'path'     => '' !== $backupino_subpath ? $backupino_subpath . '/' : '/',
+					'secure'   => 'https' === $backupino_scheme,
+					'httponly' => true,
+					'samesite' => 'Strict',
+				)
+			);
+		}
+
 		respond(
 			array(
 				'ok'           => true,
 				'db'           => $config['name'],
+				'run_handle'   => $backupino_run_handle,
 				'message'      => sprintf( 'Database connected (%d tables existing).', count( $tables ) ),
 				'tables_found' => count( $tables ),
 			)
@@ -465,7 +547,7 @@ switch ( $backupino_action ) {
 			$connection->query( 'SET UNIQUE_CHECKS = 0' );
 		} catch ( \RuntimeException $e ) {
 			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
-			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $db, $backupino_state_file ) ), 400 );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $db, $backupino_state_file, $backupino_state_secret, $backupino_run_handle ) ), 400 );
 		}
 
 		$offset   = (int) $backupino_state->get( 'sql_offset', 0 );
@@ -502,7 +584,7 @@ switch ( $backupino_action ) {
 
 		if ( ! empty( $result['error'] ) ) {
 			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
-			respond( array( 'ok' => false, 'error' => sanitize_error_message( (string) $result['error'], $db, $backupino_state_file ) ), 500 );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( (string) $result['error'], $db, $backupino_state_file, $backupino_state_secret, $backupino_run_handle ) ), 500 );
 		}
 
 		$backupino_state->set( 'sql_offset', $offset );
@@ -566,7 +648,7 @@ switch ( $backupino_action ) {
 			$connection->query( 'SET UNIQUE_CHECKS = 0' );
 		} catch ( \RuntimeException $e ) {
 			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
-			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $db, $backupino_state_file ) ), 400 );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $db, $backupino_state_file, $backupino_state_secret, $backupino_run_handle ) ), 400 );
 		}
 
 		$rewriter = new UrlRewrite( $connection, Replacer::from_urls( $old_url, $new_url ) );
@@ -883,7 +965,7 @@ switch ( $backupino_action ) {
 			}
 		} catch ( \RuntimeException $e ) {
 			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
-			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $db, $backupino_state_file ) ), 400 );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $db, $backupino_state_file, $backupino_state_secret, $backupino_run_handle ) ), 400 );
 		}
 
 		// Preserve pre-compiled Elementor CSS files from the backup package so frontend loads immediately without dynamic tag recompilation errors.
@@ -1050,7 +1132,19 @@ switch ( $backupino_action ) {
 		break;
 
 	case 'cleanup':
-		$backupino_state->destroy();
+		if ( '' !== $backupino_password ) {
+			$cleanup_auth = ( $backupino_state instanceof State && ! empty( $backupino_state->get( 'authenticated' ) ) );
+			if ( ! $cleanup_auth ) {
+				$backupino_supplied = isset( $_REQUEST['installer_password'] ) ? (string) $_REQUEST['installer_password'] : '';
+				if ( ! hash_equals( $backupino_password, $backupino_supplied ) ) {
+					respond( array( 'ok' => false, 'error' => 'Installer password required.' ), 401 );
+				}
+			}
+		}
+
+		if ( $backupino_state instanceof State ) {
+			$backupino_state->destroy();
+		}
 
 		// Restore preserved destination host php configuration (.user.ini / php.ini) if valid
 		foreach ( array( '.user.ini', 'php.ini' ) as $ini_file ) {
@@ -1078,7 +1172,6 @@ switch ( $backupino_action ) {
 			$backupino_dir . '/backupino-package.json',
 			$backupino_dir . '/backupino-wp-config.tpl',
 			$backupino_dir . '/backupino-install.json',
-			$backupino_state_file,
 			$backupino_dir . '/wp-config.backupino-orig.php',
 			$backupino_dir . '/.htaccess.backupino-orig',
 			$backupino_dir . '/.user.ini.backupino-orig',
@@ -1115,12 +1208,14 @@ switch ( $backupino_action ) {
 		respond( array( 'ok' => false, 'error' => 'Unknown action.' ), 400 );
 }
 } catch ( \Throwable $backupino_err ) {
-	$backupino_db_ctx = is_array( $backupino_state->get( 'db' ) ) ? (array) $backupino_state->get( 'db' ) : array();
+	$backupino_db_ctx = ( $backupino_state instanceof State && is_array( $backupino_state->get( 'db' ) ) )
+		? (array) $backupino_state->get( 'db' )
+		: array();
 	cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
 	respond(
 		array(
 			'ok'    => false,
-			'error' => sanitize_error_message( $backupino_err->getMessage(), $backupino_db_ctx, $backupino_state_file ),
+			'error' => sanitize_error_message( $backupino_err->getMessage(), $backupino_db_ctx, $backupino_state_file, $backupino_state_secret, $backupino_run_handle ),
 		),
 		500
 	);
@@ -1128,15 +1223,17 @@ switch ( $backupino_action ) {
 
 /**
  * Clean up sensitive installer state and temporary extracted files without
- * deleting unrelated user files or backup archives.
+ * deleting unrelated user files, other runs, or backup archives.
  *
- * @param State  $state          Active installer state.
- * @param string $dir            Installer working directory.
- * @param bool   $keep_auth_flag Preserve minimal non-sensitive auth flag when installer password is active.
+ * @param State|null $state          Active installer state.
+ * @param string     $dir            Installer working directory.
+ * @param bool       $keep_auth_flag Preserve minimal non-sensitive auth flag when installer password is active.
  * @return void
  */
-function cleanup_sensitive_temp( State $state, string $dir, bool $keep_auth_flag = false ): void {
-	$state->purge_sensitive( $keep_auth_flag );
+function cleanup_sensitive_temp( ?State $state, string $dir, bool $keep_auth_flag = false ): void {
+	if ( $state instanceof State ) {
+		$state->purge_sensitive( $keep_auth_flag );
+	}
 
 	$sensitive_temp = array(
 		$dir . '/database.sql',
@@ -1153,27 +1250,42 @@ function cleanup_sensitive_temp( State $state, string $dir, bool $keep_auth_flag
 }
 
 /**
- * Strip sensitive credentials or private filesystem paths from error messages
- * before sending them in HTTP JSON responses.
+ * Strip sensitive credentials, server secrets, session handles, or private
+ * filesystem paths from error messages before sending them in HTTP JSON responses.
  *
- * @param string               $message    Raw error message.
- * @param array<string, mixed> $db_config  Database config context.
- * @param string               $state_file Private state file path.
+ * @param string               $message      Raw error message.
+ * @param array<string, mixed> $db_config    Database config context.
+ * @param string               $state_file   Private state file path.
+ * @param string               $state_secret Server-only state secret.
+ * @param string               $run_handle   Signed session handle.
  * @return string
  */
-function sanitize_error_message( string $message, array $db_config = array(), string $state_file = '' ): string {
+function sanitize_error_message(
+	string $message,
+	array $db_config = array(),
+	string $state_file = '',
+	string $state_secret = '',
+	string $run_handle = ''
+): string {
 	$secrets = array();
 
 	if ( ! empty( $db_config['password'] ) && is_string( $db_config['password'] ) ) {
 		$secrets[] = $db_config['password'];
 	}
+	if ( '' !== $state_secret ) {
+		$secrets[] = $state_secret;
+	}
+	if ( '' !== $run_handle ) {
+		$secrets[] = $run_handle;
+	}
 	if ( '' !== $state_file ) {
 		$secrets[] = $state_file;
 		$secrets[] = dirname( $state_file );
+		$secrets[] = dirname( dirname( $state_file ) );
 	}
 
 	foreach ( $secrets as $secret ) {
-		if ( '' !== $secret ) {
+		if ( '' !== $secret && '/' !== $secret ) {
 			$message = str_replace( $secret, '[redacted]', $message );
 		}
 	}

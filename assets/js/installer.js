@@ -167,11 +167,17 @@
 	var title = document.getElementById("progress-title");
 	var busy = false;
 	var completed = false;
+	var runHandle = "";
 
 	function sendAbort(useBeacon) {
 		var token = getToken();
 		if (!token) { return; }
-		var body = new URLSearchParams({ action: "abort", token: token });
+		var fields = { action: "abort", token: token };
+		if (runHandle) {
+			fields.run_handle = runHandle;
+		}
+		var body = new URLSearchParams(fields);
+		runHandle = "";
 		if (useBeacon && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
 			try {
 				navigator.sendBeacon(window.location.pathname, body);
@@ -196,7 +202,11 @@
 	});
 
 	function api(action, data) {
-		var params = Object.assign({ action: action, token: getToken() }, data || {});
+		var base = { action: action, token: getToken() };
+		if (runHandle) {
+			base.run_handle = runHandle;
+		}
+		var params = Object.assign(base, data || {});
 		var body = new URLSearchParams(params);
 		return fetch(window.location.pathname, {
 			method: "POST",
@@ -337,6 +347,9 @@
 					fail(res.error || "Connection failed.", "error2");
 					return;
 				}
+				if (res.run_handle) {
+					runHandle = String(res.run_handle);
+				}
 				var dbPassEl = document.getElementById("db_pass");
 				if (dbPassEl) { dbPassEl.value = ""; }
 				var adminPassEl = document.getElementById("admin_pass");
@@ -397,6 +410,7 @@
 			btn.textContent = (currentLang === "fa") ? "در حال حذف فایل‌ها…" : "Deleting files…";
 			api("cleanup").then(function (res) {
 				if (!res.ok) { fail(res.error || "Cleanup failed.", "error4"); btn.disabled = false; return; }
+				runHandle = "";
 				btn.textContent = (I18N[currentLang] && I18N[currentLang].cleaned) ? I18N[currentLang].cleaned : "Installer files deleted.";
 				window.setTimeout(function () {
 					window.location.href = window.__adminUrl || "/wp-login.php";
