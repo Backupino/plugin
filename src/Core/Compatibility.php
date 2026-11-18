@@ -135,6 +135,41 @@ final class Compatibility {
 	}
 
 	/**
+	 * Extract canonical origin components (scheme, host, effective port) from an absolute URL.
+	 *
+	 * Returns null if the URL is relative, protocol-relative, invalid, or has an unsupported scheme.
+	 *
+	 * @param string $url URL to parse.
+	 * @return array{scheme: string, host: string, port: int}|null
+	 */
+	public static function extract_origin( string $url ): ?array {
+		$trimmed = trim( $url );
+		if ( '' === $trimmed || 0 === strpos( $trimmed, '//' ) ) {
+			return null;
+		}
+
+		$parts = parse_url( $trimmed );
+		if ( false === $parts || ! is_array( $parts ) ) {
+			return null;
+		}
+
+		$scheme = isset( $parts['scheme'] ) ? strtolower( (string) $parts['scheme'] ) : '';
+		$host   = isset( $parts['host'] ) ? strtolower( (string) $parts['host'] ) : '';
+
+		if ( '' === $scheme || '' === $host || ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
+			return null;
+		}
+
+		$port = isset( $parts['port'] ) ? (int) $parts['port'] : ( 'https' === $scheme ? 443 : 80 );
+
+		return array(
+			'scheme' => $scheme,
+			'host'   => $host,
+			'port'   => $port,
+		);
+	}
+
+	/**
 	 * Detailed inspection of Nginx storage protection and location block generation.
 	 *
 	 * Only generates a concrete `location ^~` directive when the storage web path can be
@@ -152,12 +187,6 @@ final class Compatibility {
 		$root    = rtrim( str_replace( '\\', '/', $paths->root() ), '/' );
 		$fs_path = $paths->packages();
 
-		$home_url      = function_exists( 'home_url' ) ? (string) home_url() : '';
-		$site_url      = function_exists( 'site_url' ) ? (string) site_url() : '';
-		$home_host     = strtolower( (string) parse_url( $home_url, PHP_URL_HOST ) );
-		$site_host     = strtolower( (string) parse_url( $site_url, PHP_URL_HOST ) );
-		$expected_host = '' !== $home_host ? $home_host : $site_host;
-
 		$uploads_baseurl = '';
 		$uploads_basedir = '';
 		if ( function_exists( 'wp_upload_dir' ) ) {
@@ -171,8 +200,8 @@ final class Compatibility {
 		// 1. Primary resolution: If base is inside wp_upload_dir basedir, map through baseurl.
 		$is_inside_uploads = '' !== $uploads_basedir && ( $base === $uploads_basedir || 0 === strpos( $base, $uploads_basedir . '/' ) );
 		if ( $is_inside_uploads ) {
-			// Require valid, non-empty baseurl.
-			if ( '' === trim( $uploads_baseurl ) ) {
+			$trimmed_baseurl = trim( $uploads_baseurl );
+			if ( '' === $trimmed_baseurl ) {
 				return array(
 					'status'   => 'manual',
 					'rule'     => '',
@@ -182,19 +211,104 @@ final class Compatibility {
 				);
 			}
 
-			// External CDN or domain mismatch check.
-			$upload_host = strtolower( (string) parse_url( $uploads_baseurl, PHP_URL_HOST ) );
-			if ( '' !== $upload_host && '' !== $expected_host && $upload_host !== $expected_host ) {
+			// Reject protocol-relative URLs (e.g. //cdn.example.org/uploads).
+			if ( 0 === strpos( $trimmed_baseurl, '//' ) ) {
 				return array(
 					'status'   => 'manual',
 					'rule'     => '',
 					'web_path' => '',
 					'fs_path'  => $fs_path,
-					'reason'   => 'cdn',
+					'reason'   => 'protocol_relative',
 				);
 			}
 
-			$upload_path = (string) parse_url( $uploads_baseurl, PHP_URL_PATH );
+			$parsed_baseurl = parse_url( $trimmed_baseurl );
+			if ( false === $parsed_baseurl || ! is_array( $parsed_baseurl ) ) {
+				return array(
+					'status'   => 'manual',
+					'rule'     => '',
+					'web_path' => '',
+					'fs_path'  => $fs_path,
+					'reason'   => 'malformed_baseurl',
+				);
+			}
+
+			// Reject unexpected query, fragment, or user credentials in baseurl.
+			if ( isset( $parsed_baseurl['query'] ) || isset( $parsed_baseurl['fragment'] ) || isset( $parsed_baseurl['user'] ) || isset( $parsed_baseurl['pass'] ) ) {
+				return array(
+					'status'   => 'manual',
+					'rule'     => '',
+					'web_path' => '',
+					'fs_path'  => $fs_path,
+					'reason'   => 'unexpected_url_components',
+				);
+			}
+
+			$upload_path = isset( $parsed_baseurl['path'] ) ? (string) $parsed_baseurl['path'] : '';
+			$is_absolute = isset( $parsed_baseurl['scheme'] ) || isset( $parsed_baseurl['host'] );
+
+			if ( $is_absolute ) {
+				$upload_origin = self::extract_origin( $trimmed_baseurl );
+				if ( null === $upload_origin ) {
+					return array(
+						'status'   => 'manual',
+						'rule'     => '',
+						'web_path' => '',
+						'fs_path'  => $fs_path,
+						'reason'   => 'invalid_origin',
+					);
+				}
+
+				// Resolve expected site origins from home_url() and site_url().
+				$home_url    = function_exists( 'home_url' ) ? (string) home_url() : '';
+				$site_url    = function_exists( 'site_url' ) ? (string) site_url() : '';
+				$home_origin = '' !== $home_url ? self::extract_origin( $home_url ) : null;
+				$site_origin = '' !== $site_url ? self::extract_origin( $site_url ) : null;
+
+				// Fail closed if neither home_url nor site_url provides a valid origin to verify against.
+				if ( null === $home_origin && null === $site_origin ) {
+					return array(
+						'status'   => 'manual',
+						'rule'     => '',
+						'web_path' => '',
+						'fs_path'  => $fs_path,
+						'reason'   => 'missing_expected_origin',
+					);
+				}
+
+				// Check exact same-origin match (scheme, hostname, effective port).
+				$matches_home = null !== $home_origin &&
+					$upload_origin['scheme'] === $home_origin['scheme'] &&
+					$upload_origin['host'] === $home_origin['host'] &&
+					$upload_origin['port'] === $home_origin['port'];
+
+				$matches_site = null !== $site_origin &&
+					$upload_origin['scheme'] === $site_origin['scheme'] &&
+					$upload_origin['host'] === $site_origin['host'] &&
+					$upload_origin['port'] === $site_origin['port'];
+
+				if ( ! $matches_home && ! $matches_site ) {
+					return array(
+						'status'   => 'manual',
+						'rule'     => '',
+						'web_path' => '',
+						'fs_path'  => $fs_path,
+						'reason'   => 'origin_mismatch',
+					);
+				}
+			} else {
+				// Relative URL: must start strictly with '/' and not contain scheme markers or traversal.
+				if ( '' === $upload_path || 0 !== strpos( $upload_path, '/' ) ) {
+					return array(
+						'status'   => 'manual',
+						'rule'     => '',
+						'web_path' => '',
+						'fs_path'  => $fs_path,
+						'reason'   => 'invalid_relative_path',
+					);
+				}
+			}
+
 			if ( '' === trim( $upload_path ) ) {
 				return array(
 					'status'   => 'manual',
@@ -210,7 +324,9 @@ final class Compatibility {
 		} elseif ( '' !== $root && ( $base === $root || 0 === strpos( $base, $root . '/' ) ) ) {
 			// 2. Fallback resolution: If base is directly inside ABSPATH / root.
 			$rel_to_root = substr( $base, strlen( $root ) );
-			$site_ref    = '' !== $site_url ? $site_url : $home_url;
+			$site_ref    = function_exists( 'site_url' ) && '' !== (string) site_url()
+				? (string) site_url()
+				: ( function_exists( 'home_url' ) ? (string) home_url() : '' );
 			$site_path   = (string) parse_url( $site_ref, PHP_URL_PATH );
 			$site_path   = '/' . trim( $site_path, '/' );
 
