@@ -33,6 +33,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 register_shutdown_function( static function () {
 	$error = error_get_last();
 	if ( $error && in_array( $error['type'], array( E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ), true ) ) {
+		if ( isset( $GLOBALS['backupino_active_state'] ) && $GLOBALS['backupino_active_state'] instanceof State ) {
+			$GLOBALS['backupino_active_state']->purge_sensitive( false );
+		}
 		while ( ob_get_level() > 0 ) {
 			@ob_end_clean();
 		}
@@ -42,7 +45,7 @@ register_shutdown_function( static function () {
 		}
 		echo json_encode( array(
 			'ok'    => false,
-			'error' => 'Fatal Error: ' . $error['message'] . ' in ' . basename( $error['file'] ) . ':' . $error['line'],
+			'error' => 'A fatal server error occurred during installation. Temporary credentials have been cleared.',
 		), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 		exit;
 	}
@@ -94,11 +97,23 @@ if ( is_file( $backupino_dir . '/php.ini' ) && ! file_exists( $backupino_dir . '
 	@rename( $backupino_dir . '/php.ini', $backupino_dir . '/php.ini.backupino-orig' );
 }
 
-$backupino_state_file   = $backupino_dir . '/backupino-install.json';
 $backupino_archive_name = isset( $backupino_payload['archive'] ) ? basename( (string) $backupino_payload['archive'] ) : '';
 $backupino_archive      = $backupino_dir . '/' . $backupino_archive_name;
 $backupino_token        = isset( $backupino_payload['token'] ) ? (string) $backupino_payload['token'] : '';
 $backupino_action       = isset( $_REQUEST['action'] ) ? (string) preg_replace( '/[^a-z_]/', '', (string) $_REQUEST['action'] ) : 'index';
+
+$backupino_state_file  = '';
+$backupino_state_error = '';
+try {
+	$backupino_state_file = State::resolve_secure_path(
+		$backupino_dir,
+		$backupino_token,
+		$backupino_archive_name,
+		isset( $_SERVER['DOCUMENT_ROOT'] ) ? (string) $_SERVER['DOCUMENT_ROOT'] : null
+	);
+} catch ( \RuntimeException $e ) {
+	$backupino_state_error = $e->getMessage();
+}
 
 // Auto-detect current host and base URL
 $backupino_scheme   = ( ! empty( $_SERVER['HTTPS'] ) && 'off' !== $_SERVER['HTTPS'] ) ? 'https' : 'http';
@@ -110,7 +125,14 @@ $backupino_subpath  = rtrim( str_replace( '\\', '/', dirname( $backupino_script 
 $backupino_auto_url = $backupino_scheme . '://' . $backupino_host . ( '/' === $backupino_subpath ? '' : $backupino_subpath );
 
 if ( 'index' === $backupino_action ) {
-	$backupino_checks = Env::check( $backupino_payload, $backupino_dir, $backupino_archive );
+	$backupino_checks   = Env::check( $backupino_payload, $backupino_dir, $backupino_archive );
+	$backupino_checks[] = array(
+		'label'  => 'Secure state storage',
+		'ok'     => '' === $backupino_state_error && '' !== $backupino_state_file,
+		'detail' => '' === $backupino_state_error
+			? 'Protected outside web document root'
+			: $backupino_state_error,
+	);
 	$backupino_body   = '<div id="app">
 	<section id="step1">
 		<h2 style="font-size:16px;margin:0 0 10px" data-i18n="env_check">Environment check</h2>'
@@ -223,7 +245,20 @@ if ( '' === $backupino_token || ! hash_equals( $backupino_token, $backupino_sent
 
 @set_time_limit( 180 );
 
-$backupino_state = new State( $backupino_state_file );
+if ( '' !== $backupino_state_error || '' === $backupino_state_file ) {
+	respond(
+		array(
+			'ok'    => false,
+			'error' => '' !== $backupino_state_error
+				? $backupino_state_error
+				: 'Secure temporary storage outside the web document root is unavailable. Installation stopped to protect sensitive credentials.',
+		),
+		500
+	);
+}
+
+$backupino_state                  = new State( $backupino_state_file, $backupino_token );
+$GLOBALS['backupino_active_state'] = $backupino_state;
 
 // Optional password gate, configured when the package was built.
 $backupino_password = isset( $backupino_payload['password'] ) ? (string) $backupino_payload['password'] : '';
@@ -236,13 +271,23 @@ if ( '' !== $backupino_password && ! $backupino_state->get( 'authenticated' ) ) 
 	}
 
 	$backupino_state->set( 'authenticated', true );
-	$backupino_state->save();
+	if ( ! $backupino_state->save() ) {
+		$backupino_state->destroy();
+		respond( array( 'ok' => false, 'error' => 'Failed to persist secure installer state.' ), 500 );
+	}
 }
 
 try {
 switch ( $backupino_action ) {
 	case 'check':
-		$checks = Env::check( $backupino_payload, $backupino_dir, $backupino_archive );
+		$checks   = Env::check( $backupino_payload, $backupino_dir, $backupino_archive );
+		$checks[] = array(
+			'label'  => 'Secure state storage',
+			'ok'     => '' === $backupino_state_error && '' !== $backupino_state_file,
+			'detail' => '' === $backupino_state_error
+				? 'Protected outside web document root'
+				: $backupino_state_error,
+		);
 
 		respond(
 			array(
@@ -286,28 +331,32 @@ switch ( $backupino_action ) {
 			$admin_pass  = isset( $_POST['admin_pass'] ) ? (string) $_POST['admin_pass'] : '';
 			$admin_email = isset( $_POST['admin_email'] ) ? trim( (string) $_POST['admin_email'] ) : '';
 
-			if ( '' === $admin_user ) {
-				respond( array( 'ok' => false, 'error' => 'Administrator username is required.' ), 400 );
+			if ( '' === $admin_user || strlen( $admin_user ) > 60 ) {
+				respond( array( 'ok' => false, 'error' => 'Administrator username is required (max 60 characters).' ), 400 );
 			}
 			if ( '' === $admin_pass ) {
 				respond( array( 'ok' => false, 'error' => 'Administrator password is required.' ), 400 );
 			}
-			if ( '' === $admin_email || false === filter_var( $admin_email, FILTER_VALIDATE_EMAIL ) ) {
+			if ( '' === $admin_email || strlen( $admin_email ) > 100 || false === filter_var( $admin_email, FILTER_VALIDATE_EMAIL ) ) {
 				respond( array( 'ok' => false, 'error' => 'A valid administrator email address is required.' ), 400 );
 			}
 
+			// Hash immediately so plaintext administrator password is never stored in state.
+			$admin_pass_hash = AdminCreator::hash_password( $admin_pass );
+			unset( $admin_pass );
+
 			$admin_account = array(
-				'enabled'  => true,
-				'username' => $admin_user,
-				'password' => $admin_pass,
-				'email'    => $admin_email,
+				'enabled'       => true,
+				'username'      => $admin_user,
+				'password_hash' => $admin_pass_hash,
+				'email'         => $admin_email,
 			);
 		}
 
 		try {
 			$connection = ConnectionManager::ensure( $config );
 		} catch ( \RuntimeException $e ) {
-			respond( array( 'ok' => false, 'error' => $e->getMessage() ), 400 );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $config, $backupino_state_file ) ), 400 );
 		}
 
 		$tables = array();
@@ -325,7 +374,10 @@ switch ( $backupino_action ) {
 		$backupino_state->set( 'new_url', $new_url );
 		$backupino_state->set( 'empty_db', ! empty( $_POST['empty_db'] ) );
 		$backupino_state->set( 'admin_account', $admin_account );
-		$backupino_state->save();
+		if ( ! $backupino_state->save() ) {
+			$backupino_state->destroy();
+			respond( array( 'ok' => false, 'error' => 'Failed to persist secure installer state.' ), 500 );
+		}
 
 		respond(
 			array(
@@ -339,11 +391,13 @@ switch ( $backupino_action ) {
 
 	case 'extract':
 		if ( ! is_readable( $backupino_archive ) ) {
+			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
 			respond( array( 'ok' => false, 'error' => 'Archive file not found: ' . basename( $backupino_archive ) ), 400 );
 		}
 
 		$extractor = new Extractor( $backupino_archive, $backupino_dir );
 		if ( ! $extractor->open() ) {
+			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
 			respond( array( 'ok' => false, 'error' => $extractor->error() ), 400 );
 		}
 
@@ -352,7 +406,11 @@ switch ( $backupino_action ) {
 		$done   = $extractor->step( $offset, 300 );
 
 		$backupino_state->set( 'extract_offset', $offset );
-		$backupino_state->save();
+		if ( ! $backupino_state->save() ) {
+			$extractor->close();
+			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
+			respond( array( 'ok' => false, 'error' => 'Failed to persist secure installer state.' ), 500 );
+		}
 
 		$extractor->close();
 
@@ -406,7 +464,8 @@ switch ( $backupino_action ) {
 			$connection->query( 'SET FOREIGN_KEY_CHECKS = 0' );
 			$connection->query( 'SET UNIQUE_CHECKS = 0' );
 		} catch ( \RuntimeException $e ) {
-			respond( array( 'ok' => false, 'error' => $e->getMessage() ), 400 );
+			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $db, $backupino_state_file ) ), 400 );
 		}
 
 		$offset   = (int) $backupino_state->get( 'sql_offset', 0 );
@@ -442,7 +501,8 @@ switch ( $backupino_action ) {
 		$result   = $importer->step( $offset, 262144, 8.0 );
 
 		if ( ! empty( $result['error'] ) ) {
-			respond( array( 'ok' => false, 'error' => $result['error'] ), 500 );
+			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( (string) $result['error'], $db, $backupino_state_file ) ), 500 );
 		}
 
 		$backupino_state->set( 'sql_offset', $offset );
@@ -505,7 +565,8 @@ switch ( $backupino_action ) {
 			$connection->query( 'SET FOREIGN_KEY_CHECKS = 0' );
 			$connection->query( 'SET UNIQUE_CHECKS = 0' );
 		} catch ( \RuntimeException $e ) {
-			respond( array( 'ok' => false, 'error' => $e->getMessage() ), 400 );
+			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $db, $backupino_state_file ) ), 400 );
 		}
 
 		$rewriter = new UrlRewrite( $connection, Replacer::from_urls( $old_url, $new_url ) );
@@ -806,98 +867,23 @@ switch ( $backupino_action ) {
 				// Table might not exist yet, ignore.
 			}
 
-			// 5. Optional new WordPress Administrator account creation
+			// 5. Optional new WordPress Administrator account creation (INSERT-only; never modifies existing accounts)
 			$admin_account = (array) $backupino_state->get( 'admin_account' );
-			if ( ! empty( $admin_account['enabled'] ) && ! empty( $admin_account['username'] ) && ! empty( $admin_account['password'] ) ) {
-				$adm_user  = trim( (string) $admin_account['username'] );
-				$adm_pass  = (string) $admin_account['password'];
-				$adm_email = trim( (string) ( $admin_account['email'] ?? '' ) );
+			if ( ! empty( $admin_account['enabled'] ) && ! empty( $admin_account['username'] ) && ! empty( $admin_account['password_hash'] ) ) {
+				$adm_user      = trim( (string) $admin_account['username'] );
+				$adm_pass_hash = (string) $admin_account['password_hash'];
+				$adm_email     = trim( (string) ( $admin_account['email'] ?? '' ) );
 
-				$target_users_table = str_replace( '`', '``', $target_prefix ) . 'users';
+				// Remove admin_account from state immediately before/on execution so it never lingers.
+				$backupino_state->remove( 'admin_account' );
+				$backupino_state->save();
 
-				// Hash password using native WordPress PasswordHash if available in extracted files, else password_hash
-				$hashed_pass = '';
-				$phpass_file = $backupino_dir . '/wp-includes/class-phpass.php';
-				if ( is_file( $phpass_file ) && is_readable( $phpass_file ) ) {
-					require_once $phpass_file;
-					if ( class_exists( 'PasswordHash' ) ) {
-						$hasher      = new \PasswordHash( 8, true );
-						$hashed_pass = $hasher->HashPassword( $adm_pass );
-					}
-				}
-				if ( '' === $hashed_pass ) {
-					$hashed_pass = password_hash( $adm_pass, PASSWORD_DEFAULT );
-				}
-
-				$existing_users = $connection->fetch_all(
-					"SELECT ID FROM `{$target_users_table}` WHERE user_login = ? OR user_email = ? LIMIT 1",
-					array( $adm_user, $adm_email )
-				);
-
-				$admin_user_id = 0;
-				if ( ! empty( $existing_users[0]['ID'] ) ) {
-					$admin_user_id = (int) $existing_users[0]['ID'];
-					$connection->execute(
-						"UPDATE `{$target_users_table}` SET user_pass = ?, user_email = ? WHERE ID = ?",
-						array( $hashed_pass, $adm_email, $admin_user_id )
-					);
-				} else {
-					$nicename = substr( preg_replace( '/[^a-z0-9_\.-]/i', '-', strtolower( $adm_user ) ), 0, 50 );
-					if ( '' === $nicename ) {
-						$nicename = 'admin';
-					}
-					$now = gmdate( 'Y-m-d H:i:s' );
-					$connection->execute(
-						"INSERT INTO `{$target_users_table}` (user_login, user_pass, user_nicename, user_email, user_registered, user_status, display_name) VALUES (?, ?, ?, ?, ?, 0, ?)",
-						array( $adm_user, $hashed_pass, $nicename, $adm_email, $now, $adm_user )
-					);
-					$created_users = $connection->fetch_all(
-						"SELECT ID FROM `{$target_users_table}` WHERE user_login = ? LIMIT 1",
-						array( $adm_user )
-					);
-					if ( ! empty( $created_users[0]['ID'] ) ) {
-						$admin_user_id = (int) $created_users[0]['ID'];
-					}
-				}
-
-				if ( $admin_user_id > 0 ) {
-					$meta_entries = array(
-						$target_prefix . 'capabilities' => 'a:1:{s:13:"administrator";b:1;}',
-						$target_prefix . 'user_level'   => '10',
-						'nickname'                      => $adm_user,
-						'first_name'                    => '',
-						'last_name'                     => '',
-						'description'                   => '',
-						'rich_editing'                  => 'true',
-						'syntax_highlighting'           => 'true',
-						'comment_shortcuts'             => 'false',
-						'admin_color'                   => 'fresh',
-						'use_ssl'                       => '0',
-						'show_admin_bar_front'          => 'true',
-					);
-
-					foreach ( $meta_entries as $m_key => $m_val ) {
-						$existing_meta = $connection->fetch_all(
-							"SELECT umeta_id FROM `{$target_meta_table}` WHERE user_id = ? AND meta_key = ? LIMIT 1",
-							array( $admin_user_id, $m_key )
-						);
-						if ( ! empty( $existing_meta[0]['umeta_id'] ) ) {
-							$connection->execute(
-								"UPDATE `{$target_meta_table}` SET meta_value = ? WHERE umeta_id = ?",
-								array( $m_val, (int) $existing_meta[0]['umeta_id'] )
-							);
-						} else {
-							$connection->execute(
-								"INSERT INTO `{$target_meta_table}` (user_id, meta_key, meta_value) VALUES (?, ?, ?)",
-								array( $admin_user_id, $m_key, $m_val )
-							);
-						}
-					}
-					$admin_created_username = $adm_user;
-				}
+				$created_admin          = AdminCreator::create( $connection, $target_prefix, $adm_user, $adm_email, $adm_pass_hash );
+				$admin_created_username = $created_admin['username'];
 			}
 		} catch ( \RuntimeException $e ) {
-			respond( array( 'ok' => false, 'error' => $e->getMessage() ), 400 );
+			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
+			respond( array( 'ok' => false, 'error' => sanitize_error_message( $e->getMessage(), $db, $backupino_state_file ) ), 400 );
 		}
 
 		// Preserve pre-compiled Elementor CSS files from the backup package so frontend loads immediately without dynamic tag recompilation errors.
@@ -920,6 +906,7 @@ switch ( $backupino_action ) {
 
 		$db['new_url'] = $new_url;
 		if ( ! ConfigWriter::write( $backupino_dir . '/wp-config.php', $db, $orig_content ) ) {
+			cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
 			respond( array( 'ok' => false, 'error' => 'wp-config.php could not be written.' ), 500 );
 		}
 
@@ -1001,9 +988,6 @@ switch ( $backupino_action ) {
 			? rtrim( $new_url, '/' ) . '/' . trim( $detected_login_slug, '/' ) . '/'
 			: rtrim( $new_url, '/' ) . '/wp-login.php';
 
-		$backupino_state->set( 'finished', true );
-		$backupino_state->save();
-
 		// Enqueue restore notification in WordPress options so it is dispatched cleanly via WordPress HTTP API on first boot
 		if ( ! empty( $backupino_payload['notify']['enabled'] ) && isset( $connection ) && isset( $target_opt_table ) ) {
 			$notif        = (array) $backupino_payload['notify'];
@@ -1043,6 +1027,10 @@ switch ( $backupino_action ) {
 			}
 		}
 
+		// Purge all sensitive credentials & temporary SQL/config templates immediately upon completion.
+		$backupino_state->set( 'finished', true );
+		cleanup_sensitive_temp( $backupino_state, $backupino_dir, '' !== $backupino_password );
+
 		respond(
 			array(
 				'ok'            => true,
@@ -1054,6 +1042,11 @@ switch ( $backupino_action ) {
 				'message'       => 'wp-config.php written.',
 			)
 		);
+		break;
+
+	case 'abort':
+		cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
+		respond( array( 'ok' => true, 'aborted' => true ) );
 		break;
 
 	case 'cleanup':
@@ -1078,45 +1071,28 @@ switch ( $backupino_action ) {
 			}
 		}
 
+		// Delete ONLY exact known Backupino installer artifacts (never unrelated user files or archives).
 		$targets = array(
 			$backupino_dir . '/database.sql',
 			$backupino_dir . '/backupino-manifest.ndjson',
 			$backupino_dir . '/backupino-package.json',
 			$backupino_dir . '/backupino-wp-config.tpl',
+			$backupino_dir . '/backupino-install.json',
 			$backupino_state_file,
-			$backupino_archive,
 			$backupino_dir . '/wp-config.backupino-orig.php',
 			$backupino_dir . '/.htaccess.backupino-orig',
 			$backupino_dir . '/.user.ini.backupino-orig',
 			$backupino_dir . '/php.ini.backupino-orig',
 		);
 
-		$dir_files = @scandir( $backupino_dir );
-		if ( is_array( $dir_files ) ) {
-			foreach ( $dir_files as $f ) {
-				if ( '.' === $f || '..' === $f ) {
-					continue;
-				}
-				$fpath = $backupino_dir . '/' . $f;
-				if ( ! is_file( $fpath ) ) {
-					continue;
-				}
-				if ( preg_match( '/\.(zip|sql|ndjson)$/i', $f ) ) {
-					if (
-						0 === strpos( $f, 'backupino' ) ||
-						( '' !== $backupino_archive_name && $f === $backupino_archive_name ) ||
-						preg_match( '/^[a-zA-Z0-9_\.\-]+_\d{8}_\d{6}\.zip$/', $f )
-					) {
-						$targets[] = $fpath;
-					}
-				}
-			}
+		if ( '' !== $backupino_archive_name ) {
+			$targets[] = $backupino_archive;
 		}
 
 		$targets = array_unique( $targets );
 		foreach ( $targets as $target ) {
-			if ( is_file( $target ) ) {
-				@chmod( $target, 0777 );
+			if ( '' !== $target && is_file( $target ) ) {
+				@chmod( $target, 0600 );
 				@unlink( $target );
 			}
 		}
@@ -1139,7 +1115,70 @@ switch ( $backupino_action ) {
 		respond( array( 'ok' => false, 'error' => 'Unknown action.' ), 400 );
 }
 } catch ( \Throwable $backupino_err ) {
-	respond( array( 'ok' => false, 'error' => $backupino_err->getMessage() ), 500 );
+	$backupino_db_ctx = is_array( $backupino_state->get( 'db' ) ) ? (array) $backupino_state->get( 'db' ) : array();
+	cleanup_sensitive_temp( $backupino_state, $backupino_dir, false );
+	respond(
+		array(
+			'ok'    => false,
+			'error' => sanitize_error_message( $backupino_err->getMessage(), $backupino_db_ctx, $backupino_state_file ),
+		),
+		500
+	);
+}
+
+/**
+ * Clean up sensitive installer state and temporary extracted files without
+ * deleting unrelated user files or backup archives.
+ *
+ * @param State  $state          Active installer state.
+ * @param string $dir            Installer working directory.
+ * @param bool   $keep_auth_flag Preserve minimal non-sensitive auth flag when installer password is active.
+ * @return void
+ */
+function cleanup_sensitive_temp( State $state, string $dir, bool $keep_auth_flag = false ): void {
+	$state->purge_sensitive( $keep_auth_flag );
+
+	$sensitive_temp = array(
+		$dir . '/database.sql',
+		$dir . '/backupino-wp-config.tpl',
+		$dir . '/backupino-install.json',
+	);
+
+	foreach ( $sensitive_temp as $path ) {
+		if ( is_file( $path ) ) {
+			@chmod( $path, 0600 );
+			@unlink( $path );
+		}
+	}
+}
+
+/**
+ * Strip sensitive credentials or private filesystem paths from error messages
+ * before sending them in HTTP JSON responses.
+ *
+ * @param string               $message    Raw error message.
+ * @param array<string, mixed> $db_config  Database config context.
+ * @param string               $state_file Private state file path.
+ * @return string
+ */
+function sanitize_error_message( string $message, array $db_config = array(), string $state_file = '' ): string {
+	$secrets = array();
+
+	if ( ! empty( $db_config['password'] ) && is_string( $db_config['password'] ) ) {
+		$secrets[] = $db_config['password'];
+	}
+	if ( '' !== $state_file ) {
+		$secrets[] = $state_file;
+		$secrets[] = dirname( $state_file );
+	}
+
+	foreach ( $secrets as $secret ) {
+		if ( '' !== $secret ) {
+			$message = str_replace( $secret, '[redacted]', $message );
+		}
+	}
+
+	return $message;
 }
 
 /**

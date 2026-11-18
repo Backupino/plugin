@@ -15,77 +15,95 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_unlink, WordPress.WP.AlternativeFunctions.unlink_unlink -- Recursive uninstall file removal.
 // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Recursive uninstall permissions handling.
 
-/**
- * Recursively remove a directory and all its contents.
- *
- * @param string $dir Target directory.
- * @return void
- */
-function backupino_remove_directory( string $dir ): void {
-	if ( ! is_dir( $dir ) ) {
-		return;
-	}
-
-	$items = new RecursiveIteratorIterator(
-		new RecursiveDirectoryIterator( $dir, FilesystemIterator::SKIP_DOTS ),
-		RecursiveIteratorIterator::CHILD_FIRST
-	);
-
-	foreach ( $items as $item ) {
-		if ( $item->isDir() ) {
-			@chmod( $item->getPathname(), 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-			@rmdir( $item->getPathname() );       // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		} else {
-			@chmod( $item->getPathname(), 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-			@unlink( $item->getPathname() );      // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+if ( ! function_exists( 'backupino_remove_directory' ) ) {
+	/**
+	 * Recursively remove a directory and all its contents.
+	 *
+	 * @param string $dir Target directory.
+	 * @return void
+	 */
+	function backupino_remove_directory( string $dir ): void {
+		if ( ! is_dir( $dir ) ) {
+			return;
 		}
-	}
 
-	@chmod( $dir, 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-	@rmdir( $dir );       // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		$items = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $dir, FilesystemIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		foreach ( $items as $item ) {
+			if ( $item->isDir() ) {
+				@chmod( $item->getPathname(), 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				@rmdir( $item->getPathname() );       // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			} else {
+				@chmod( $item->getPathname(), 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				@unlink( $item->getPathname() );      // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			}
+		}
+
+		@chmod( $dir, 0777 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		@rmdir( $dir );       // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+	}
 }
 
-/**
- * Remove every trace of the plugin for the current site.
- *
- * @return void
- */
-function backupino_uninstall_site(): void {
-	global $wpdb;
+if ( ! function_exists( 'backupino_uninstall_site' ) ) {
+	/**
+	 * Remove every trace of the plugin for the current site.
+	 *
+	 * @return void
+	 */
+	function backupino_uninstall_site(): void {
+		global $wpdb;
 
-	// Drop custom database tables
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-	$wpdb->query( 'DROP TABLE IF EXISTS `' . $wpdb->prefix . 'backupino_jobs`' );
+		// Drop custom database tables
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( 'DROP TABLE IF EXISTS `' . $wpdb->prefix . 'backupino_jobs`' );
 
-	// Delete all stored options
-	delete_option( 'backupino_settings' );
-	delete_option( 'backupino_schema_version' );
-	delete_option( 'backupino_schedule_state' );
-	delete_option( 'backupino_installed_at' );
-	delete_option( 'backupino_download_key' );
-	delete_option( 'backupino_notify_queue' );
-	delete_option( 'backupino_migration_notice' );
+		// Delete all stored options
+		delete_option( 'backupino_settings' );
+		delete_option( 'backupino_schema_version' );
+		delete_option( 'backupino_schedule_state' );
+		delete_option( 'backupino_installed_at' );
+		delete_option( 'backupino_download_key' );
+		delete_option( 'backupino_notify_queue' );
+		delete_option( 'backupino_migration_notice' );
 
-	// Clear scheduled cron events
-	wp_clear_scheduled_hook( 'backupino_run_jobs' );
-	wp_clear_scheduled_hook( 'backupino_scheduled_backup' );
+		// Clear scheduled cron events (current and legacy hooks)
+		$backupino_cron_hooks = array(
+			'backupino_run_jobs',
+			'backupino_scheduled_backup',
+			'backupino_cron_worker',
+			'backupino_cron_scheduler',
+			'backupino_cron_queue',
+			'backupino_cron_retention',
+		);
+		foreach ( $backupino_cron_hooks as $backupino_hook ) {
+			wp_clear_scheduled_hook( $backupino_hook );
+		}
 
-	// Remove storage directories in uploads and legacy wp-content/backupino
-	$backupino_uploads = wp_upload_dir( null, false );
-	if ( ! empty( $backupino_uploads['basedir'] ) ) {
-		$backupino_primary_dir = rtrim( (string) $backupino_uploads['basedir'], '/' ) . '/backupino';
-		backupino_remove_directory( $backupino_primary_dir );
-	}
+		// Remove storage directories in uploads and legacy wp-content/backupino
+		$backupino_uploads = wp_upload_dir( null, false );
+		if ( ! empty( $backupino_uploads['basedir'] ) ) {
+			$backupino_primary_dir = rtrim( (string) $backupino_uploads['basedir'], '/' ) . '/backupino';
+			backupino_remove_directory( $backupino_primary_dir );
+		}
 
-	$backupino_content_dir = defined( 'WP_CONTENT_DIR' ) ? (string) WP_CONTENT_DIR : ( (string) ABSPATH . 'wp-content' );
-	$backupino_legacy_dir  = rtrim( $backupino_content_dir, '/' ) . '/backupino';
-	if ( is_dir( $backupino_legacy_dir ) ) {
-		backupino_remove_directory( $backupino_legacy_dir );
+		$backupino_content_dir = defined( 'WP_CONTENT_DIR' ) ? (string) WP_CONTENT_DIR : ( (string) ABSPATH . 'wp-content' );
+		$backupino_legacy_dir  = rtrim( $backupino_content_dir, '/' ) . '/backupino';
+		if ( is_dir( $backupino_legacy_dir ) ) {
+			backupino_remove_directory( $backupino_legacy_dir );
+		}
 	}
 }
 
 if ( is_multisite() ) {
-	$backupino_sites = get_sites( array( 'fields' => 'ids' ) );
+	$backupino_sites = get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		)
+	);
 
 	foreach ( $backupino_sites as $backupino_site_id ) {
 		switch_to_blog( (int) $backupino_site_id );

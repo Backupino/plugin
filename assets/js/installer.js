@@ -166,6 +166,34 @@
 	var bar = document.getElementById("bar");
 	var title = document.getElementById("progress-title");
 	var busy = false;
+	var completed = false;
+
+	function sendAbort(useBeacon) {
+		var token = getToken();
+		if (!token) { return; }
+		var body = new URLSearchParams({ action: "abort", token: token });
+		if (useBeacon && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+			try {
+				navigator.sendBeacon(window.location.pathname, body);
+				return;
+			} catch (e) {}
+		}
+		try {
+			fetch(window.location.pathname, {
+				method: "POST",
+				body: body,
+				credentials: "same-origin",
+				keepalive: true,
+				headers: { "Content-Type": "application/x-www-form-urlencoded" }
+			}).catch(function () {});
+		} catch (e) {}
+	}
+
+	window.addEventListener("pagehide", function () {
+		if (busy && !completed) {
+			sendAbort(true);
+		}
+	});
 
 	function api(action, data) {
 		var params = Object.assign({ action: action, token: getToken() }, data || {});
@@ -200,7 +228,8 @@
 	}
 
 	function fail(message, field) {
-		var el = document.getElementById(field || "error3");
+		var targetField = field || "error3";
+		var el = document.getElementById(targetField);
 		if (el) {
 			el.textContent = message;
 			el.style.display = "block";
@@ -212,6 +241,9 @@
 		}
 		if (bar) {
 			bar.style.background = "#dc2626";
+		}
+		if (targetField === "error3" && !completed) {
+			sendAbort(false);
 		}
 		busy = false;
 	}
@@ -305,6 +337,10 @@
 					fail(res.error || "Connection failed.", "error2");
 					return;
 				}
+				var dbPassEl = document.getElementById("db_pass");
+				if (dbPassEl) { dbPassEl.value = ""; }
+				var adminPassEl = document.getElementById("admin_pass");
+				if (adminPassEl) { adminPassEl.value = ""; }
 				show("step3");
 				updateStepNav(3);
 				note("Connected to database `" + res.db + "` (found " + res.tables_found + " existing tables).");
@@ -322,6 +358,8 @@
 							updateStepNav(6);
 							api("config").then(function (final) {
 								if (!final.ok) { fail(final.error || "Configuration failed."); return; }
+								completed = true;
+								busy = false;
 								show("step4");
 								var siteUrl = final.url || "";
 								var adminUrl = final.admin || (siteUrl ? siteUrl.replace(/\/+$/, "") + "/wp-login.php" : "/wp-login.php");
@@ -342,7 +380,7 @@
 										adminBox.classList.remove("hidden");
 									}
 								}
-							});
+							}).catch(function (err) { fail(String(err)); });
 						});
 					});
 				});

@@ -22,7 +22,8 @@ use Backupino\Support\Str;
 final class Paths {
 
 	/**
-	 * Storage root (`wp-content/backupino` by default).
+	 * Storage root (`backupino` under the configured WordPress uploads `basedir`,
+	 * or `WP_CONTENT_DIR/backupino` if `basedir` is unavailable).
 	 *
 	 * @var string
 	 */
@@ -49,8 +50,10 @@ final class Paths {
 	/**
 	 * Build from the current WordPress environment.
 	 *
-	 * Uses wp-content/backupino outside of public uploads for enhanced security and isolation,
-	 * with automatic fallback to uploads directory if wp-content is not writable.
+	 * Resolves the storage root to `<basedir>/backupino` using `wp_upload_dir()`
+	 * whenever a non-empty `basedir` is returned, falling back to
+	 * `WP_CONTENT_DIR . '/backupino'` (or `ABSPATH . 'wp-content/backupino'`)
+	 * when `wp_upload_dir()` is unavailable or returns an empty `basedir`.
 	 *
 	 * @return self
 	 */

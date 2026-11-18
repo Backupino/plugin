@@ -39,6 +39,7 @@ final class InstallerBuilder {
 		'Importer.php',
 		'UrlRewrite.php',
 		'ConfigWriter.php',
+		'AdminCreator.php',
 		'View.php',
 	);
 
